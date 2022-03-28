@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+	<title>Workber</title>
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/normalize.css" />
+	<link rel="stylesheet" href="assets/css/style.css">
+	<!-- <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script> -->
+	<!-- <script src="js/map.js"></script> -->
+	<script src="script.js"></script>
+</head>
+<body>
+	<span class="main-page d-none"></span>
+	<!-- <div class="distances d-none">
+		<div class="dist-text">
+		</div>
+		<div class="dist-graph">
+			<div class="vl vl-short"></div>
+			<div class="dot"></div>
+			<div class="vl"></div>
+			<div class="dot"></div>
+			<div class="vl vl-short"></div>
+		</div>
+	</div> -->
+	<header class="header">
+		<div class="header-block">
+			<div class="workber-logo">
+				<a href="/">
+					<img src="assets/workber_img/Workber-logo.svg" alt="Workber">
+				</a>
+			</div>
+			<div class="top-menu">
+				<div class="back-menu d-none">
+					<a href="." class="navigation-link back-feed">
+						<svg width="25" height="24" class="icon">
+								<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
+						</svg>
+						<span class="text-back">
+							BACK TO FEED
+						</span>
+					</a>
+				</div>
+				<div class="search-block start-page">
+					<!-- <h2 class="search-title">Find Your Answers</h2> -->
+					<div class="search-panel">
+						<div class="search-field">
+							<input class="search-input" type="search" name="hasgtag" placeholder="Search services, projects…">
+						</div>
+						<button class="search-button">
+							<svg width="25" height="24" class="icon icon-search">
+								<use xlink:href="assets/workber_img/icons.svg#btn-search"></use>
+							</svg>
+							<!-- Search -->
+						</button>
+					</div>
+				
+					<!-- <div class="popular-tags d-none">
+						Popular:
+						<span class="popular-tag">Pet Grooming</span>
+						<span class="popular-tag">Dry-Cleaning</span>
+						<span class="popular-tag">Translation</span>
+					</div> -->
+				</div>
+				<div class="search-menu">
+					<div class="tabs-service">
+						<!-- <a href="?page=all" data-service="all" class="service service-search-all service-selected">All</a> -->
+						<a href="?page=service" data-service="service" class="service search-service service-selected">I offer</a>
+						<a href="?page=project" data-service="project" class="service search-project">I need</a>
+					</div>
+					<div class="post-menu home-page">
+						<div class="tabs-locality">
+							<a href="#" class="locality locality-home">Home</a>
+							<a href="#" class="locality locality-local locality-selected">Local</a>
+						</div>
+						<a href="#" class="navigation-link icon-settings" title="Set home location">
+							<svg width="25" height="24" class="icon">
+								<use xlink:href="assets/workber_img/icons.svg#btn-location"></use>
+							</svg>
+						</a>
+					</div>
+				</div>
+
+				<!-- <div> -->
+					<!-- <a href="#" class="navigation-link icon-search icon-search-page">
+						<svg width="25" height="24" class="icon">
+							<use xlink:href="assets/workber_img/icons.svg#btn-search"></use>
+						</svg>
+					</a> -->
+					
+				<!-- </div> -->
+				
+				<div class="user-menu">
+					<div class="icons-panel">
+						<!-- <a href="#" class="navigation-link icon-search">
+							<svg width="25" height="24" class="icon">
+								<use xlink:href="assets/workber_img/icons.svg#btn-search"></use>
+							</svg>
+						</a> -->
+						<a href="#" class="navigation-link icon-favorites">
+							<svg width="15" height="20" class="icon">
+								<use xlink:href="assets/workber_img/icons.svg#btn-favorites"></use>
+							</svg>
+						</a>
+						<!-- <a href="#" class="navigation-link icon-settings">
+							<svg width="25" height="24" class="icon">
+								<use xlink:href="assets/workber_img/icons.svg#btn-settings"></use>
+							</svg>
+						</a> -->
+						<a href="#" class="navigation-link icon-create">Create</a>
+					</div>
+					<div class="avatar">
+						<img class="avatar-img" src="assets/workber_img/avatar.png" alt="Avatar">
+					</div>
+				</div>
+			</div>
+			<div class="dist-text-header">
+			</div>
+			<!-- <span class="debug-height"></span>		 -->
+		</div>
+		<div class="distance-info d-none">
+				
+		</div>
+	</header>
+	<div class="distances d-none">
+		<div class="dist-text">
+		</div>
+		<div class="dist-graph">
+			<div class="vl vl-short"></div>
+			<div class="dot"></div>
+			<div class="vl"></div>
+			<div class="dot"></div>
+			<div class="vl vl-short"></div>
+		</div>
+	</div>
+	<section class="posts-block posts-offer d-none">
+	</section>
+	<section class="posts-block posts-need d-none">
+	</section>
+	<section class="posts-block posts-start start-page d-none">
+		<div class="posts-row">
+		</div>
+	</section>
+	<section class="posts-block posts-all d-none">
+	</section>
+	<section class="posts-block post-one d-none">
+	</section>
+	<div class="location-overlay">
+		<div class="location">
+			<h5 class="location-title">Set your home location to find services near you</h5>
+			<div class="map" id="map"></div>
+			<button class="location__btn-close"></button>
+		</div>
+	</div>
+	<div class="not-found post d-none">
+		<h2 class="not-found-header">No posts found</h2>  
+	</div>
+	<section class="no-more-posts post d-none">
+		<h3>
+			No more posts found...
+		</h3>
+	</section>
+	<section class="search-spinner d-none">
+		<svg width="60" height="60">
+			<use xlink:href="assets/workber_img/icons.svg#spinner"></use>
+		</svg>
+	</section>
+	<!-- <footer class="footer">
+		Workber
+	</footer> -->
+	<!-- <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGnP5m0Jp0I9otFx-pJXAktVQ7DGyrRhY&callback=initMap&v=weekly"
+      async
+    ></script> -->
+</body>
+</html>

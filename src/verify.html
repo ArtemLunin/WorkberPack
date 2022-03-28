@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="assets/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+	<title>Document</title>
+</head>
+<body>
+	<div class="modal-overlay">
+		<div class="signModal">
+			<div class="modal-header">
+				<div class="back-menu">
+					<a href="#" class="navigation-link back-feed">
+						<svg width="25" height="24" class="icon">
+							<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
+						</svg>
+						<span class="text-back">
+							BACK
+						</span>
+					</a>
+				</div>
+				<span class="menu__close">
+					<svg width="24" height="24" class="icon">
+						<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
+					</svg>
+				</span>
+			</div>
+			<div class="modal-body">
+				<h2 class="modal-signin modal-title">Thank you!</h2>
+				<p class="success-reg">An email was sent to your address containing verification code.
+				Please, enter your verification code</p>
+				<form>
+					<label for="code" style="font-size: 12px;color: #9AA0A8;">Verification code</label>
+					<input type="text" class="input-form" maxlength="10" name="code" id="code">
+					<input type="hidden" name="registrationID" id="registrationID">
+					<div style="margin-top:32px;color: #9AA0A8;">
+						<span>Haven’t received code?</span>
+						<a href="#">Resend</a>
+					</div>
+					<button type="submit" class="modal-signin btn__sign btn__confirmation">Continue</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
