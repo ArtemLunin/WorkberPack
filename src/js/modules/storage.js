@@ -4,9 +4,19 @@ export const getLocation = () => {
 	return [lat,lng];
 };
 
-export const setLocalityStatus = localityStatus => {
-	localStorage.setItem('localityStatus', localityStatus);
-};
+// export const setLocalityStatus = localityStatus => {
+// 	localStorage.setItem('localityStatus', localityStatus);
+// };
+
+export const setGlobalItem = (item, packJSON = null) => {
+	if (packJSON) {
+		localStorage.setItem(packJSON, JSON.stringify(item));
+	} else {
+		for (const key in item) {
+			localStorage.setItem(key, item[key]);
+		}
+	}
+}
 
 export const getLocalityStatus = () => {
 	const localityStatus = localStorage.getItem('localityStatus');

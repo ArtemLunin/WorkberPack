@@ -584,7 +584,8 @@ const switchLocality = (e) => {
 			needInit = true;
 		}
 		if(needInit) {
-			storage.setLocalityStatus(localityStatus);
+			// storage.setLocalityStatus(localityStatus);
+			storage.setGlobalItem({localityStatus: localityStatus});
 			reloadCurrentPage();
 		}
 	}

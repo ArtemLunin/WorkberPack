@@ -1,6 +1,8 @@
 import {sendRequest} from './network';
 import {workberBackEnd} from './config';
-import {renderModalVerification} from './modal';
+import * as storage from './storage';
+import {appState} from './appState';
+import clonedeep from 'lodash.clonedeep';
 
 export const checkPassword = (passwords) => {
 	let errorMessage = '';
@@ -12,17 +14,18 @@ export const checkPassword = (passwords) => {
 	return errorMessage;
 };
 
-export const showSignError = (errorContainer, errorMsg) => {
-	errorContainer.textContent = errorMsg;
-	errorContainer.classList.remove('d-none');
+export const showSignInfo = (infoContainer, errorMsg) => {
+	infoContainer.textContent = '';
+	errorMsg.forEach(item => infoContainer.innerHTML += `${Object.values(item).join('<br>')}`);
+	infoContainer.classList.remove('d-none');
 };
 
-export const hideSignError = (errorContainer) => {
-	errorContainer.textContent = '';
-	errorContainer.classList.add('d-none');
+export const hideSignInfo = (infoContainer) => {
+	infoContainer.textContent = '';
+	infoContainer.classList.add('d-none');
 };
 
-export const submitSignForm = (form, errorSignSelector, modalOverlayClass, modalOverlay) => {
+export const submitSignForm = (form, errorSignSelector, modalSign, modalVerification) => {
 	const btnSubmit = document.activeElement;
 	const passwords = new Set();
 	let errorMsg = '';
@@ -35,11 +38,11 @@ export const submitSignForm = (form, errorSignSelector, modalOverlayClass, modal
 	}
 	errorMsg = checkPassword([...passwords]);
 	if (errorMsg !== '') {
-		showSignError(form.querySelector(errorSignSelector), errorMsg);
+		showSignInfo(form.querySelector(errorSignSelector), [{error: errorMsg}]);
 		return false;
 	}
 
-	hideSignError(form.querySelector(errorSignSelector));
+	hideSignInfo(form.querySelector(errorSignSelector));
 
 	if (btnSubmit.getAttribute('type') === 'submit') {
 		let typeSubmit = btnSubmit.getAttribute('id');
@@ -56,16 +59,72 @@ export const submitSignForm = (form, errorSignSelector, modalOverlayClass, modal
 		formData.append('call', call);
 		sendRequest(workberBackEnd, formData).then((data) => {
 			if (data.error) {
-				showSignError(form.querySelector(errorSignSelector), data.error.errors[0].email);
+				showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
 			} else if (data.success) {
-				showModalVerification(modalOverlay, modalOverlayClass)
+				const objData = data.success;
+				switch (objData.message) {
+					case "user has logined":
+						storage.setGlobalItem({
+							sid: objData.sid,
+							refresh_token: objData.refresh_token,
+							lifetime: objData.lifetime,
+						});
+						modalSign.remove();
+						appState.profile = clonedeep(objData.profile);
+						break;
+					case "regNewUser successful":
+						// showModalVerification(modalSign, modalVerification);
+						modalSign.remove();
+						modalVerification.querySelector('#email').value = objData.user_email;
+						modalVerification.querySelector('#code').value = '';
+						document.body.append(modalVerification);
+						break;
+					default:
+						break;
+				}
+
 			}
 		});
 	}
 };
 
-const showModalVerification = (prevModalOverlay, modalOverlayClass) => {
-	const modalOverlay = renderModalVerification(modalOverlayClass);
-	prevModalOverlay.remove();
-	document.body.append(modalOverlay);
-}
+export const submitVerifyForm = (form, parentContainerClass, errorSignSelector, infoSignSelector) => {
+	const formData = new FormData(form);
+	const parentConatiner = form.closest(`.${parentContainerClass}`);
+
+	hideSignInfo(form.querySelector(errorSignSelector));
+	hideSignInfo(form.querySelector(infoSignSelector));
+
+	formData.append('call', 'doCheckEmail');
+	sendRequest(workberBackEnd, formData).then((data) => {
+		if (data.error) {
+			showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
+		} else if (data.success) {
+			const objData = data.success;
+			storage.setGlobalItem({
+				sid: objData.sid,
+				refresh_token: objData.refresh_token,
+				lifetime: objData.lifetime,
+			});
+			appState.profile = clonedeep(objData.profile);
+			parentConatiner.querySelector('.menu__close').click();
+		}
+	});
+};
+
+export const submitResendForm = (form, errorSignSelector, infoSignSelector) => {
+	const formData = new FormData(form);
+
+	formData.append('call', 'doSendCode');
+	hideSignInfo(form.querySelector(errorSignSelector));
+	hideSignInfo(form.querySelector(infoSignSelector));
+
+	sendRequest(workberBackEnd, formData).then((data) => {
+		if (data.error) {
+			showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
+		} else if (data.success) {
+			const objData = data.success;
+			showSignInfo(form.querySelector(infoSignSelector), [{0:'New code sent'}]);
+		}
+	});
+};

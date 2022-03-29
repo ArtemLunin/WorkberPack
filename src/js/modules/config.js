@@ -1,4 +1,4 @@
-const workberDomain = 'workber.com';
+const workberDomain = 'workber.me';
 const workberSite = 'https://'+ workberDomain;
 export const workberBackEnd = 'https://' + '2b2.' + workberDomain + '/gw.php';
 export const workberImages = workberSite + '/img';
