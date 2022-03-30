@@ -10699,10 +10699,17 @@ window.addEventListener('DOMContentLoaded', function () {
         if (!!zoneName) {
           distText.textContent = distTextHeader.textContent = zoneName;
         }
-      }
+      } // if(scrollSearchActivated || onePostShowned || setZoneName) {
+      // 	return false;
+      // }
 
-      if (scrollSearchActivated || onePostShowned || setZoneName) {
-        return false;
+
+      if (!scrollSearchActivated && !onePostShowned && !document.querySelector(".".concat(_modules_modal__WEBPACK_IMPORTED_MODULE_24__["commonModalOpenClass"]))) {
+        var windowRelativeBottom = document.documentElement.getBoundingClientRect().bottom;
+
+        if (windowRelativeBottom <= document.documentElement.clientHeight + 120) {
+          doUploadPosts();
+        }
       }
     };
 
@@ -10878,7 +10885,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
       setTimeout(function () {
         checkScrollBottom();
-      }, 1000);
+      }, 100000);
     };
 
     var doUploadPosts = function doUploadPosts() {
@@ -11019,8 +11026,7 @@ window.addEventListener('DOMContentLoaded', function () {
         }
       }
 
-      window.addEventListener('scroll', postsScroll);
-      checkScrollBottom();
+      window.addEventListener('scroll', postsScroll); // checkScrollBottom();
     }
   } // modalMap('.icon-settings', '.location__btn-close', '.location-overlay', 'location-overlay-open');
 
@@ -11049,7 +11055,7 @@ var appState = {};
 /*!**********************************!*\
   !*** ./src/js/modules/config.js ***!
   \**********************************/
-/*! exports provided: workberBackEnd, workberImages, endSearchCode, registrationID */
+/*! exports provided: workberBackEnd, workberImages, endSearchCode, registrationID, storeLinks */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11058,12 +11064,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "workberImages", function() { return workberImages; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "endSearchCode", function() { return endSearchCode; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "registrationID", function() { return registrationID; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "storeLinks", function() { return storeLinks; });
 var workberDomain = 'workber.me';
 var workberSite = 'https://' + workberDomain;
 var workberBackEnd = 'https://' + '2b2.' + workberDomain + '/gw.php';
 var workberImages = workberSite + '/img';
 var endSearchCode = 2;
 var registrationID = Date.now();
+var storeLinks = {
+  goolePlay: "https://play.google.com/store/apps/details?id=com.workber",
+  appStore: "https://apps.apple.com/ru/app/workber/id1485121269"
+};
 
 /***/ }),
 
@@ -11071,7 +11082,7 @@ var registrationID = Date.now();
 /*!*********************************!*\
   !*** ./src/js/modules/forms.js ***!
   \*********************************/
-/*! exports provided: checkPassword, showSignInfo, hideSignInfo, submitSignForm, submitVerifyForm, submitResendForm */
+/*! exports provided: checkPassword, showSignInfo, hideSignInfo, submitSignForm, submitVerifyForm, submitRestoreForm, submitResendForm, submitPasswordForm */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11081,7 +11092,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hideSignInfo", function() { return hideSignInfo; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "submitSignForm", function() { return submitSignForm; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "submitVerifyForm", function() { return submitVerifyForm; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "submitRestoreForm", function() { return submitRestoreForm; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "submitResendForm", function() { return submitResendForm; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "submitPasswordForm", function() { return submitPasswordForm; });
 /* harmony import */ var core_js_modules_es_symbol__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.symbol */ "./node_modules/core-js/modules/es.symbol.js");
 /* harmony import */ var core_js_modules_es_symbol__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_symbol__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var core_js_modules_es_symbol_description__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/es.symbol.description */ "./node_modules/core-js/modules/es.symbol.description.js");
@@ -11247,16 +11260,19 @@ var submitSignForm = function submitSignForm(form, errorSignSelector, modalSign,
               refresh_token: objData.refresh_token,
               lifetime: objData.lifetime
             });
-            modalSign.remove();
             _appState__WEBPACK_IMPORTED_MODULE_16__["appState"].profile = lodash_clonedeep__WEBPACK_IMPORTED_MODULE_17___default()(objData.profile);
+            modalSign.querySelector('.menu__close').click();
             break;
 
           case "regNewUser successful":
-            // showModalVerification(modalSign, modalVerification);
             modalSign.remove();
-            modalVerification.querySelector('#email').value = objData.user_email;
-            modalVerification.querySelector('#code').value = '';
-            document.body.append(modalVerification);
+            showModalForm([{
+              selector: '#email',
+              value: objData.user_email
+            }, {
+              selector: '#code',
+              value: ''
+            }], modalVerification);
             break;
 
           default:
@@ -11266,7 +11282,7 @@ var submitSignForm = function submitSignForm(form, errorSignSelector, modalSign,
     });
   }
 };
-var submitVerifyForm = function submitVerifyForm(form, parentContainerClass, errorSignSelector, infoSignSelector) {
+var submitVerifyForm = function submitVerifyForm(form, parentContainerClass, errorSignSelector, infoSignSelector, modalContainerNext) {
   var formData = new FormData(form);
   var parentConatiner = form.closest(".".concat(parentContainerClass));
   hideSignInfo(form.querySelector(errorSignSelector));
@@ -11277,13 +11293,49 @@ var submitVerifyForm = function submitVerifyForm(form, parentContainerClass, err
       showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
     } else if (data.success) {
       var objData = data.success;
-      _storage__WEBPACK_IMPORTED_MODULE_15__["setGlobalItem"]({
-        sid: objData.sid,
-        refresh_token: objData.refresh_token,
-        lifetime: objData.lifetime
-      });
-      _appState__WEBPACK_IMPORTED_MODULE_16__["appState"].profile = lodash_clonedeep__WEBPACK_IMPORTED_MODULE_17___default()(objData.profile);
-      parentConatiner.querySelector('.menu__close').click();
+
+      if (!objData.sid || objData.sid === "" || objData.sid === 0) {
+        console.log('restore case');
+        showModalForm([{
+          selector: '#email',
+          value: form.querySelector('#email').value
+        }, {
+          selector: '#confirmation_token',
+          value: objData.confirmation_token
+        }], modalContainerNext);
+      } else {
+        _storage__WEBPACK_IMPORTED_MODULE_15__["setGlobalItem"]({
+          sid: objData.sid,
+          refresh_token: objData.refresh_token,
+          lifetime: objData.lifetime
+        });
+        _appState__WEBPACK_IMPORTED_MODULE_16__["appState"].profile = lodash_clonedeep__WEBPACK_IMPORTED_MODULE_17___default()(objData.profile);
+        document.body.append(modalContainerNext);
+      }
+
+      parentConatiner.remove();
+    }
+  });
+};
+var submitRestoreForm = function submitRestoreForm(form, errorSignSelector, modalRestore, modalVerification) {
+  var formData = new FormData(form);
+  hideSignInfo(form.querySelector(errorSignSelector));
+  formData.append('call', 'doRestore');
+  Object(_network__WEBPACK_IMPORTED_MODULE_13__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_14__["workberBackEnd"], formData).then(function (data) {
+    if (data.error) {
+      showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
+    } else if (data.success) {
+      modalRestore.remove();
+      showModalForm([{
+        selector: '#email',
+        value: form.querySelector('#email').value
+      }, {
+        selector: '#code',
+        value: ''
+      }, {
+        selector: '#typeVerify',
+        value: '1'
+      }], modalVerification);
     }
   });
 };
@@ -11302,6 +11354,73 @@ var submitResendForm = function submitResendForm(form, errorSignSelector, infoSi
       }]);
     }
   });
+};
+var submitPasswordForm = function submitPasswordForm(form, errorSignSelector, modalChangePassword) {
+  var errorMsg = '';
+  var passwords = new Set();
+  var formData = new FormData(form);
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = formData.entries()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var _step2$value = _slicedToArray(_step2.value, 2),
+          key = _step2$value[0],
+          value = _step2$value[1];
+
+      if (form.elements[key].getAttribute('type') === 'password') {
+        passwords.add(value);
+      }
+    }
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+        _iterator2.return();
+      }
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
+      }
+    }
+  }
+
+  errorMsg = checkPassword(_toConsumableArray(passwords));
+
+  if (errorMsg !== '') {
+    showSignInfo(form.querySelector(errorSignSelector), [{
+      error: errorMsg
+    }]);
+    return false;
+  }
+
+  hideSignInfo(form.querySelector(errorSignSelector));
+  formData.append('call', 'doChangePwd');
+  Object(_network__WEBPACK_IMPORTED_MODULE_13__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_14__["workberBackEnd"], formData).then(function (data) {
+    if (data.error) {
+      showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
+    } else if (data.success) {
+      var objData = data.success;
+      _storage__WEBPACK_IMPORTED_MODULE_15__["setGlobalItem"]({
+        sid: objData.sid,
+        refresh_token: objData.refresh_token,
+        lifetime: objData.lifetime
+      });
+      _appState__WEBPACK_IMPORTED_MODULE_16__["appState"].profile = lodash_clonedeep__WEBPACK_IMPORTED_MODULE_17___default()(objData.profile);
+      modalChangePassword.querySelector('.menu__close').click();
+    }
+  });
+};
+
+var showModalForm = function showModalForm(items, container) {
+  items.forEach(function (item) {
+    console.log(item.selector, item.value);
+    container.querySelector(item.selector).value = item.value;
+  });
+  document.body.append(container);
 };
 
 /***/ }),
@@ -11794,17 +11913,23 @@ var renderModalSign = function renderModalSign(modalOverlayClass, settingsSelect
   var iconSettings = document.querySelector(settingsSelector);
   var modalSign = document.createElement('div');
   modalSign.classList.add(modalOverlayClass, commonModalOpenClass);
-  modalSign.innerHTML = "\n\t\t<div class=\"signModal\">\n\t\t\t<div class=\"modal-header\">\n\t\t\t\t<span class=\"menu__sign_\">\n\t\t\t\t\t<span class=\"menu__sign-in menu__sign\" data-items_show=\"modal-signin\" data-items_hide=\"modal-signup\">Login</span>\n\t\t\t\t\t<span class=\"menu__sign-up menu__sign\" data-items_show=\"modal-signup\" data-items_hide=\"modal-signin\">Registration</span>\n\t\t\t\t</span>\n\t\t\t\t<span class=\"menu__close\">\n\t\t\t\t\t<svg width=\"24\" height=\"24\" class=\"icon\">\n\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-close\"></use>\n\t\t\t\t\t</svg>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<div class=\"modal-body\">\n\t\t\t\t<h2 class=\"modal-signin modal-title\">Welcome back!</h2>\n\t\t\t\t<h2 class=\"modal-signup modal-title\">New user?</h2>\n\t\t\t\t<form class=\"modal-form\" action=\"#\" method=\"POST\" id=\"loginForm\">\n\t\t\t\t\t<input type=\"email\" class=\"icon__modal icon-email\" name=\"email\" id=\"\" placeholder=\"Email\" required>\n\t\t\t\t\t<input type=\"password\" class=\"icon__modal icon-password\" name=\"pwd\" id=\"\" placeholder=\"Password\"\n\t\t\t\t\t\trequired>\n\t\t\t\t\t<input type=\"password\" class=\"icon__modal icon-password2 modal-signup\" name=\"password-repeat\" id=\"\"\n\t\t\t\t\t\tplaceholder=\"Repeat password\" required>\n\t\t\t\t\t<div class=\"modal-signin modal-checkbox\">\n\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t<input type=\"checkbox\" name=\"remember\" id=\"cbRemember\" class=\"modal-signin\">\n\t\t\t\t\t\t\t<label for=\"cbRemember\">Remember me</label>\n\t\t\t\t\t\t</span>\n\t\t\t\t\t\t<a href=\"#\" class=\"modal-sign-forgot\">Forgot password?</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"modal-signup modal-checkbox\">\n\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t<input type=\"checkbox\" name=\"policy-agree\" id=\"cbAgree\" class=\"modal-signup\" data-control=\"btn__sign-up\">\n\t\t\t\t\t\t\t<label for=\"cbAgree\">I agree with the <a href=\"#\" target=\"_blank\">Terms and\n\t\t\t\t\t\t\t\t\tconditions</a> and <a href=\"#\" target=\"_blank\">Privacy policy</a>\n\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t</span>\n\t\t\t\t\t</div>\n\t\t\t\t\t<button type=\"submit\" class=\"modal-signin btn__sign btn__sign-in\" id=\"btn__sign-in\">SIGN IN</button>\n\t\t\t\t\t<button type=\"submit\" class=\"modal-signup btn__sign btn__sign-up\" id=\"btn__sign-up\">SIGN UP</button>\n\t\t\t\t\t<p class=\"errorSignMessage\"></p>\n\t\t\t\t\t<input type=\"hidden\" name=\"registrationID\" id=\"registrationID\" value=".concat(_config__WEBPACK_IMPORTED_MODULE_13__["registrationID"], ">\n\t\t\t\t</form>\n\t\t\t</div>\n\t\t\t<div class=\"modal-footer\">\n\t\t\t\t<p class=\"login-social\">Or sign in via</p>\n\t\t\t\t<div class=\"social-buttons\">\n\t\t\t\t\t<svg width=\"36\" height=\"36\" class=\"icon\">\n\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-facebook\"></use>\n\t\t\t\t\t</svg>\n\t\t\t\t\t<svg width=\"36\" height=\"36\" class=\"icon\">\n\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-twitter\"></use>\n\t\t\t\t\t</svg>\n\t\t\t\t\t<svg width=\"36\" height=\"36\" class=\"icon\">\n\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-google\"></use>\n\t\t\t\t\t</svg>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t");
+  modalSign.innerHTML = "\n\t\t<div class=\"signModal\">\n\t\t\t<div class=\"modal-header\">\n\t\t\t\t<span class=\"menu__sign_\">\n\t\t\t\t\t<span class=\"menu__sign-in menu__sign\" data-items_show=\"modal-signin\" data-items_hide=\"modal-signup\">Login</span>\n\t\t\t\t\t<span class=\"menu__sign-up menu__sign\" data-items_show=\"modal-signup\" data-items_hide=\"modal-signin\">Registration</span>\n\t\t\t\t</span>\n\t\t\t\t<span class=\"menu__close\">\n\t\t\t\t\t<svg width=\"24\" height=\"24\" class=\"icon\">\n\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-close\"></use>\n\t\t\t\t\t</svg>\n\t\t\t\t</span>\n\t\t\t</div>\n\t\t\t<div class=\"modal-body\">\n\t\t\t\t<h2 class=\"modal-signin modal-title\">Welcome back!</h2>\n\t\t\t\t<h2 class=\"modal-signup modal-title\">New user?</h2>\n\t\t\t\t<form class=\"modal-form\" action=\"#\" method=\"POST\" id=\"loginForm\">\n\t\t\t\t\t<input type=\"email\" class=\"icon__modal icon-email\" name=\"email\" id=\"email\" placeholder=\"Email\" required>\n\t\t\t\t\t<input type=\"password\" class=\"icon__modal icon-password\" name=\"pwd\" id=\"\" placeholder=\"Password\"\n\t\t\t\t\t\trequired>\n\t\t\t\t\t<input type=\"password\" class=\"icon__modal icon-password2 modal-signup\" name=\"password-repeat\" id=\"\"\n\t\t\t\t\t\tplaceholder=\"Repeat password\" required>\n\t\t\t\t\t<div class=\"modal-signin modal-checkbox\">\n\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t<input type=\"checkbox\" name=\"remember\" id=\"cbRemember\" class=\"modal-signin\">\n\t\t\t\t\t\t\t<label for=\"cbRemember\">Remember me</label>\n\t\t\t\t\t\t</span>\n\t\t\t\t\t\t<a href=\"#\" class=\"modal-sign-forgot\">Forgot password?</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\"modal-signup modal-checkbox\">\n\t\t\t\t\t\t<span>\n\t\t\t\t\t\t\t<input type=\"checkbox\" name=\"policy-agree\" id=\"cbAgree\" class=\"modal-signup\" data-control=\"btn__sign-up\">\n\t\t\t\t\t\t\t<label for=\"cbAgree\">I agree with the <a href=\"#\" target=\"_blank\">Terms and\n\t\t\t\t\t\t\t\t\tconditions</a> and <a href=\"#\" target=\"_blank\">Privacy policy</a>\n\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t</span>\n\t\t\t\t\t</div>\n\t\t\t\t\t<button type=\"submit\" class=\"modal-signin btn__sign btn__sign-in\" id=\"btn__sign-in\">SIGN IN</button>\n\t\t\t\t\t<button type=\"submit\" class=\"modal-signup btn__sign btn__sign-up\" id=\"btn__sign-up\">SIGN UP</button>\n\t\t\t\t\t<p class=\"errorSignMessage\"></p>\n\t\t\t\t\t<input type=\"hidden\" name=\"registrationID\" id=\"registrationID\" value=".concat(_config__WEBPACK_IMPORTED_MODULE_13__["registrationID"], ">\n\t\t\t\t</form>\n\t\t\t</div>\n\t\t\t<div class=\"modal-footer\">\n\t\t\t\t<p class=\"login-social\">Or sign in via</p>\n\t\t\t\t<div class=\"social-buttons\">\n\t\t\t\t\t<svg width=\"36\" height=\"36\" class=\"icon\">\n\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-facebook\"></use>\n\t\t\t\t\t</svg>\n\t\t\t\t\t<svg width=\"36\" height=\"36\" class=\"icon\">\n\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-twitter\"></use>\n\t\t\t\t\t</svg>\n\t\t\t\t\t<svg width=\"36\" height=\"36\" class=\"icon\">\n\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-google\"></use>\n\t\t\t\t\t</svg>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t");
 
   var renderModalVerification = function renderModalVerification(modalOverlayClass) {
     var modalVerification = document.createElement('div');
     modalVerification.classList.add(modalOverlayClass, commonModalOpenClass);
-    modalVerification.innerHTML = "\n\t\t\t<div class=\"signModal\">\n\t\t\t\t<div class=\"modal-header\">\n\t\t\t\t\t<div class=\"back-menu\">\n\t\t\t\t\t\t<a href=\"#\" class=\"navigation-link back-feed\">\n\t\t\t\t\t\t\t<svg width=\"25\" height=\"24\" class=\"icon\">\n\t\t\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-back\"></use>\n\t\t\t\t\t\t\t</svg>\n\t\t\t\t\t\t\t<span class=\"text-back\">\n\t\t\t\t\t\t\t\tBACK\n\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<span class=\"menu__close\">\n\t\t\t\t\t\t<svg width=\"24\" height=\"24\" class=\"icon\">\n\t\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-close\"></use>\n\t\t\t\t\t\t</svg>\n\t\t\t\t\t</span>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"modal-body\">\n\t\t\t\t\t<h2 class=\"modal-signin modal-title\">Thank you!</h2>\n\t\t\t\t\t<p class=\"success-reg\">An email was sent to your address containing verification code.\n\t\t\t\t\tPlease, enter your verification code</p>\n\t\t\t\t\t<form id=\"verificationForm\">\n\t\t\t\t\t\t<label for=\"code\" style=\"font-size: 12px;color: #9AA0A8;\">Verification code</label>\n\t\t\t\t\t\t<input type=\"text\" class=\"input-form\" maxlength=\"10\" name=\"code\" id=\"code\">\n\t\t\t\t\t\t<p class=\"errorSignMessage\"></p>\n\t\t\t\t\t\t<div style=\"margin-top:32px;color: #9AA0A8;\">\n\t\t\t\t\t\t\t<span>Haven't received code?</span>\n\t\t\t\t\t\t\t<a href=\"#\" class=\"a-resend\">Resend</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<p class=\"infoSignMessage\"></p>\n\t\t\t\t\t\t<button type=\"submit\" class=\"modal-signin btn__sign btn__confirmation\">Continue</button>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<input type=\"hidden\" name=\"registrationID\" id=\"registrationID\" value=".concat(_config__WEBPACK_IMPORTED_MODULE_13__["registrationID"], ">\n\t\t\t\t\t\t<input type=\"hidden\" name=\"email\" id=\"email\">\n\t\t\t\t\t</form>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t");
+    modalVerification.innerHTML = "\n\t\t\t<div class=\"signModal\">\n\t\t\t\t<div class=\"modal-header\">\n\t\t\t\t\t<div class=\"back-menu\">\n\t\t\t\t\t\t<a href=\"#\" class=\"navigation-link back-feed\">\n\t\t\t\t\t\t\t<svg width=\"25\" height=\"24\" class=\"icon\">\n\t\t\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-back\"></use>\n\t\t\t\t\t\t\t</svg>\n\t\t\t\t\t\t\t<span class=\"text-back\">\n\t\t\t\t\t\t\t\tBACK\n\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<span class=\"menu__close\">\n\t\t\t\t\t\t<svg width=\"24\" height=\"24\" class=\"icon\">\n\t\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-close\"></use>\n\t\t\t\t\t\t</svg>\n\t\t\t\t\t</span>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"modal-body\">\n\t\t\t\t\t<h2 class=\"modal-signin modal-title\">Thank you!</h2>\n\t\t\t\t\t<p class=\"success-reg\">An email was sent to your address containing verification code.<br>\n\t\t\t\t\tPlease, enter your verification code</p>\n\t\t\t\t\t<form id=\"verificationForm\">\n\t\t\t\t\t\t<label for=\"code\" style=\"font-size: 12px;color: #9AA0A8;\">Verification code</label>\n\t\t\t\t\t\t<input type=\"text\" class=\"input-form\" maxlength=\"10\" name=\"code\" id=\"code\" autocomplete=\"off\">\n\t\t\t\t\t\t<p class=\"errorSignMessage\"></p>\n\t\t\t\t\t\t<div style=\"margin-top:32px;color: #9AA0A8;\">\n\t\t\t\t\t\t\t<span>Haven't received code?</span>\n\t\t\t\t\t\t\t<a href=\"#\" class=\"a-resend\">Resend</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<p class=\"infoSignMessage\"></p>\n\t\t\t\t\t\t<button type=\"submit\" class=\"modal-signin btn__sign btn__confirmation\">Continue</button>\n\t\t\t\t\t\t<input type=\"hidden\" name=\"registrationID\" id=\"registrationID\" value=".concat(_config__WEBPACK_IMPORTED_MODULE_13__["registrationID"], ">\n\t\t\t\t\t\t<input type=\"hidden\" name=\"email\" id=\"email\">\n\t\t\t\t\t\t<input type=\"hidden\" name=\"typeVerify\" id=\"typeVerify\" value=\"0\" disabled>\n\t\t\t\t\t</form>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t");
     var verificationForm = modalVerification.querySelector('#verificationForm'),
         resendCode = verificationForm.querySelector('.a-resend');
     verificationForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      Object(_forms__WEBPACK_IMPORTED_MODULE_12__["submitVerifyForm"])(e.target, modalOverlayClass, '.errorSignMessage', '.infoSignMessage');
+      console.log(verificationForm.querySelector('#typeVerify').value);
+
+      if (verificationForm.querySelector('#typeVerify').value === '1') {
+        Object(_forms__WEBPACK_IMPORTED_MODULE_12__["submitVerifyForm"])(e.target, modalOverlayClass, '.errorSignMessage', '.infoSignMessage', modalChangePassword);
+      } else {
+        Object(_forms__WEBPACK_IMPORTED_MODULE_12__["submitVerifyForm"])(e.target, modalOverlayClass, '.errorSignMessage', '.infoSignMessage', modalCongratulation);
+      }
     });
     verificationForm.addEventListener('reset', function () {// hideSignInfo(loginForm.querySelector('.errorSignMessage'));
     });
@@ -11812,11 +11937,73 @@ var renderModalSign = function renderModalSign(modalOverlayClass, settingsSelect
       e.preventDefault();
       Object(_forms__WEBPACK_IMPORTED_MODULE_12__["submitResendForm"])(e.target.closest('form'), '.errorSignMessage', '.infoSignMessage');
     });
-    modalVerification.querySelector('.menu__close').addEventListener('click', function () {
-      modalVerification.remove();
-      enableScroll();
+    modalVerification.addEventListener('click', function (e) {
+      var target = e.target;
+
+      if (!target.closest('.signModal') || target.closest('.menu__close')) {
+        closeSignModal(modalVerification);
+      }
     });
     return modalVerification;
+  };
+
+  var renderModalCongratulation = function renderModalCongratulation(modalOverlayClass) {
+    var modalCongratulation = document.createElement('div');
+    modalCongratulation.classList.add(modalOverlayClass, commonModalOpenClass);
+    modalCongratulation.innerHTML = "\n\t\t\t<div class=\"signModal\">\n\t\t\t\t<div class=\"modal-header justify-end\">\n\t\t\t\t\t<span class=\"menu__close\">\n\t\t\t\t\t\t<svg width=\"24\" height=\"24\" class=\"icon\">\n\t\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-close\"></use>\n\t\t\t\t\t\t</svg>\n\t\t\t\t\t</span>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"modal-body\">\n\t\t\t\t\t<h2 class=\"modal-signin modal-title\">Congratulations! You have\n\t\t\t\t\tsuccessfully registered!</h2>\n\t\t\t\t\t<p class=\"descr-mobile-store\">Download the Workber app to your device to find all services<br> and projects around you</p>\n\t\t\t\t\t<div class=\"store-links\">\n\t\t\t\t\t\t<a href=\"".concat(_config__WEBPACK_IMPORTED_MODULE_13__["storeLinks"].appStore, "\" target=\"_blank\" class=\"mobile-store-link\"><img src=\"assets/workber_img/appstore.png\" alt=\"App Store\"></a>\n\t\t\t\t\t\t<a href=").concat(_config__WEBPACK_IMPORTED_MODULE_13__["storeLinks"].goolePlay, " target=\"_blank\" class=\"mobile-store-link\"><img src=\"assets/workber_img/googleplay.png\" alt=\"Goolge Play\"></a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t");
+    modalCongratulation.addEventListener('click', function (e) {
+      var target = e.target;
+
+      if (!target.closest('.signModal') || target.closest('.menu__close')) {
+        closeSignModal(modalCongratulation);
+      }
+    });
+    return modalCongratulation;
+  };
+
+  var renderModalRestore = function renderModalRestore(modalOverlayClass) {
+    var modalRestore = document.createElement('div');
+    modalRestore.classList.add(modalOverlayClass, commonModalOpenClass);
+    modalRestore.innerHTML = "\n\t\t\t<div class=\"signModal\">\n\t\t\t\t<div class=\"modal-header\">\n\t\t\t\t\t<div class=\"back-menu\">\n\t\t\t\t\t\t\t<a href=\"#\" class=\"navigation-link back-feed\">\n\t\t\t\t\t\t\t\t<svg width=\"25\" height=\"24\" class=\"icon\">\n\t\t\t\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-back\"></use>\n\t\t\t\t\t\t\t\t</svg>\n\t\t\t\t\t\t\t\t<span class=\"text-back\">\n\t\t\t\t\t\t\t\t\tBACK\n\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<span class=\"menu__close\">\n\t\t\t\t\t\t<svg width=\"24\" height=\"24\" class=\"icon\">\n\t\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-close\"></use>\n\t\t\t\t\t\t</svg>\n\t\t\t\t\t</span>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"modal-body\">\n\t\t\t\t\t<h2 class=\"modal-signin modal-title\">Forgot password?</h2>\n\t\t\t\t\t<p style=\"margin-bottom: 32px;\">We will send an email with password change instruction.</p>\n\t\t\t\t\t<form id=\"restoreForm\">\n\t\t\t\t\t\t<input type=\"email\" class=\"icon__modal icon-email\" name=\"email\" id=\"email\" placeholder=\"Please enter your email address\" style=\"margin-bottom: 32px;\"\n\t\t\t\t\t\t\trequired>\n\t\t\t\t\t\t<p class=\"errorSignMessage\"></p>\n\t\t\t\t\t\t<input type=\"hidden\" name=\"restoreID\" id=\"restoreID\" value=".concat(_config__WEBPACK_IMPORTED_MODULE_13__["registrationID"], ">\n\t\t\t\t\t\t<button type=\"submit\" class=\"modal-signin btn__sign btn__restore\">Send</button>\n\t\t\t\t\t</form>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t");
+    var restoreForm = modalRestore.querySelector('#restoreForm');
+    modalRestore.addEventListener('click', function (e) {
+      var target = e.target;
+
+      if (!target.closest('.signModal') || target.closest('.menu__close')) {
+        closeSignModal(modalRestore);
+      }
+    });
+    modalRestore.querySelector('.back-feed').addEventListener('click', function (e) {
+      e.preventDefault();
+      closeSignModal(modalRestore);
+      document.body.append(modalSign);
+      disableScroll();
+    });
+    restoreForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      Object(_forms__WEBPACK_IMPORTED_MODULE_12__["submitRestoreForm"])(e.target, '.errorSignMessage', modalRestore, modalVerification);
+    });
+    return modalRestore;
+  };
+
+  var renderModalChangePassword = function renderModalChangePassword(modalOverlayClass) {
+    var modalChangePassword = document.createElement('div');
+    modalChangePassword.classList.add(modalOverlayClass, commonModalOpenClass);
+    modalChangePassword.innerHTML = "\n\t\t\t<div class=\"signModal\">\n\t\t\t\t<div class=\"modal-header justify-end\">\n\t\t\t\t\t<span class=\"menu__close\">\n\t\t\t\t\t\t<svg width=\"24\" height=\"24\" class=\"icon\">\n\t\t\t\t\t\t\t<use xlink:href=\"assets/workber_img/icons.svg#btn-close\"></use>\n\t\t\t\t\t\t</svg>\n\t\t\t\t\t</span>\n\t\t\t\t</div>\n\t\t\t\t<div class=\"modal-body\">\n\t\t\t\t\t<h2 class=\"modal-title\">Set password</h2>\n\t\t\t\t\t<p style=\"margin-bottom: 32px;\">Please, choose your password.</p>\n\t\t\t\t\t<form id=\"changePasswordForm\">\n\t\t\t\t\t\t<input type=\"password\" class=\"icon__modal icon-password\" name=\"pwd\" id=\"\" placeholder=\"Password\" style=\"margin-bottom: 32px;\" required>\n\t\t\t\t\t\t<input type=\"password\" class=\"icon__modal icon-password2\" name=\"password-repeat\" id=\"\"\tplaceholder=\"Repeat password\" style=\"margin-bottom: 32px;\" required>\n\t\t\t\t\t\t<p class=\"errorSignMessage\"></p>\n\t\t\t\t\t\t<input type=\"hidden\" name=\"email\" id=\"email\">\n\t\t\t\t\t\t<input type=\"hidden\" name=\"confirmation_token\" id=\"confirmation_token\">\n\t\t\t\t\t\t<button type=\"submit\" class=\"btn__sign btn__confirmation\">Done</button>\n\t\t\t\t\t</form>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t";
+    var changePasswordForm = modalChangePassword.querySelector('#changePasswordForm');
+    modalChangePassword.addEventListener('click', function (e) {
+      console.log('close!!!');
+      var target = e.target;
+
+      if (!target.closest('.signModal') || target.closest('.menu__close')) {
+        closeSignModal(modalChangePassword);
+      }
+    });
+    changePasswordForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      Object(_forms__WEBPACK_IMPORTED_MODULE_12__["submitPasswordForm"])(e.target, '.errorSignMessage', modalChangePassword);
+    });
+    return modalChangePassword;
   };
 
   var switchMenu = function switchMenu(e) {
@@ -11848,15 +12035,26 @@ var renderModalSign = function renderModalSign(modalOverlayClass, settingsSelect
     toggleStatusElem(loginForm.querySelector("#".concat(loginForm.elements['policy-agree'].dataset['control'])), loginForm.elements['policy-agree'].checked);
   };
 
-  var loginForm = modalSign.querySelector('#loginForm');
-  var modalVerification = renderModalVerification(modalOverlayClass);
-  modalSign.querySelector('.menu__close').addEventListener('click', function () {
-    modalSign.remove();
+  var closeSignModal = function closeSignModal(container) {
+    container.remove();
     enableScroll();
+  };
+
+  var loginForm = modalSign.querySelector('#loginForm'),
+      forgotPassword = loginForm.querySelector('.modal-sign-forgot');
+  var modalVerification = renderModalVerification(modalOverlayClass),
+      modalCongratulation = renderModalCongratulation(modalOverlayClass),
+      modalRestore = renderModalRestore(modalOverlayClass),
+      modalChangePassword = renderModalChangePassword(modalOverlayClass);
+  modalSign.addEventListener('click', function (e) {
+    var target = e.target;
+
+    if (!target.closest('.signModal') || target.closest('.menu__close')) {
+      closeSignModal(modalSign);
+    }
   });
   modalSign.querySelector('.modal-header').addEventListener('click', switchMenu);
   iconSettings.addEventListener('click', function () {
-    console.log(_appState__WEBPACK_IMPORTED_MODULE_14__["appState"]);
     switchSignMethod(modalSign, '.menu__sign-in');
     document.body.append(modalSign);
     loginForm.reset();
@@ -11872,6 +12070,18 @@ var renderModalSign = function renderModalSign(modalOverlayClass, settingsSelect
   });
   loginForm.addEventListener('reset', function () {
     Object(_forms__WEBPACK_IMPORTED_MODULE_12__["hideSignInfo"])(loginForm.querySelector('.errorSignMessage'));
+  });
+  forgotPassword.addEventListener('click', function (e) {
+    e.preventDefault();
+    var email = forgotPassword.closest('form').querySelector('#email');
+
+    if (email) {
+      modalRestore.querySelector('#email').value = email.value;
+    }
+
+    document.body.append(modalRestore);
+    closeSignModal(modalSign);
+    disableScroll();
   });
 
   var toggleStatusElem = function toggleStatusElem(elem, cbState) {
@@ -11893,7 +12103,6 @@ var disableScroll = function disableScroll() {
 };
 
 var enableScroll = function enableScroll() {
-  // scrollDisabled = 0;
   document.body.style.cssText = '';
   window.scroll({
     top: document.body.dbScrollY

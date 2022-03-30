@@ -833,8 +833,9 @@ a {
 	animation: fadeIn 300ms ease-in-out;
 }
 .signModal {
-	max-width: 678px;
-	padding: 16px;
+	max-width: 582px;
+	padding: 48px;
+	box-sizing:content-box;
 	font-size: 14px;
 	line-height: 21px;
 	letter-spacing: 0.25px;
@@ -847,6 +848,9 @@ a {
 	padding: 22px 24px 22px 48px;
 	border-bottom: 1px solid rgba(136, 152, 170, 0.1);
 }
+.modal-header.justify-end {
+	justify-content: end;
+}
 .menu__sign_ >*:first-child {
 	margin-right: 32px;
 }
@@ -854,13 +858,18 @@ a {
 	font-weight: 600;
 	color: #47434F;
 	padding-bottom: 30px;
-	border-bottom-color: rgb(254, 166, 49);
 	border-bottom-style: solid;
 	border-bottom-width: 3px;
 }
 .menu__sign_ {
 	color: #9AA0A8;
 	cursor: pointer;
+}
+.menu__sign-in.active {
+	border-bottom-color: #FEA631;
+}
+.menu__sign-up.active {
+	border-bottom-color: #719FE4;
 }
 .modal-body {
 	padding: 32px 48px 48px 48px;
@@ -938,11 +947,11 @@ a {
 .btn__sign[disabled] {
 	cursor: not-allowed;
 }
-.btn__sign-in, .btn__confirmation {
+.btn__sign-up, .btn__confirmation {
 	background: linear-gradient(0deg, #719FE4, #719FE4), linear-gradient(0deg, #1665D8 2.22%, #1F6FE5 98.44%);
 	border: 1px solid #4789ED;
 }
-.btn__sign-up {
+.btn__sign-in, .btn__restore {
 	background: linear-gradient(0deg, #FEA631, #FEA631), linear-gradient(0deg, #1665D8 2.22%, #1F6FE5 98.44%);
 	border: 1px solid #EB9524;
 }
@@ -966,6 +975,12 @@ a {
 }
 .success-reg {
 	margin-bottom: 32px;
+}
+.descr-mobile-store {
+	margin-bottom: 64px;
+}
+.mobile-store-link {
+	margin-right: 24px;
 }
 @media (max-width: 1060px) {
 	.header-block {

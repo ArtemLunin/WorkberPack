@@ -69,26 +69,25 @@ export const submitSignForm = (form, errorSignSelector, modalSign, modalVerifica
 							refresh_token: objData.refresh_token,
 							lifetime: objData.lifetime,
 						});
-						modalSign.remove();
 						appState.profile = clonedeep(objData.profile);
+						modalSign.querySelector('.menu__close').click();
 						break;
 					case "regNewUser successful":
-						// showModalVerification(modalSign, modalVerification);
 						modalSign.remove();
-						modalVerification.querySelector('#email').value = objData.user_email;
-						modalVerification.querySelector('#code').value = '';
-						document.body.append(modalVerification);
+						showModalForm([
+							{ selector: '#email', value: objData.user_email },
+							{ selector: '#code', value: ''},
+						], modalVerification);
 						break;
 					default:
 						break;
 				}
-
 			}
 		});
 	}
 };
 
-export const submitVerifyForm = (form, parentContainerClass, errorSignSelector, infoSignSelector) => {
+export const submitVerifyForm = (form, parentContainerClass, errorSignSelector, infoSignSelector, modalContainerNext) => {
 	const formData = new FormData(form);
 	const parentConatiner = form.closest(`.${parentContainerClass}`);
 
@@ -101,13 +100,43 @@ export const submitVerifyForm = (form, parentContainerClass, errorSignSelector, 
 			showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
 		} else if (data.success) {
 			const objData = data.success;
-			storage.setGlobalItem({
-				sid: objData.sid,
-				refresh_token: objData.refresh_token,
-				lifetime: objData.lifetime,
-			});
-			appState.profile = clonedeep(objData.profile);
-			parentConatiner.querySelector('.menu__close').click();
+			if (!objData.sid || objData.sid === "" || objData.sid === 0) {
+				console.log('restore case');
+				showModalForm([
+					{ selector: '#email', value: form.querySelector('#email').value },
+					{ selector: '#confirmation_token', value: objData.confirmation_token },
+				], modalContainerNext);
+			} else {
+				storage.setGlobalItem({
+					sid: objData.sid,
+					refresh_token: objData.refresh_token,
+					lifetime: objData.lifetime,
+				});
+				appState.profile = clonedeep(objData.profile);
+				document.body.append(modalContainerNext);
+			}
+			parentConatiner.remove();
+		}
+	});
+};
+
+export const submitRestoreForm = (form, errorSignSelector, modalRestore, modalVerification) => {
+	const formData = new FormData(form);
+	
+	hideSignInfo(form.querySelector(errorSignSelector));
+
+	formData.append('call', 'doRestore');
+
+	sendRequest(workberBackEnd, formData).then((data) => {
+		if (data.error) {
+			showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
+		} else if (data.success) {
+			modalRestore.remove();
+			showModalForm([
+				{ selector: '#email', value: form.querySelector('#email').value },
+				{ selector: '#code', value: ''},
+				{ selector: '#typeVerify', value: '1'}
+			], modalVerification);
 		}
 	});
 };
@@ -127,4 +156,48 @@ export const submitResendForm = (form, errorSignSelector, infoSignSelector) => {
 			showSignInfo(form.querySelector(infoSignSelector), [{0:'New code sent'}]);
 		}
 	});
+};
+
+export const submitPasswordForm = (form, errorSignSelector, modalChangePassword) => {
+	let errorMsg = '';
+	const passwords = new Set();
+	const formData = new FormData(form);
+
+	for (let [key, value] of formData.entries()) {
+		if (form.elements[key].getAttribute('type') === 'password') {
+			passwords.add(value);
+		}
+	}
+	errorMsg = checkPassword([...passwords]);
+	if (errorMsg !== '') {
+		showSignInfo(form.querySelector(errorSignSelector), [{error: errorMsg}]);
+		return false;
+	}
+
+	hideSignInfo(form.querySelector(errorSignSelector));
+
+	formData.append('call', 'doChangePwd');
+
+	sendRequest(workberBackEnd, formData).then((data) => {
+		if (data.error) {
+			showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
+		} else if (data.success) {
+			const objData = data.success;
+			storage.setGlobalItem({
+				sid: objData.sid,
+				refresh_token: objData.refresh_token,
+				lifetime: objData.lifetime,
+			});
+			appState.profile = clonedeep(objData.profile);
+			modalChangePassword.querySelector('.menu__close').click();
+		}
+	});
+};
+
+const showModalForm = (items, container) => {
+	items.forEach(item => {
+		console.log(item.selector, item.value);
+		container.querySelector(item.selector).value = item.value;
+	});
+	document.body.append(container);
 };

@@ -1,7 +1,7 @@
 import {getLocation} from './storage';
 import {setPositionOnMap} from './map';
-import {hideSignInfo, submitSignForm, submitVerifyForm, submitResendForm} from './forms';
-import {registrationID} from './config';
+import {hideSignInfo, submitSignForm, submitVerifyForm, submitResendForm, submitRestoreForm, submitPasswordForm} from './forms';
+import {registrationID, storeLinks} from './config';
 import {appState} from './appState';
 
 export const commonModalOpenClass = 'modal-open-class';
@@ -62,7 +62,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 				<h2 class="modal-signin modal-title">Welcome back!</h2>
 				<h2 class="modal-signup modal-title">New user?</h2>
 				<form class="modal-form" action="#" method="POST" id="loginForm">
-					<input type="email" class="icon__modal icon-email" name="email" id="" placeholder="Email" required>
+					<input type="email" class="icon__modal icon-email" name="email" id="email" placeholder="Email" required>
 					<input type="password" class="icon__modal icon-password" name="pwd" id="" placeholder="Password"
 						required>
 					<input type="password" class="icon__modal icon-password2 modal-signup" name="password-repeat" id=""
@@ -130,11 +130,11 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Thank you!</h2>
-					<p class="success-reg">An email was sent to your address containing verification code.
+					<p class="success-reg">An email was sent to your address containing verification code.<br>
 					Please, enter your verification code</p>
 					<form id="verificationForm">
 						<label for="code" style="font-size: 12px;color: #9AA0A8;">Verification code</label>
-						<input type="text" class="input-form" maxlength="10" name="code" id="code">
+						<input type="text" class="input-form" maxlength="10" name="code" id="code" autocomplete="off">
 						<p class="errorSignMessage"></p>
 						<div style="margin-top:32px;color: #9AA0A8;">
 							<span>Haven't received code?</span>
@@ -142,9 +142,9 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 						</div>
 						<p class="infoSignMessage"></p>
 						<button type="submit" class="modal-signin btn__sign btn__confirmation">Continue</button>
-						
 						<input type="hidden" name="registrationID" id="registrationID" value=${registrationID}>
 						<input type="hidden" name="email" id="email">
+						<input type="hidden" name="typeVerify" id="typeVerify" value="0" disabled>
 					</form>
 				</div>
 			</div>
@@ -155,7 +155,12 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 		verificationForm.addEventListener('submit', (e) => {
 			e.preventDefault();
-			submitVerifyForm(e.target, modalOverlayClass, '.errorSignMessage', '.infoSignMessage');
+			console.log(verificationForm.querySelector('#typeVerify').value);
+			if (verificationForm.querySelector('#typeVerify').value === '1') {
+				submitVerifyForm(e.target, modalOverlayClass, '.errorSignMessage', '.infoSignMessage', modalChangePassword);
+			} else {
+				submitVerifyForm(e.target, modalOverlayClass, '.errorSignMessage', '.infoSignMessage', modalCongratulation);
+			}
 		});
 
 		verificationForm.addEventListener('reset', () => {
@@ -167,12 +172,156 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 			submitResendForm(e.target.closest('form'), '.errorSignMessage', '.infoSignMessage');
 		});
 
-		modalVerification.querySelector('.menu__close').addEventListener('click', () => {
-			modalVerification.remove();
-			enableScroll();
+		modalVerification.addEventListener('click', (e) => {
+			const target = e.target;
+			if (!target.closest('.signModal') || target.closest('.menu__close')) {
+				closeSignModal(modalVerification);
+			}
 		});
 
 		return modalVerification;
+	};
+
+	const renderModalCongratulation = (modalOverlayClass) => {
+		const modalCongratulation = document.createElement('div');
+
+		modalCongratulation.classList.add(modalOverlayClass, commonModalOpenClass);
+		modalCongratulation.innerHTML = `
+			<div class="signModal">
+				<div class="modal-header justify-end">
+					<span class="menu__close">
+						<svg width="24" height="24" class="icon">
+							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
+						</svg>
+					</span>
+				</div>
+				<div class="modal-body">
+					<h2 class="modal-signin modal-title">Congratulations! You have
+					successfully registered!</h2>
+					<p class="descr-mobile-store">Download the Workber app to your device to find all services<br> and projects around you</p>
+					<div class="store-links">
+						<a href="${storeLinks.appStore}" target="_blank" class="mobile-store-link"><img src="assets/workber_img/appstore.png" alt="App Store"></a>
+						<a href=${storeLinks.goolePlay} target="_blank" class="mobile-store-link"><img src="assets/workber_img/googleplay.png" alt="Goolge Play"></a>
+					</div>
+				</div>
+			</div>
+		`;
+
+		modalCongratulation.addEventListener('click', (e) => {
+			const target = e.target;
+			if (!target.closest('.signModal') || target.closest('.menu__close')) {
+				closeSignModal(modalCongratulation);
+			}
+		});
+
+		return modalCongratulation;
+	};
+
+	const renderModalRestore = (modalOverlayClass) => {
+		const modalRestore = document.createElement('div');
+
+		modalRestore.classList.add(modalOverlayClass, commonModalOpenClass);
+		modalRestore.innerHTML = `
+			<div class="signModal">
+				<div class="modal-header">
+					<div class="back-menu">
+							<a href="#" class="navigation-link back-feed">
+								<svg width="25" height="24" class="icon">
+									<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
+								</svg>
+								<span class="text-back">
+									BACK
+								</span>
+							</a>
+					</div>
+					<span class="menu__close">
+						<svg width="24" height="24" class="icon">
+							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
+						</svg>
+					</span>
+				</div>
+				<div class="modal-body">
+					<h2 class="modal-signin modal-title">Forgot password?</h2>
+					<p style="margin-bottom: 32px;">We will send an email with password change instruction.</p>
+					<form id="restoreForm">
+						<input type="email" class="icon__modal icon-email" name="email" id="email" placeholder="Please enter your email address" style="margin-bottom: 32px;"
+							required>
+						<p class="errorSignMessage"></p>
+						<input type="hidden" name="restoreID" id="restoreID" value=${registrationID}>
+						<button type="submit" class="modal-signin btn__sign btn__restore">Send</button>
+					</form>
+				</div>
+			</div>
+		`;
+
+		const restoreForm = modalRestore.querySelector('#restoreForm');
+
+		modalRestore.addEventListener('click', (e) => {
+			const target = e.target;
+			if (!target.closest('.signModal') || target.closest('.menu__close')) {
+				closeSignModal(modalRestore);
+			}
+		});
+
+		modalRestore.querySelector('.back-feed').addEventListener('click', (e) => {
+			e.preventDefault();
+			closeSignModal(modalRestore);
+			document.body.append(modalSign);
+			disableScroll();
+		});
+
+		restoreForm.addEventListener('submit', (e) => {
+			e.preventDefault();
+			submitRestoreForm(e.target, '.errorSignMessage', modalRestore, modalVerification);
+		});
+
+		return modalRestore;
+	};
+
+	const renderModalChangePassword = (modalOverlayClass) => {
+		const modalChangePassword = document.createElement('div');
+
+		modalChangePassword.classList.add(modalOverlayClass, commonModalOpenClass);
+		modalChangePassword.innerHTML = `
+			<div class="signModal">
+				<div class="modal-header justify-end">
+					<span class="menu__close">
+						<svg width="24" height="24" class="icon">
+							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
+						</svg>
+					</span>
+				</div>
+				<div class="modal-body">
+					<h2 class="modal-title">Set password</h2>
+					<p style="margin-bottom: 32px;">Please, choose your password.</p>
+					<form id="changePasswordForm">
+						<input type="password" class="icon__modal icon-password" name="pwd" id="" placeholder="Password" style="margin-bottom: 32px;" required>
+						<input type="password" class="icon__modal icon-password2" name="password-repeat" id=""	placeholder="Repeat password" style="margin-bottom: 32px;" required>
+						<p class="errorSignMessage"></p>
+						<input type="hidden" name="email" id="email">
+						<input type="hidden" name="confirmation_token" id="confirmation_token">
+						<button type="submit" class="btn__sign btn__confirmation">Done</button>
+					</form>
+				</div>
+			</div>
+		`;
+
+		const changePasswordForm = modalChangePassword.querySelector('#changePasswordForm');
+
+		modalChangePassword.addEventListener('click', (e) => {
+			console.log('close!!!');
+			const target = e.target;
+			if (!target.closest('.signModal') || target.closest('.menu__close')) {
+				closeSignModal(modalChangePassword);
+			}
+		});
+
+		changePasswordForm.addEventListener('submit', (e) => {
+			e.preventDefault();
+			submitPasswordForm(e.target, '.errorSignMessage', modalChangePassword);
+		});
+
+		return modalChangePassword;
 	};
 
 	const switchMenu = (e) => {
@@ -206,18 +355,28 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		toggleStatusElem(loginForm.querySelector(`#${loginForm.elements['policy-agree'].dataset['control']}`), loginForm.elements['policy-agree'].checked);
 	};
 
-	const loginForm = modalSign.querySelector('#loginForm');
-	const modalVerification = renderModalVerification(modalOverlayClass);
-
-	modalSign.querySelector('.menu__close').addEventListener('click', () => {
-		modalSign.remove();
+	const closeSignModal = (container) => {
+		container.remove();
 		enableScroll();
+	};
+
+	const loginForm = modalSign.querySelector('#loginForm'), 
+		forgotPassword = loginForm.querySelector('.modal-sign-forgot');
+	const modalVerification = renderModalVerification(modalOverlayClass),
+		modalCongratulation = renderModalCongratulation(modalOverlayClass),
+		modalRestore = renderModalRestore(modalOverlayClass),
+		modalChangePassword = renderModalChangePassword(modalOverlayClass);
+
+	modalSign.addEventListener('click', (e) => {
+		const target = e.target;
+		if (!target.closest('.signModal') || target.closest('.menu__close')) {
+			closeSignModal(modalSign);
+		}
 	});
 
 	modalSign.querySelector('.modal-header').addEventListener('click', switchMenu);
 
 	iconSettings.addEventListener('click', () => {
-		console.log(appState);
 		switchSignMethod(modalSign, '.menu__sign-in');
 		document.body.append(modalSign);
 		loginForm.reset();
@@ -236,6 +395,17 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 	loginForm.addEventListener('reset', () => {
 		hideSignInfo(loginForm.querySelector('.errorSignMessage'));
+	});
+
+	forgotPassword.addEventListener('click', (e) => {
+		e.preventDefault();
+		const email = forgotPassword.closest('form').querySelector('#email');
+		if (email) {
+			modalRestore.querySelector('#email').value = email.value;
+		}
+		document.body.append(modalRestore);
+		closeSignModal(modalSign);
+		disableScroll();
 	});
 
 	const toggleStatusElem = (elem, cbState) => {
@@ -268,10 +438,9 @@ const disableScroll = () => {
 };
 
 const enableScroll = () => {
-		// scrollDisabled = 0;
-		document.body.style.cssText = '';
-		window.scroll({
-			top: document.body.dbScrollY,
+	document.body.style.cssText = '';
+	window.scroll({
+		top: document.body.dbScrollY,
 	});
 };
 

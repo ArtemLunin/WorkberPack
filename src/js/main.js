@@ -552,8 +552,14 @@ const postsScroll = ( e, setZoneName = 0) => {
 			distText.textContent = distTextHeader.textContent = zoneName;
 		}
 	}
-	if(scrollSearchActivated || onePostShowned || setZoneName) {
-		return false;
+	// if(scrollSearchActivated || onePostShowned || setZoneName) {
+	// 	return false;
+	// }
+	if(!scrollSearchActivated && !onePostShowned && (!document.querySelector(`.${commonModalOpenClass}`))) {
+		let windowRelativeBottom = document.documentElement.getBoundingClientRect().bottom;
+		if (windowRelativeBottom <= document.documentElement.clientHeight + 120) {
+			doUploadPosts();
+		}
 	}
 };
 
@@ -700,7 +706,7 @@ const checkScrollBottom = () => {
 	}
 	setTimeout(() => {
 		checkScrollBottom();
-	}, 1000);
+	}, 100000);
 };
 
 const doUploadPosts = () => {
@@ -827,7 +833,7 @@ if (!isLogined && userMenu)
 			}
 		}
 		window.addEventListener('scroll', postsScroll);
-		checkScrollBottom();
+		// checkScrollBottom();
 	}
 
 
