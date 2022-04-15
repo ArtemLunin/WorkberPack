@@ -8,3 +8,4 @@ export const storeLinks = {
 	goolePlay: "https://play.google.com/store/apps/details?id=com.workber",
 	appStore: "https://apps.apple.com/ru/app/workber/id1485121269"
 };
+export const maxDescriptionLength = 120;

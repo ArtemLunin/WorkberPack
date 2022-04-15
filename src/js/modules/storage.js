@@ -1,3 +1,6 @@
+import clonedeep from 'lodash.clonedeep';
+import {appState} from './appState';
+
 export const getLocation = () => {
 	const lat = parseFloat(localStorage.getItem('lat'));
 	const lng = parseFloat(localStorage.getItem('lng'));
@@ -8,6 +11,11 @@ export const getLocation = () => {
 // 	localStorage.setItem('localityStatus', localityStatus);
 // };
 
+export const storeProfile = (profile, localData) => {
+	setGlobalItem(localData);
+	appState.profile = clonedeep(profile);
+};
+
 export const setGlobalItem = (item, packJSON = null) => {
 	if (packJSON) {
 		localStorage.setItem(packJSON, JSON.stringify(item));
@@ -16,7 +24,21 @@ export const setGlobalItem = (item, packJSON = null) => {
 			localStorage.setItem(key, item[key]);
 		}
 	}
-}
+};
+
+export const getGlobalItem = (itemKey) => localStorage.getItem(itemKey);
+
+export const removeGlobalItem = (itemsArr) => {
+	itemsArr.forEach(item => {
+		localStorage.removeItem(item);
+	});
+};
+
+export const removeLocalLoginInfo = () => {
+	removeGlobalItem([
+		'refresh_token', 'sid', 'lifetime', 'lat', 'lng'
+	]);
+};
 
 export const getLocalityStatus = () => {
 	const localityStatus = localStorage.getItem('localityStatus');
@@ -28,10 +50,14 @@ export const getLocalityStatus = () => {
 };
 
 export const iniBrowserLocation = () => {
-	if (navigator.geolocation && !(localStorage.getItem('lat') && localStorage.getItem('lng'))) {
-		navigator.geolocation.getCurrentPosition(function (position) {
-			localStorage.setItem('lat', position.coords.latitude);
-			localStorage.setItem('lng', position.coords.longitude);
+	if (navigator.geolocation && !(getGlobalItem('lat') && getGlobalItem('lng'))) {
+		navigator.geolocation.getCurrentPosition(success);
+	}
+
+	function success(position) {
+		setGlobalItem({
+			lat: position.coords.latitude,
+			lng: position.coords.longitude
 		});
 	}
 };

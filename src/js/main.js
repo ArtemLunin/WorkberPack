@@ -1,11 +1,15 @@
 import {mapLoader, setPostCoordsMap} from './modules/map';
-import {workberBackEnd, workberImages, endSearchCode} from './modules/config';
+import {workberBackEnd, workberImages, endSearchCode, maxDescriptionLength} from './modules/config';
 import * as storage from './modules/storage';
 import {modalMap, renderModalSign, commonModalOpenClass} from './modules/modal';
 import {createPost, createStartPostFeed, createPostFeed} from './modules/handlerPostData';
 import {createRequestParams} from './modules/requests';
 import {sendRequest} from './modules/network';
-// import {renderModalSign} from './modules/renderModalSign';
+import {getUserProfile, URImod} from './modules/appState';
+import {toggleService, hidePageElems, showPageElems} from './modules/domManipulation';
+import {getCurrentPage, cropDescription} from './modules/domHelpers'
+import {renderProfile} from './modules/domElements';
+
 
 window.addEventListener('DOMContentLoaded', () => {
 
@@ -16,17 +20,15 @@ let postid = 0;
 let search = location.search;
 const paramsURI = new URLSearchParams(location.search.substring(1));
 postid = paramsURI.get('postid');
-const originURI = new URL(location);
-const originPath = `${originURI.origin}${originURI.pathname}`;
-let newURI = new URL(`${originURI.origin}${originURI.pathname}`);
+
 let pathname = location.pathname;
 let path = pathname.match(/post-view\.html/);
-if(path && postid !=0) {
+if (path && postid != 0) {
 	let redirect = pathname.replace(/post-view\.html/, `index.html?page=post&postid=${postid}`);
 	location.href = redirect;
 } else {
 
-const isLogined = 0;
+let isLogined = 0;
 let waitForLoad = 0;
 
 
@@ -53,7 +55,6 @@ const userMenu = document.querySelector('.user-menu');
 const backMenu = document.querySelector('.back-menu');
 const searchButton = document.querySelector('.search-button');
 const searchInput = document.querySelector('.search-input');
-const services = document.querySelectorAll('.service');
 const tabsServices = document.querySelector('.tabs-service');
 const searchService = document.querySelector('.search-service');
 const searchProject = document.querySelector('.search-project');
@@ -139,6 +140,9 @@ const showControl = {
 		},
 		'container': postsOne,
 	},
+	'profile': {
+		'hide': ['posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'distance-info', 'dist-text-header', 'distances', 'tabs-service'],
+	}
 };
 
 const callParams = {
@@ -151,7 +155,7 @@ const callParams = {
 
 let currentPage = 'doStart';
 workberHome.dataset['currentPage'] = 'doStart';
-const pages = ['service', 'project', 'all', 'post'];
+const pages = ['service', 'project', 'all', 'post', 'profile'];
 const eventClick = new Event("click");
 const eventScroll = new Event("scroll");
 
@@ -247,9 +251,10 @@ const changeSearch = (e) =>
 {
 	e.preventDefault();
 	const target = e.target;
-	if(target.matches('.service')) {
+	if (target.matches('.service')) {
 		if (!target.matches('.service-selected') || currentPage == 'doStart') {
-			toggleService(target);
+			// toggleService(target);
+			toggleService('.service', target, 'service-selected');
 			showControl[currentPage].scrollYPos = window.pageYOffset;
 			showControl[currentPage].container.classList.add('d-none');
 			const searchPage = target.dataset.service;
@@ -262,7 +267,7 @@ const changeSearch = (e) =>
 const searchPosts = (e) => {
 	const params = selectLocation();
 	showControl[currentPage].scrollYPos = window.pageYOffset;
-	currentPage = getCurrentPage();
+	currentPage = getCurrentPage('.service');
 	if(searchInput.value === showControl[currentPage].callParams.keywords) {
 		enableElemsStart(currentPage);
 		// if (searchInput.value === '' || searchInput.value.trim().length < 3) {
@@ -292,6 +297,8 @@ const searchPosts = (e) => {
 const goSearch = (searchPage, keywords, renderPosts) => {
 	currentPage = searchPage;
 	const params = selectLocation();
+	const originURI = new URL(location);
+	let newURI = new URL(`${originURI.origin}${originURI.pathname}`);
 	newURI.searchParams.delete('hashtag');
 	showControl[searchPage].container.textContent = '';
 	if(!!keywords && keywords.trim().length > 2) {
@@ -302,12 +309,12 @@ const goSearch = (searchPage, keywords, renderPosts) => {
 };
 
 const showFeedSearch = (e = null) => {
-	if(e) {
+	if (e) {
 		e.preventDefault();
 	}
 	showControl[currentPage].scrollYPos = window.pageYOffset;
 	currentPage = 'doStart';
-	if(postsStart.textContent == '') {
+	if (postsStart.textContent == '') {
 		const params = selectLocation();
 		getDataSearch(createRequestParams(currentPage, showControl[currentPage].callParams, params), postsStart, renderStartPosts);
 	}
@@ -328,6 +335,9 @@ const getDataSearch = async (searchQuery, postsContainer, callback) => {
 	formdata.append("call", searchQuery.call);
 	for(const callParam in searchQuery.params) {
 		formdata.append(callParam, searchQuery.params[callParam]);
+	}
+	if (storage.getGlobalItem('sid')) {
+		formdata.append('token', storage.getGlobalItem('sid'));
 	}
 
 	sendRequest(workberBackEnd, formdata).then((data) => {
@@ -363,14 +373,14 @@ const addEvents = () => {
 	});
 };
 
-const toggleService = targetService => {
-	services.forEach(item => {
-		item.classList.remove('service-selected');
-	});
-	if(!!targetService) {
-		targetService.classList.add('service-selected');
-	}
-};
+// const toggleService = targetService => {
+// 	services.forEach(item => {
+// 		item.classList.remove('service-selected');
+// 	});
+// 	if(!!targetService) {
+// 		targetService.classList.add('service-selected');
+// 	}
+// };
 
 // const enableElems = () => {
 // 	if(currentlyLoad >= waitForLoad){
@@ -384,10 +394,10 @@ const toggleService = targetService => {
 // };
 
 const enableElemsStart = callName => {
-	if(currentlyLoad >= waitForLoad) {
+	if (currentlyLoad >= waitForLoad) {
 		searchSpinner.classList.add('d-none');
-		hidePageElems(callName);
-		showPageElems(callName);
+		hidePageElems(callName, showControl);
+		showPageElems(callName, showControl);
 		if (showControl[currentPage].container.dataset.code === endSearchCode) {
 			noMorePosts.classList.remove('d-none');
 		} else {
@@ -407,39 +417,6 @@ const enableElemsStart = callName => {
 	}
 };
 
-const hidePageElems = callName => {
-	// if(showControl[callName]?.hide) {
-		showControl[callName].hide.forEach(item => {
-			controlElems(item, 'hide');
-		});
-	// }
-};
-
-const showPageElems = callName => {
-	// if(showControl[callName]?.show) {
-		showControl[callName].show.forEach(item => {
-			controlElems(item, 'show');
-		});
-	// }
-};
-
-const controlElems = (classElems, todo) => {
-	const elems = document.querySelectorAll(`.${classElems}`);
-	elems.forEach(item => {
-		if(todo === 'hide') { // hide elems
-			item.classList.add('d-none');
-		} else { // show elems
-			item.classList.remove('d-none');
-		}
-	});
-};
-
-// const showHiddenElems = () => {
-// 	shownedAfterLoadPage.forEach(item => {
-// 		let itemClass = document.querySelector('.'+item);
-// 		itemClass.classList.remove('d-none');
-// 	});
-// };
 
 const showOnePost = postid => {
 	backMenu.dataset['prevPage'] = currentPage;
@@ -478,8 +455,8 @@ const showOnePost = postid => {
 			setPostCoordsMap(lat, lng, city);
 			document.querySelector('.hashtags-links').addEventListener('click', searchByTag);
 
-			hidePageElems(showPageName);
-			showPageElems(showPageName);
+			hidePageElems(showPageName, showControl);
+			showPageElems(showPageName, showControl);
 			noMorePosts.classList.add('d-none');
 			window.scroll(0, 0);
 		} catch (error) {
@@ -544,6 +521,7 @@ const searchByTag = (e) => {
 };
 
 const postsScroll = ( e, setZoneName = 0) => {
+	return false;
 	const postsContainer = showControl[currentPage].container;
 	const allVisible = Array.from(postsContainer.querySelectorAll('.post-feed')).filter(visible);
 	if (!!allVisible[0] && !!allVisible[0].querySelector('.post-content')) {
@@ -572,10 +550,6 @@ const visible = elem => {
   return false;
 };
 
-
-
-
-
 const switchLocality = (e) => {
 	const target = e.target;
 	let needInit = false;
@@ -589,15 +563,12 @@ const switchLocality = (e) => {
 			localityStatus = 'locality-local';
 			needInit = true;
 		}
-		if(needInit) {
-			// storage.setLocalityStatus(localityStatus);
+		if (needInit) {
 			storage.setGlobalItem({localityStatus: localityStatus});
 			reloadCurrentPage();
 		}
 	}
 };
-
-
 
 const selectLocation = () => {
 	const paramsLocation = {};
@@ -617,49 +588,19 @@ const selectLocation = () => {
 	return paramsLocation;
 };
 
-const getCurrentPage = () => {
-	for(let item of services) {
-		if(item.matches('.service-selected')) {
-			return item.dataset.service;
-		}
-	}
-};
+// const getCurrentPage = () => {
+// 	for(let item of services) {
+// 		if(item.matches('.service-selected')) {
+// 			return item.dataset.service;
+// 		}
+// 	}
+// };
 
 const notFoundPosts = () => {
 	const tempDiv = notFound.cloneNode(true);
 	tempDiv.classList.remove('d-none');
 	return tempDiv;
 };
-
-// const initHomePage = () => {
-// 	const params = selectLocation();
-// 	postsOffer.textContent = '';
-// 	postsNeed.textContent = '';
-// 	getDataSearch(createRequestParams('service', params), postsOffer, renderSearchPosts);
-// 	getDataSearch(createRequestParams('project', params), postsNeed, renderSearchPosts);
-// 	currentPage = 'service';
-// 	enableElems();
-// 	tabsServices.addEventListener('click', e => {
-// 		const target = e.target;
-// 		if(target.matches('.service')) {
-// 			if(!target.matches('.service-selected')) {
-// 				showControl[currentPage].scrollYPos = window.pageYOffset;
-// 				postsOfferShowned = postsOfferShowned ^ 1;
-// 				currentPage = postsOfferShowned ? 'service' : 'project';
-// 				workberHome.dataset['currentPage'] = currentPage;
-// 				serviceOffer.classList.toggle('service-selected');
-// 				serviceNeed.classList.toggle('service-selected');
-// 				postsOffer.classList.toggle('d-none');
-// 				postsNeed.classList.toggle('d-none');
-// 				distanceInfo.textContent = showControl[currentPage].zoneName;
-// 				const scrollFeed = showControl[currentPage].scrollYPos;
-// 				setTimeout(() => {
-// 					window.scroll(0, scrollFeed);
-// 				}, 100);
-// 			}
-// 		}
-// 	});
-// };
 
 const reloadCurrentPage = () => {
 	const params = selectLocation();
@@ -746,7 +687,7 @@ const doUploadPosts = () => {
 		default:
 			return false;
 	}
-	URImod(/*newURI, */{
+	URImod({
 		'page': currentPage,
 		'hashtag': searchInput.value,
 		'lat': params.lat,
@@ -756,15 +697,7 @@ const doUploadPosts = () => {
 	enableElemsStart(currentPage);
 };
 
-const URImod = (newURIParams) => {
-	const newSearchParams = new URLSearchParams();
-	for(let key in newURIParams) {
-		if(!!newURIParams[key]) {
-			newSearchParams.set(key, newURIParams[key]);
-		}
-	}
-	history.pushState(null, null, `${originPath}?${newSearchParams.toString()}`);
-};
+
 
 workberHome.addEventListener('click', showHome);
 tabsServices.addEventListener('click', changeSearch);
@@ -799,48 +732,70 @@ if (workberLogo) {
 	workberLogo.src = workberImages + '/site' + '/Workber-logo.svg';
 }
 
-if (!isLogined && userMenu)
-{
-	userMenu.classList.add('d-none');
-}
-
-	if (!!mainPage) {
-		storage.iniBrowserLocation();
-		searchInput.value = '';
-		const paramPage = paramsURI.get('page');
-		if(!paramPage || pages.indexOf(paramPage) == -1) {
-			clickHomeButton();
-		} else {
-			window.scroll(0, 0);
-			if(paramPage == 'post' && (postid = paramsURI.get('postid'))) {
-				getPostByID(postid, postsOne, renderOnePost);
-			} else {
-				if (paramPage === 'project') {
-					toggleService(searchProject);
-				} else if (paramPage === 'service') {
-					toggleService(searchService);
-				} else {
-
-				}
-				// tabsServices.classList.remove('d-hidden');
-				const hashTag = paramsURI.get('hashtag');
-				currentPage = paramPage;
-				if(!!hashTag && hashTag.trim().length > 2) {
-					searchInput.value = hashTag;
-					showControl[paramPage].callParams.keywords = hashTag;
-				}
-				reloadCurrentPage();
-			}
-		}
-		window.addEventListener('scroll', postsScroll);
-		// checkScrollBottom();
-	}
-
-
-}
-
-	// modalMap('.icon-settings', '.location__btn-close', '.location-overlay', 'location-overlay-open');
-	renderModalSign('modal-overlay', '.icon-settings');
+	renderModalSign('modal-overlay', '.icon-login');
 	mapLoader();
+
+	getUserProfile().then(profile => {
+		
+		let profileContainer;
+
+		if (profile) {
+			profileContainer = renderProfile(profile.profile, '.icon-settings', showControl);
+			const profileDescription = profileContainer.querySelector('#profileDescription');
+			const descriptionCounter = profileContainer.querySelector('#descriptionCounter');
+			// profileDescription.innerText = profileDescription.innerText.trim().substring(0, maxDescriptionLength);
+			// descriptionCounter.innerText = `${profileDescription.innerText.length}/${maxDescriptionLength}`;
+			profileDescription.addEventListener('keyup', (e) => {
+				cropDescription(e.target, descriptionCounter, maxDescriptionLength);
+			});
+			profileDescription.dispatchEvent(new Event('keyup'));
+		}
+		if (!profile && userMenu)
+		{
+			userMenu.classList.add('d-none');
+		}
+
+		if (!!mainPage) {
+			storage.iniBrowserLocation();
+			searchInput.value = '';
+			const paramPage = paramsURI.get('page');
+			if(!paramPage || pages.indexOf(paramPage) == -1) {
+				clickHomeButton();
+			} else {
+				window.scroll(0, 0);
+				if (paramPage == 'post' && (postid = paramsURI.get('postid'))) {
+					getPostByID(postid, postsOne, renderOnePost);
+				} else if (paramPage === 'profile') {
+					if (profile) {
+						
+						document.body.append(profileContainer);
+						// showControl[currentPage].container.classList.add('d-none');
+					} else {
+						clickHomeButton();
+					}
+				} else {
+					if (paramPage === 'project') {
+						toggleService('.service', searchProject, 'service-selected');
+					} else if (paramPage === 'service') {
+						toggleService('.service', searchService, 'service-selected');
+					} else {
+
+					}
+					// tabsServices.classList.remove('d-hidden');
+					const hashTag = paramsURI.get('hashtag');
+					currentPage = paramPage;
+					if(!!hashTag && hashTag.trim().length > 2) {
+						searchInput.value = hashTag;
+						showControl[paramPage].callParams.keywords = hashTag;
+					}
+					reloadCurrentPage();
+				}
+			}
+			window.addEventListener('scroll', postsScroll);
+			// checkScrollBottom();
+		}
+	});
+}
+
 });
 

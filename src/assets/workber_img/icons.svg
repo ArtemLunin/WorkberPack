@@ -89,4 +89,16 @@
   <symbol width="36" height="36" viewBox="0 0 36 36" id="btn-facebook" xmlns="http://www.w3.org/2000/svg">
     <path fill-rule="evenodd" clip-rule="evenodd" d="M0 18C0 8.07484 8.07484 0 18 0C27.9259 0 36 8.07484 36 18C36 27.9244 27.9244 36 18 36C8.07484 36 0 27.9244 0 18ZM19.548 18.6337H22.4764L22.8556 14.9454H19.5494V12.7775C19.5494 11.9625 20.0896 11.7726 20.4695 11.7726H22.8034V8.19157L19.5879 8.17925C16.0206 8.17925 15.2086 10.8496 15.2086 12.5585V14.9447H13.1458V18.6337H15.2086V29.0715H19.548V18.6337Z"/>
   </symbol>
+  <symbol width="24" height="24" viewBox="0 0 24 24" id="btn-signout" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M11 3H13V13H11V3ZM16.41 6.59L17.83 5.17C19.77 6.82 21 9.26 21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 9.26 4.23 6.82 6.17 5.17L7.58 6.58C6.01 7.86 5 9.81 5 12C5 15.87 8.13 19 12 19C15.87 19 19 15.87 19 12C19 9.81 17.99 7.86 16.41 6.59Z"/>
+</symbol>
+  <symbol width="24" height="24" viewBox="0 0 24 24" id="btn-toggledown" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 13.3333L17.6 8L19 9.33333L12 16L5 9.33333L6.4 8L12 13.3333Z"/>
+  </symbol>
+  <symbol width="24" height="24" viewBox="0 0 24 24" id="btn-toggleup" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 10.6667L6.4 16L5 14.6667L12 8L19 14.6667L17.6 16L12 10.6667Z"/>
+  </symbol>
+  <symbol width="24" height="24" viewBox="0 0 24 24" id="btn-trash" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M13.5 0L14.5 1H18V3H0V1H3.5L4.5 0H13.5ZM1 19.0527C1 20.1527 1.9 21.0527 3 21.0527H15C16.1 21.0527 17 20.1527 17 19.0527V4.05273H1V19.0527ZM3 6.05273H15V19.0527H3V6.05273Z"/>
+  </symbol>
 </svg>

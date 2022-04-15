@@ -155,7 +155,6 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 		verificationForm.addEventListener('submit', (e) => {
 			e.preventDefault();
-			console.log(verificationForm.querySelector('#typeVerify').value);
 			if (verificationForm.querySelector('#typeVerify').value === '1') {
 				submitVerifyForm(e.target, modalOverlayClass, '.errorSignMessage', '.infoSignMessage', modalChangePassword);
 			} else {
@@ -309,7 +308,6 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		const changePasswordForm = modalChangePassword.querySelector('#changePasswordForm');
 
 		modalChangePassword.addEventListener('click', (e) => {
-			console.log('close!!!');
 			const target = e.target;
 			if (!target.closest('.signModal') || target.closest('.menu__close')) {
 				closeSignModal(modalChangePassword);
@@ -355,11 +353,6 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		toggleStatusElem(loginForm.querySelector(`#${loginForm.elements['policy-agree'].dataset['control']}`), loginForm.elements['policy-agree'].checked);
 	};
 
-	const closeSignModal = (container) => {
-		container.remove();
-		enableScroll();
-	};
-
 	const loginForm = modalSign.querySelector('#loginForm'), 
 		forgotPassword = loginForm.querySelector('.modal-sign-forgot');
 	const modalVerification = renderModalVerification(modalOverlayClass),
@@ -371,6 +364,9 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		const target = e.target;
 		if (!target.closest('.signModal') || target.closest('.menu__close')) {
 			closeSignModal(modalSign);
+			if (modalSign.querySelector('.menu__close').dataset.reloadPage === '1') {
+				location.reload();
+			}
 		}
 	});
 
@@ -378,6 +374,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 	iconSettings.addEventListener('click', () => {
 		switchSignMethod(modalSign, '.menu__sign-in');
+		modalSign.querySelector('.menu__close').dataset.reloadPage = '';
 		document.body.append(modalSign);
 		loginForm.reset();
 		disableScroll();
@@ -421,9 +418,68 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 	};
 };
 
+export const renderModalHashtag = (modalOverlayClass) => {
+	const modal = document.createElement('div');
+
+	modal.classList.add(modalOverlayClass);
+	modal.innerHTML = `
+		<div class="templateModal modalContent">
+			<div class="template__header">
+				<span class="text-header">
+					Add new hashtags template
+				</span>
+				<span class="menu__close">
+					<svg width="24" height="24" class="icon">
+						<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
+					</svg>
+				</span>
+			</div>
+			<div class="template__body">
+				<form class="modal-form" action="#" method="POST">
+					<div class="nameData">
+						<div class="nameData__field1">
+							<label for="newHashtagTemplateName">Hashtag template name</label>
+							<input type="text" class="input-form" name="newHashtagTemplateName" id="newHashtagTemplateName"
+								value="">
+						</div>
+					</div>
+					<div class="nameData-w-100">
+						<div class="profileData__field2">
+							<label for="hashtagTemplateList">Hashtags list</label>
+							<div class="hashtags-list-full input-form" contenteditable="true" id="hashtagTemplateList">
+							</div>
+						</div>
+					</div>
+					<div class="form-profile-footer">
+						<button type="submit" class="btn__form btn__confirmation">Save</button>
+						<button type="reset" class="btn__form btn__confirmation">Cancel</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	`;
+
+	modal.addEventListener('click', (e) => {
+			const target = e.target;
+			if (!target.closest('.modalContent') || target.closest('.menu__close')) {
+				closeSignModal(document.querySelector(`.${modalOverlayClass}`));
+			}
+		});
+
+	modal.querySelector('form').addEventListener('reset', (e) => {
+		const target = e.target;
+		target.querySelector('#hashtagTemplateList').textContent = '';
+	});
+
+	return modal;
+};
+
+const closeSignModal = (container) => {
+	container.remove();
+	enableScroll();
+};
 
 const disableScroll = () => {
-	// scrollDisabled = 1;
 	const widthScroll = window.innerWidth - document.body.offsetWidth;
 	document.body.dbScrollY = window.scrollY;
 	document.body.style.cssText = `

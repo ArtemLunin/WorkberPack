@@ -8,7 +8,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="assets/css/normalize.css" />
-	<link rel="stylesheet" href="assets/css/style.css">
+	<link rel="stylesheet" href="assets/css/style.min.css">
 	<!-- <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script> -->
 	<!-- <script src="js/map.js"></script> -->
 	<script src="script.js"></script>
@@ -76,7 +76,7 @@
 							<a href="#" class="locality locality-home">Home</a>
 							<a href="#" class="locality locality-local locality-selected">Local</a>
 						</div>
-						<a href="#" class="navigation-link icon-settings" title="Set home location">
+						<a href="#" class="navigation-link icon-login" title="Set home location">
 							<svg width="25" height="24" class="icon">
 								<use xlink:href="assets/workber_img/icons.svg#btn-location"></use>
 							</svg>
@@ -105,12 +105,12 @@
 								<use xlink:href="assets/workber_img/icons.svg#btn-favorites"></use>
 							</svg>
 						</a>
-						<!-- <a href="#" class="navigation-link icon-settings">
+						<a href="#" class="navigation-link icon-settings">
 							<svg width="25" height="24" class="icon">
 								<use xlink:href="assets/workber_img/icons.svg#btn-settings"></use>
 							</svg>
-						</a> -->
-						<a href="#" class="navigation-link icon-create">Create</a>
+						</a>
+						<a href="#" class="navigation-link icon-create d-none">Create</a>
 					</div>
 					<div class="avatar">
 						<img class="avatar-img" src="assets/workber_img/avatar.png" alt="Avatar">
@@ -148,6 +148,7 @@
 	</section>
 	<section class="posts-block post-one d-none">
 	</section>
+	
 	<div class="location-overlay">
 		<div class="location">
 			<h5 class="location-title">Set your home location to find services near you</h5>

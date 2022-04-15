@@ -1,0 +1,24 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: 'Montserrat', sans-serif;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 14px;
+	background-color: #F2F2F2;
+	color: #47434F;
+}
+
+p {
+	margin: 0;
+}
+
+.d-none {
+	display: none !important;
+}
+
+.d-hidden {
+	visibility: hidden;
+}
