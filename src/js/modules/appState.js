@@ -1,7 +1,5 @@
 import {sendGetRequest} from './requests';
 import * as storage from './storage';
-// import {sendRequest} from './network';
-// import {workberBackEnd} from './config';
 
 export const appState = {};
 export const getUserProfile = async () => {
@@ -11,7 +9,7 @@ export const getUserProfile = async () => {
 		const profile = await sendGetRequest({
 			call: 'doGetProfile',
 			token: token,
-		}, false);
+		}, null);
 		if (profile === 401) {
 			if (refreshToken && refreshToken != '') {
 				const data = await refreshTokens(token, refreshToken)
@@ -25,7 +23,7 @@ export const getUserProfile = async () => {
 						const profile = await sendGetRequest({
 							call: 'doGetProfile',
 							token: objData.sid,
-						}, false);
+						}, null);
 						if (profile) {
 							storeProfileInfo(profile);
 							return profile;
@@ -45,6 +43,17 @@ export const getUserProfile = async () => {
 	return false;
 };
 
+export const postAPIRequest = async (hashtagRequestData) => {
+	let token = storage.getGlobalItem('sid');
+	if (token) {
+		hashtagRequestData.token = token;
+		const data = await sendGetRequest(hashtagRequestData, 
+		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
+		return data;
+	}
+	return false;
+};
+
 export const deleteHashtagTemplate = async (id) => {
 	let token = storage.getGlobalItem('sid');
 	if (token) {
@@ -54,7 +63,6 @@ export const deleteHashtagTemplate = async (id) => {
 			id: id
 		}, 
 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
-		storage.setGlobalItem({sid: data.sid});
 		return data;
 	}
 	return false;
@@ -68,7 +76,6 @@ export const getHashtagTemplate = async () => {
 			token: token,
 		}, 
 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
-		storage.setGlobalItem({sid: data.sid});
 		return data;
 	}
 	return false;
@@ -99,7 +106,7 @@ export const logout = async () => {
 		await sendGetRequest({
 			call: 'logout',
 			token: token,
-		}, false);
+		}, null);
 	}
 	storage.removeLocalLoginInfo();
 	return true;

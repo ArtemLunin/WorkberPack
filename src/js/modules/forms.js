@@ -1,8 +1,6 @@
 import {sendRequest} from './network';
 import {workberBackEnd} from './config';
 import * as storage from './storage';
-// import {appState} from './appState';
-// import clonedeep from 'lodash.clonedeep';
 
 export const checkPassword = (passwords) => {
 	let errorMessage = '';
@@ -24,6 +22,7 @@ export const hideSignInfo = (infoContainer) => {
 	infoContainer.textContent = '';
 	infoContainer.classList.add('d-none');
 };
+
 
 export const submitSignForm = (form, errorSignSelector, modalSign, modalVerification) => {
 	const btnSubmit = document.activeElement;
@@ -108,12 +107,6 @@ export const submitVerifyForm = (form, parentContainerClass, errorSignSelector, 
 					{ selector: '#confirmation_token', value: objData.confirmation_token },
 				], modalContainerNext);
 			} else {
-				// storage.setGlobalItem({
-				// 	sid: objData.sid,
-				// 	refresh_token: objData.refresh_token,
-				// 	lifetime: objData.lifetime,
-				// });
-				// appState.profile = clonedeep(objData.profile);
 				storage.storeProfile(objData.profile, {
 					sid: objData.sid,
 					refresh_token: objData.refresh_token,
@@ -191,12 +184,6 @@ export const submitPasswordForm = (form, errorSignSelector, modalChangePassword)
 			showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
 		} else if (data.success) {
 			const objData = data.success;
-			// storage.setGlobalItem({
-			// 	sid: objData.sid,
-			// 	refresh_token: objData.refresh_token,
-			// 	lifetime: objData.lifetime,
-			// });
-			// appState.profile = clonedeep(objData.profile);
 			storage.storeProfile(objData.profile, {
 					sid: objData.sid,
 					refresh_token: objData.refresh_token,
@@ -208,6 +195,7 @@ export const submitPasswordForm = (form, errorSignSelector, modalChangePassword)
 		}
 	});
 };
+
 
 const showModalForm = (items, container) => {
 	items.forEach(item => {

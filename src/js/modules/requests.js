@@ -54,7 +54,8 @@ export const sendGetRequest = async (requestProps, tokensPair = null) => {
 								formData.set('token', objData.sid);
 								const data = await sendRequest(workberBackEnd, formData);
 								if (data.error) {
-									throw new Error(JSON.stringify(data.error));
+									// throw new Error(JSON.stringify(data.error));
+									return (data.error);
 								} else if (data.success) {
 									return (data.success);
 								}
@@ -65,17 +66,18 @@ export const sendGetRequest = async (requestProps, tokensPair = null) => {
 						return data; 
 					}
 				}
-				// storage.removeLocalLoginInfo();
 				return 401;
 			}
 			if (data.error) {
-				throw new Error(JSON.stringify(data.error));
+				// throw new Error(JSON.stringify(data.error));
+				return (data.error);
 			} else if (data.success) {
 				return (data.success);
 			}
 			return false;
 		})
 		.catch((error) => {
+			console.error(error);
 			return false;
 		});
 	return data;
@@ -86,6 +88,6 @@ const refreshTokens = async (token, refreshToken) => {
 		call: 'doRefreshTokens',
 		token: token,
 		refresh_token: refreshToken
-	}, false);
+	}, null);
 	return data;
 };

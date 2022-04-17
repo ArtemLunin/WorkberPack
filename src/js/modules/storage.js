@@ -7,10 +7,6 @@ export const getLocation = () => {
 	return [lat,lng];
 };
 
-// export const setLocalityStatus = localityStatus => {
-// 	localStorage.setItem('localityStatus', localityStatus);
-// };
-
 export const storeProfile = (profile, localData) => {
 	setGlobalItem(localData);
 	appState.profile = clonedeep(profile);

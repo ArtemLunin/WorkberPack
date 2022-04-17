@@ -2,7 +2,8 @@ import {getLocation} from './storage';
 import {setPositionOnMap} from './map';
 import {hideSignInfo, submitSignForm, submitVerifyForm, submitResendForm, submitRestoreForm, submitPasswordForm} from './forms';
 import {registrationID, storeLinks} from './config';
-import {appState} from './appState';
+// import {submitHashtagForm} from './domElements';
+// import {submitHashtagForm} from './appState';
 
 export const commonModalOpenClass = 'modal-open-class';
 
@@ -418,63 +419,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 	};
 };
 
-export const renderModalHashtag = (modalOverlayClass) => {
-	const modal = document.createElement('div');
-
-	modal.classList.add(modalOverlayClass);
-	modal.innerHTML = `
-		<div class="templateModal modalContent">
-			<div class="template__header">
-				<span class="text-header">
-					Add new hashtags template
-				</span>
-				<span class="menu__close">
-					<svg width="24" height="24" class="icon">
-						<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-					</svg>
-				</span>
-			</div>
-			<div class="template__body">
-				<form class="modal-form" action="#" method="POST">
-					<div class="nameData">
-						<div class="nameData__field1">
-							<label for="newHashtagTemplateName">Hashtag template name</label>
-							<input type="text" class="input-form" name="newHashtagTemplateName" id="newHashtagTemplateName"
-								value="">
-						</div>
-					</div>
-					<div class="nameData-w-100">
-						<div class="profileData__field2">
-							<label for="hashtagTemplateList">Hashtags list</label>
-							<div class="hashtags-list-full input-form" contenteditable="true" id="hashtagTemplateList">
-							</div>
-						</div>
-					</div>
-					<div class="form-profile-footer">
-						<button type="submit" class="btn__form btn__confirmation">Save</button>
-						<button type="reset" class="btn__form btn__confirmation">Cancel</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	`;
-
-	modal.addEventListener('click', (e) => {
-			const target = e.target;
-			if (!target.closest('.modalContent') || target.closest('.menu__close')) {
-				closeSignModal(document.querySelector(`.${modalOverlayClass}`));
-			}
-		});
-
-	modal.querySelector('form').addEventListener('reset', (e) => {
-		const target = e.target;
-		target.querySelector('#hashtagTemplateList').textContent = '';
-	});
-
-	return modal;
-};
-
-const closeSignModal = (container) => {
+export const closeSignModal = (container) => {
 	container.remove();
 	enableScroll();
 };

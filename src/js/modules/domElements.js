@@ -1,8 +1,21 @@
+// import clonedeep from 'lodash.clonedeep';
 import {hidePageElems} from './domManipulation';
-import {renderModalHashtag} from './modal';
-import {URImod, deleteHashtagTemplate, getHashtagTemplate, logout} from './appState';
+import {closeSignModal} from './modal';
+import {URImod, deleteHashtagTemplate, getHashtagTemplate, postAPIRequest, logout} from './appState';
+// import * as storage from './storage';
 
 export const renderProfile = ({contact_email, contact_phone, user_name, user_picture, user_descr, email, hashtagsList}, settingsSelector, showControl) => {
+	
+	const dataOuterFlag = 'data-outer';
+	
+	const userAvatar = user_picture => user_picture ? user_picture : 'assets/workber_img/big_avatar.jpeg';
+
+	const localProfile = {
+		hashagsList: JSON.parse(JSON.stringify(hashtagsList)),
+		personalData: JSON.parse(JSON.stringify({
+			contact_email, contact_phone, user_name, user_picture: userAvatar(user_picture), user_descr, email
+		})),
+	};
 
 	const renderHashtags = (section, list) => {
 		hashtagsTemplatesCount.textContent = list.length;
@@ -19,7 +32,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 
 	const iconSettings = document.querySelector(settingsSelector);
 	const profileContainer = document.createElement('section') ;
-	const userAvatar = user_picture ? user_picture : 'assets/workber_img/big_avatar.jpeg';
+
 
 	// const hashtagsTemplatesCount = hashtagsList.length;
 
@@ -28,10 +41,23 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		<aside class="profile-sidebar">
 			<div class="profile-user">
 				<div class="profile-avatar">
-					<img class="img-avatar" src="${userAvatar}" alt="uset avatar">
+					<img class="img-avatar" src="" id="imgAvatar" alt="user avatar">
+					<form action="#" method="POST" id="formSetAvatar">
+						<input type="hidden" name="call" value="doSetAvatar">
+						<input type="hidden" name="action" value="set">
+						<input type="file" name="file" id="fileAvatar" accept="image/*" hidden>
+							<a href="#" class="profile-avatar-change">
+								<div class="profile-avatar-hint">
+									<svg width="24" height="24" class="icon icon-photo">
+											<use xlink:href="assets/workber_img/icons.svg#btn-photo"></use>
+									</svg>
+								<span>Change photo</span>
+								</div>
+							</a>
+					</form>
 				</div>
 				<div class="profile-userName">
-					<h2>${user_name}</h2>
+					<h2 id="titleUserName"></h2>
 				</div>
 				<hr class="divider">
 				<ul class="profile-menu">
@@ -55,56 +81,13 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		</aside>
 		<div class="profile-settings">
 			<div class="profile-unit profile-settings-common profile-settings-main">
-				<section class="profile-personal">
-					<h3 class="profile-h3">Personal Data</h3>
-					<form action="#" class="personalDataForm" id="personalDataForm">
-						<div class="nameData">
-							<div class="nameData__field1">
-								<label for="userName">Username (required)</label>
-								<input type="text" class="input-form" name="userName" id="userName" value="${user_name}" required>
-							</div>
-						</div>
-						<div class="nameData">
-							<div class="nameData-w-100 nameData__field3">
-								<label for="profileDescription">Description <span
-										class="editable-elem-chars color-pale" id="descriptionCounter"></span></label>
-								<div class="profile-description input-form" contenteditable="true" id="profileDescription">${user_descr}</div>
-							</div>
-						</div>
-						<div class="nameData">
-							<div class="nameData-w-70 nameData__field1">
-								<label for="email">Email</label>
-								<input type="email" class="input-form" name="email" id="email" value=${email} disabled>
-							</div>
-						</div>
-						<div class="nameData">
-							<div class="nameData__field2">
-								<label for="homeLocation">Home location</label>
-								<input type="text" class="input-form" name="homeLocation" id="homeLocation">
-							</div>
-						</div>
-						<div class="nameData">
-							<div class="nameData-w-70 mr-1 nameData__field1">
-								<label for="contact_email">Email (public)</label>
-								<input type="email" class="input-form" name="contact_email" id="contact_email" value="${contact_email}">
-							</div>
-							<div class="nameData-w-30 mr-1 nameData__field1">
-								<label for="contact_phone">Phone (public)</label>
-								<input type="text" class="input-form" name="contact_phone" id="contact_phone" value="${contact_phone}">
-							</div>
-						</div>
-						<div class="nameData">
-							<button type="submit" class="btn__form btn__confirmation">Save Data</button>
-						</div>
-					</form>
-				</section>
 			</div>
 			<div class="profile-unit profile-contacts d-none">
 				<section class="profile-top">
 					<div class="profile-top-info">
 						<span style="color: #9AA0A8;">Contacts templates: <span class="profile-entities">5</span>
 						</span>
-						<button class="btn__form btn__add-profile">Add new</button>
+						<button class="btn__form btn__add-contact btn__add-profile" data-modal="contactModalForm">Add new</button>
 					</div>
 				</section>
 				<section class="profile-item">
@@ -196,7 +179,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					<div class="profile-top-info">
 						<span style="color: #9AA0A8;">Hashtags templates: <span class="profile-entities" id="hashtagsTemplatesCount"></span>
 						</span>
-						<button class="btn__form btn__add-hashtag">Add new</button>
+						<button class="btn__form btn__add-hashtag btn__add-profile" data-modal="hashtagModalForm">Add new</button>
 					</div>
 				</section>
 				<section class="profile-item"></section>
@@ -227,24 +210,176 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		</div>
 	`;
 
-	const renderHashtagForm = () => {
-		// ({id, templateName, hashtagList}
+	const renderModalHashtag = (dataOuterFlag, ...modalOverlayClass) => {
+		const modal = document.createElement('div');
+
+		modal.classList.add(...modalOverlayClass);
+		modal.innerHTML = `
+			<div class="templateModal modalContent">
+				<div class="template__header">
+					<span class="text-header">
+						Add new hashtags template
+					</span>
+					<span class="menu__close">
+						<svg width="24" height="24" class="icon">
+							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
+						</svg>
+					</span>
+				</div>
+				<div class="template__body">
+					<form class="modal-form" action="#" method="POST" id="formNewHashtag">
+						<input type="hidden" name="hashtagTemplateList" ${dataOuterFlag}>
+						<div class="nameData" style="margin-bottom: 32px;">
+							<div class="nameData__field1">
+								<label for="templateName">Hashtag template name</label>
+								<input type="text" class="input-form" name="templateName" id="templateName">
+							</div>
+						</div>
+						<div class="nameData-w-100">
+							<div class="profileData__field2">
+								<label for="hashtagTemplateList">Hashtags list</label>
+								<div class="hashtags-list-full input-form" contenteditable="true" id="hashtagTemplateList">
+								</div>
+							</div>
+						</div>
+						<div class="form-profile-footer">
+							<button type="submit" class="btn__form btn__confirmation">Save</button>
+							<button type="reset" class="btn__form btn__confirmation">Cancel</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		`;
+
+		modal.addEventListener('click', function (e) {
+			const target = e.target;
+			if (!target.closest('.modalContent') || target.closest('.menu__close')) {
+				this.querySelector('form').reset();
+				closeSignModal(this);
+			}
+		});
+
+		modal.querySelector('form').addEventListener('reset', (e) => {
+			const target = e.target;
+			target.querySelector('#hashtagTemplateList').textContent = '';
+		});
+
+		modal.querySelector('form').addEventListener('submit', (e) => {
+			const target = e.target;
+			e.preventDefault();
+			submitHashtagForm(target, dataOuterFlag, document.querySelector(`.${modalOverlayClass}`));
+		});
+
+		return modal;
+	};
+
+	const submitHashtagForm = (form, dataOuterFlag, modal = null) => {
+		const requestProps = {};
+		const formData = new FormData(form);
+		let call = 'doSetHashtagTemplates';
+		let fieldValue = '';
+		for (let [key, value] of formData.entries()) {
+			fieldValue = value;
+			if (form.elements[key].getAttribute('type') === 'hidden' &&
+				form.elements[key].getAttribute(dataOuterFlag) !== null) {
+				try {
+					fieldValue = form.querySelector(`#${key}`).textContent.trim()
+						.split(" ")
+						.map((item) => {
+							if (item.substring(0,1) != '#') {
+								item = '#' + item;
+							}
+							return item;
+						})
+						.join(' ');
+				} catch (e) {
+					if (e instanceof TypeError) {
+						console.error(e.message + `, Element ${key} can't find container with data`);
+					} else {
+						throw e;
+					}
+				}
+			}
+			if (key === 'id') {
+				call = 'doUpdHashtagTemplates';
+			}
+			requestProps[key] = fieldValue;
+		}
+		requestProps.call = call;
+		postAPIRequest(requestProps).then(() => {
+			getHashtagTemplate().then((data) => {
+				if (modal) {
+					modal.querySelector('.menu__close').click();
+				}
+				localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
+				profileProps.hashtags.callback(hashtagSection, localProfile.hashagsList);
+			});
+		});
+	};
+
+	const submitSettingsForm = (form) => {
+		const requestProps = {};
+		const formData = new FormData(form);
+		let fieldValue = '';
+		for (let [key, value] of formData.entries()) {
+			fieldValue = value;
+			if (form.elements[key].getAttribute('type') === 'hidden' &&
+				form.elements[key].getAttribute(dataOuterFlag) !== null) {
+				try {
+					fieldValue = form.querySelector(`#${key}`).textContent.trim();
+				} catch (e) {
+					if (e instanceof TypeError) {
+						console.error(e.message + `, Element ${key} can't find container with data`);
+					} else {
+						throw e;
+					}
+				}
+			}
+			try {
+				if ((typeof fieldValue === 'object' && form.elements[key].type === 'file') 
+					|| fieldValue.trim() !== '') {
+					requestProps[key] = fieldValue;
+				}
+			} catch (e) {}
+		}
+		postAPIRequest(requestProps).then((data) => {
+			if (data.errors) {
+				console.log(data.errors);
+			}
+			else if (data.code && data.code === 1) {
+				if ( data.message === "avatar set") {
+					localProfile.personalData.user_picture = userAvatar(data.user_picture);
+				} else {
+					localProfile.personalData = JSON.parse(JSON.stringify({
+						contact_email: data.profile.contact_email, 
+						contact_phone: data.profile.contact_phone, 
+						user_name: data.profile.user_name, 
+						user_picture: userAvatar(data.profile.user_picture),
+						user_descr: data.profile.user_descr, 
+						email: data.profile.email
+					}));
+				}
+				refreshPersonalForm();
+			}
+		});
+	};
+
+	const renderHashtagForm = (dataOuterFlag) => {
 		const formContainer = document.createElement('div');
 		formContainer.classList.add('profile-item-detail', 'border-elements');
-		// const hashtagForm = document.createElement('form');
 		formContainer.insertAdjacentHTML('beforeend', `
 			<form action="#" class="hashtagsDataForm" id="hashtagsDataForm">
 				<input type="hidden" name="id" value="" id="id">
+				<input type="hidden" name="hashtagTemplateList" ${dataOuterFlag}>
 				<div class="nameData" style="margin-top: 0;">
 					<div class="profileData__field1">
-						<label for="hashtagTemplateName">Hashtag template name</label>
-						<input type="text" class="input-form" name="hashtagTemplateName" id="hashtagTemplateName" value="" required>
+						<label for="templateName">Hashtag template name</label>
+						<input type="text" class="input-form" name="templateName" id="templateName" value="" required>
 					</div>
 				</div>
 				<div class="nameData">
 					<div class="profileData__field2">
-						<label for="hashtagTemplateList">Hashtags list <span
-								class="editable-elem-chars color-pale">265/300</span></label>
+						<label for="hashtagTemplateList">Hashtags list <span class="editable-elem-chars color-pale">265/300</span></label>
 						<div class="hashtags-list-full input-form" contenteditable="true"
 							id="hashtagTemplateList">
 						</div>
@@ -257,6 +392,58 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		`);
 		return formContainer;
 	};
+
+	const renderPersonalForm = ((dataOuterFlag) => {
+		const formContainer = document.createElement('section');
+		formContainer.classList.add('profile-personal');
+		formContainer.insertAdjacentHTML('beforeend', `
+			<h3 class="profile-h3">Personal Data</h3>
+			<form action="#" class="personalDataForm" id="personalDataForm" data-batch>
+			<input type="hidden" name="call" value="doUpdateProfile">
+			<input type="hidden" name="user_descr" ${dataOuterFlag}>
+				<div class="nameData">
+					<div class="nameData__field1">
+						<label for="user_name">Username (required)</label>
+						<input type="text" class="input-form" name="user_name" id="user_name" value="" required>
+					</div>
+				</div>
+				<div class="nameData">
+					<div class="nameData-w-100 nameData__field3">
+						<label for="user_descr">Description <span
+								class="editable-elem-chars color-pale" id="descriptionCounter"></span></label>
+						<div class="profile-description input-form" contenteditable="true" id="user_descr"></div>
+					</div>
+				</div>
+				<div class="nameData">
+					<div class="nameData-w-70 nameData__field1">
+						<label for="email">Email</label>
+						<input type="email" class="input-form" name="email" id="email" disabled>
+					</div>
+				</div>
+				<div class="nameData">
+					<div class="nameData__field2">
+						<label for="homeLocation">Home location</label>
+						<input type="text" class="input-form" name="homeLocation" id="homeLocation">
+					</div>
+				</div>
+				<div class="nameData">
+					<div class="nameData-w-70 mr-1 nameData__field1">
+						<label for="contact_email">Email (public)</label>
+						<input type="email" class="input-form" name="contact_email" id="contact_email" value="">
+					</div>
+					<div class="nameData-w-30 mr-1 nameData__field1">
+						<label for="phone">Phone (public)</label>
+						<input type="text" class="input-form" name="phone" id="phone" value="">
+					</div>
+				</div>
+				<div class="nameData">
+					<button type="submit" class="btn__form btn__confirmation">Save Data</button>
+				</div>
+			</form>
+			`
+		);
+		return formContainer;
+	});
 
 	function renderHashtagSection(hashtagsList) {
 		const section = document.createElement('div');
@@ -301,13 +488,10 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				if (button) {
 					if (button.classList.contains('delete-hashatag')) {
 						deleteHashtagTemplate(button.dataset.id).then(() => {
-							// if (data) {
-								getHashtagTemplate().then((data) => {
-									profileProps.hashtags.callback(hashtagSection, data.hashtagsList);						
-								});
-								// console.log(data);
-
-							// }
+							getHashtagTemplate().then((data) => {
+								localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
+								profileProps.hashtags.callback(hashtagSection, localProfile.hashagsList);					
+							});
 						});
 						return;
 					}
@@ -324,7 +508,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					if (button.dataset.showned === 'down') {
 						parent.append(fillForm(hashtagForm, [
 							{id: '#id', inputType: 'value', value: parent.dataset['id']},
-							{id: '#hashtagTemplateName', inputType: 'value', value: parent.querySelector('.profile-name').textContent},
+							{id: '#templateName', inputType: 'value', value: parent.querySelector('.profile-name').textContent},
 							{id: '#hashtagTemplateList', inputType: 'content', value: parent.querySelector('.hashtags-list-cutted').textContent}
 						]));
 						parent.querySelectorAll('.profile-buttons a').forEach((item) => {
@@ -340,8 +524,12 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		return section;
 	}
 
-	const hashtagForm = renderHashtagForm();
-	const hashtagModalForm = renderModalHashtag('modal-overlay');
+	const hashtagForm = renderHashtagForm(dataOuterFlag),
+		personalForm = renderPersonalForm(dataOuterFlag);
+
+	// const hashtagModalForm = renderModalHashtag(dataOuterFlag, 'modal-overlay', 'hashtagModalForm');
+	const modalForms = {};
+	modalForms.hashtagModalForm = renderModalHashtag(dataOuterFlag, 'modal-overlay', 'hashtagModalForm');
 
 	const fillForm = (formContainer, formData) => {
 		formContainer.querySelector('form').reset();
@@ -361,14 +549,58 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		return formContainer;
 	};
 
+	const refreshPersonalForm = () => {
+		personalForm.remove();
+		profileContainer.querySelector('#imgAvatar').src = localProfile.personalData.user_picture;
+		profileContainer.querySelector('#titleUserName').textContent = localProfile.personalData.user_name;
+		profileContainer.querySelector('.profile-settings-main').append(fillForm(personalForm, [
+			{id: '#user_name', inputType: 'value', value: localProfile.personalData.user_name},
+			{id: '#user_descr', inputType: 'content', value:localProfile.personalData. user_descr},
+			{id: '#email', inputType: 'value', value: localProfile.personalData.email},
+			{id: '#contact_email', inputType: 'value', value: localProfile.personalData.contact_email},
+			{id: '#phone', inputType: 'value', value: localProfile.personalData.contact_phone},
+		]));
+	};
+
 	const hashtagSection = profileContainer.querySelector('.profile-hashtags .profile-item'),
-		btnAddHashtag = profileContainer.querySelector('.btn__add-hashtag'),
+		profileAvatar = profileContainer.querySelector('.profile-avatar-change'),
+		formSetAvatar = profileContainer.querySelector('#formSetAvatar'),
+		fileAvatar = formSetAvatar.querySelector('#fileAvatar'),
 		hashtagsTemplatesCount = profileContainer.querySelector('#hashtagsTemplatesCount');
-	
-	btnAddHashtag.addEventListener('click', (e) => {
-		e.preventDefault();
-		document.body.append(hashtagModalForm);
+
+	profileContainer.querySelectorAll('.btn__add-profile').forEach(item => {
+		item.addEventListener('click', (e) => {
+			e.preventDefault();
+			const target = e.target;
+			if (modalForms[target.dataset['modal']]) {
+				document.body.append(modalForms[target.dataset['modal']]);
+			}
+		});
 	});
+	
+	hashtagForm.querySelector('form').addEventListener('submit', (e) => {
+		e.preventDefault();
+		submitHashtagForm(e.target, dataOuterFlag);
+	});
+
+	formSetAvatar.addEventListener('submit', (e) => {
+		e.preventDefault();
+		// const form = e.target;
+		// const formData = new FormData(form);
+		// for (let [key, value] of formData.entries()) {
+		// 	// console.log(key, value);
+		// 	formData.append('file', target.files[0]);
+		// }
+		submitSettingsForm(e.target);
+	});
+
+	fileAvatar.addEventListener('change', (e) => {
+		formSetAvatar.requestSubmit();
+	});
+	// btnAddHashtag.addEventListener('click', (e) => {
+	// 	e.preventDefault();
+	// 	document.body.append(hashtagModalForm);
+	// });
 
 	iconSettings.addEventListener('click', (e) => {
 		e.preventDefault();
@@ -379,6 +611,22 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				'page': 'profile',
 			});
 		}
+	});
+
+	refreshPersonalForm();
+
+	profileContainer.querySelectorAll('form').forEach((form) => {
+		if (form.getAttribute('data-batch') !== null) {
+			form.addEventListener('submit', (e) => {
+				e.preventDefault();
+				submitSettingsForm(e.target);
+			});
+		}
+	});
+
+	profileAvatar.addEventListener('click', (e) => {
+		e.preventDefault();
+		fileAvatar.click();
 	});
 
 	profileContainer.querySelector('.profile-menu').addEventListener('click', (e) => {
@@ -396,7 +644,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					item.classList.add('d-none');
 				});
 				profileContainer.querySelector(`.${menuItem.dataset['container']}`).classList.remove('d-none');
-				profileProps.hashtags.callback(hashtagSection, hashtagsList);
+				profileProps.hashtags.callback(hashtagSection, localProfile.hashagsList);
 				profileContainer.querySelectorAll('.profile-menu>LI').forEach((item) => {
 					item.classList.remove('active');
 				});
@@ -405,5 +653,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 			
 		}
 	});
+
 	return profileContainer;
-}
+};
+

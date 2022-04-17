@@ -741,7 +741,7 @@ if (workberLogo) {
 
 		if (profile) {
 			profileContainer = renderProfile(profile.profile, '.icon-settings', showControl);
-			const profileDescription = profileContainer.querySelector('#profileDescription');
+			const profileDescription = profileContainer.querySelector('#user_descr');
 			const descriptionCounter = profileContainer.querySelector('#descriptionCounter');
 			// profileDescription.innerText = profileDescription.innerText.trim().substring(0, maxDescriptionLength);
 			// descriptionCounter.innerText = `${profileDescription.innerText.length}/${maxDescriptionLength}`;

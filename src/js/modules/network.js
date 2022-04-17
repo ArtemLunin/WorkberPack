@@ -11,6 +11,9 @@ export async function sendRequest(url, body) {
 		if (data.success && data.success.sid) {
 			storage.setGlobalItem({'sid':data.success.sid});
 		}
+		else if (data.error && data.error.sid) {
+			storage.setGlobalItem({'sid':data.error.sid});
+		}
 		return data;
 	} else if (response.status === 401) {
 		return 401;

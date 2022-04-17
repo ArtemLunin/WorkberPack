@@ -344,6 +344,17 @@ a {
 
 .icon {
 	fill: #9AA0A8;
+	&:hover {
+		fill: #fea631;
+	}
+	&-photo {
+		margin-left: 32px;
+		margin-right: 16px;
+		fill: #fff;
+		&:hover {
+			fill: #fff;
+		}
+	}
 }
 
 .icon-selected {
@@ -1171,6 +1182,25 @@ a {
 		background-color: #fff;
 	}
 }
+.profile-avatar {
+	position: relative;
+	&-change {
+		cursor: pointer;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		font-weight: 600;
+		line-height: 24px;
+		padding-top: 6px;
+		padding-bottom: 6px;
+		color: #FFFFFF;
+		background: rgba(3, 3, 3, 0.5);
+	}
+	&-hint {
+		display: flex;
+	}
+}
 
 .profile-settings {
 	background-color: #F2F2F2;
@@ -1372,10 +1402,6 @@ a {
 	margin-top: 32px;
 }
 
-// .icon__profile-open {
-// 	display: none;
-// }
-
 .hashtags-list-cutted {
 	width: 448px;
 	height: 16px;
@@ -1400,10 +1426,6 @@ a {
 	.tabs-locality {
 		margin-left: 0;
 	}
-
-	/* .navigation-link {
-  	margin-right: 12px;
-  } */
 
 	.icons-panel:after {
 		display: none;
