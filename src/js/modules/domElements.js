@@ -1,10 +1,10 @@
-// import clonedeep from 'lodash.clonedeep';
-import {hidePageElems} from './domManipulation';
+import hash from 'object-hash';
+import {hidePageElems, renderButtonsFooter} from './domManipulation';
 import {closeSignModal} from './modal';
-import {URImod, deleteHashtagTemplate, getHashtagTemplate, postAPIRequest, logout} from './appState';
-// import * as storage from './storage';
+import {URImod, checkUserName, postAPIRequest, logout, deleteTemplate, getTemplate, deleteAccount} from './appState';
+import {hideSignInfo, showSignInfo} from './forms';
 
-export const renderProfile = ({contact_email, contact_phone, user_name, user_picture, user_descr, email, hashtagsList}, settingsSelector, showControl) => {
+export const renderProfile = ({contact_email, contact_phone, user_name, user_picture, user_descr, email, hashtagsList, contactsList}, settingsSelector, showControl) => {
 	
 	const dataOuterFlag = 'data-outer';
 	
@@ -12,29 +12,35 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 
 	const localProfile = {
 		hashagsList: JSON.parse(JSON.stringify(hashtagsList)),
+		contactsList: JSON.parse(JSON.stringify(contactsList)),
 		personalData: JSON.parse(JSON.stringify({
 			contact_email, contact_phone, user_name, user_picture: userAvatar(user_picture), user_descr, email
 		})),
 	};
 
-	const renderHashtags = (section, list) => {
-		hashtagsTemplatesCount.textContent = list.length;
+	let personalDataCheckSum = hash.MD5({contact_email, contact_phone, user_name,user_descr}),
+		contactDataCheckSum = '',
+		hashtagDataCheckSum = '';
+
+	const renderTemplates = (templateCountElem, section, funcRenderSection, list) => {
+		templateCountElem.textContent = list.length;
 		section.textContent = '';
-		section.append(renderHashtagSection(list));
+		section.append(funcRenderSection(list));
 	};
 
 	const profileProps = {
-		'hashtags': {
-			container: 'profile-hashtags',
-			callback: renderHashtags
+		hashtags: {
+			// container: 'profile-hashtags',
+			callback: renderTemplates
+		},
+		contacts: {
+			// container: 'profile-contacts',
+			callback: renderTemplates
 		}
 	};
 
 	const iconSettings = document.querySelector(settingsSelector);
 	const profileContainer = document.createElement('section') ;
-
-
-	// const hashtagsTemplatesCount = hashtagsList.length;
 
 	profileContainer.classList.add('posts-block', 'profile-container');
 	profileContainer.innerHTML = `
@@ -61,9 +67,9 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				</div>
 				<hr class="divider">
 				<ul class="profile-menu">
-					<li data-container="profile-settings-main" class="menu-item active">Profile</li>
-					<li data-container="profile-contacts" class="menu-item">Contacts</li>
-					<li data-container="profile-hashtags" class="menu-item">Hashtags Templates</li>
+					<li data-container="profile-settings-main" class="menu-item active">Personal data</li>
+					<li data-container="profile-contacts" class="menu-item">Contact information</li>
+					<li data-container="profile-hashtags" class="menu-item">Hashtags</li>
 					<li data-container="profile-privacy" class="menu-item">Privacy</li>
 					<li>
 						<hr class="divider">
@@ -76,6 +82,14 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 							Sign Out
 						</div>
 					</li>
+					<li data-container="deleteAccount" class="menu-item">
+						<div class="profile-signout">
+							<svg width="24" height="24" class="icon">
+								<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
+							</svg>
+							Delete account
+						</div>
+					</li>
 				</ul>
 			</div>
 		</aside>
@@ -85,94 +99,12 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 			<div class="profile-unit profile-contacts d-none">
 				<section class="profile-top">
 					<div class="profile-top-info">
-						<span style="color: #9AA0A8;">Contacts templates: <span class="profile-entities">5</span>
+						<span style="color: #9AA0A8;">Contacts templates: <span class="profile-entities" id="contactsTemplatesCount"></span>
 						</span>
 						<button class="btn__form btn__add-contact btn__add-profile" data-modal="contactModalForm">Add new</button>
 					</div>
 				</section>
-				<section class="profile-item">
-					<div class="profile-item-info border-elements">
-						<div class="profile-main-info">
-							<div class="profile-name">John work</div>
-							<div class="profile-phone">096-730-0219</div>
-							<div class="profile-address">701 Art Fall</div>
-						</div>
-						<div class="profile-buttons">
-							<a href="#">
-								<svg width="24" height="24" class="icon icon__profile-open">
-									<use xlink:href="assets/workber_img/icons.svg#btn-trash"></use>
-								</svg>
-							</a>
-							<a href="#">
-								<svg width="24" height="24" class="icon icon__profile-open">
-									<use xlink:href="assets/workber_img/icons.svg#btn-toggleup"></use>
-								</svg>
-							</a>
-							<a href="#">
-								<svg width="24" height="24" class="icon icon__profile-close">
-									<use xlink:href="assets/workber_img/icons.svg#btn-toggledown"></use>
-								</svg>
-							</a>
-						</div>
-					</div>
-					<div class="profile-item-detail border-elements">
-						<form action="#" class="profileDataForm" id="profileDataForm">
-							<div class="nameData" style="margin-top: 0;">
-								<div class="profileData__field1">
-									<label for="templateName">Contacts template name</label>
-									<input type="text" class="input-form" name="templateName" id="templateName"
-										value="Work">
-								</div>
-							</div>
-	
-							<div class="nameData">
-								<div class="profileData__field2">
-									<label for="templatePhone">Phone</label>
-									<input type="text" class="input-form" name="templatePhone" id="templatePhone"
-										value="727-692-7836">
-								</div>
-								<div class="profileData__field3">
-									<label for="templateEmail">Email</label>
-									<input type="email" class="input-form" name="templateEmail" id="templateEmail"
-										value="ethel.harvey@jalosert.com">
-								</div>
-							</div>
-							<div class="nameData">
-								<div class="profileData__field4">
-									<label for="templateCity">City</label>
-									<input type="text" class="input-form" name="templateCity" id="templateCity"
-										value="Sacramento">
-								</div>
-								<div class="profileData__field5">
-									<label for="templateAddress">Address</label>
-									<input type="text" class="input-form" name="templateAddress" id="templateAddress"
-										value="523 Glover Corner Apt. 691">
-								</div>
-							</div>
-							<div class="form-profile-footer">
-								<button type="submit" class="btn__form btn__confirmation">Save Changes</button>
-							</div>
-						</form>
-					</div>
-					<div class="profile-item-info border-elements">
-						<div class="profile-main-info">
-							<div class="profile-name">Home</div>
-							<div class="profile-phone">842-625-3058</div>
-							<div class="profile-address">26 Wintheiser Pine Apt. 802</div>
-						</div>
-						<div class="profile-buttons">
-							<svg width="24" height="24" class="icon">
-								<use xlink:href="assets/workber_img/icons.svg#btn-trash"></use>
-							</svg>
-							<svg width="24" height="24" class="icon">
-								<use xlink:href="assets/workber_img/icons.svg#btn-toggleup"></use>
-							</svg>
-							<svg width="24" height="24" class="icon">
-								<use xlink:href="assets/workber_img/icons.svg#btn-toggledown"></use>
-							</svg>
-						</div>
-					</div>
-				</section>
+				<section class="profile-item"></section>
 			</div>
 			<div class="profile-unit profile-settings-common profile-hashtags d-none">
 				<section class="profile-top">
@@ -201,9 +133,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 							<label for="cbViewContacts">View my contacts</label>
 							<!-- </div> -->
 						</div>
-						<div class="form-profile-footer">
-							<button type="submit" class="btn__form btn__confirmation">Save Changes</button>
-						</div>
+						${renderButtonsFooter()}
 					</form>
 				</section>
 			</div>
@@ -228,11 +158,13 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				</div>
 				<div class="template__body">
 					<form class="modal-form" action="#" method="POST" id="formNewHashtag">
+						<input type="hidden" name="call" value="doSetHashtagTemplates">
 						<input type="hidden" name="hashtagTemplateList" ${dataOuterFlag}>
 						<div class="nameData" style="margin-bottom: 32px;">
 							<div class="nameData__field1">
 								<label for="templateName">Hashtag template name</label>
-								<input type="text" class="input-form" name="templateName" id="templateName">
+								<input type="text" class="input-form" name="templateName" id="templateName" required>
+								<p class="errorSignMessage"></p>
 							</div>
 						</div>
 						<div class="nameData-w-100">
@@ -242,10 +174,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 								</div>
 							</div>
 						</div>
-						<div class="form-profile-footer">
-							<button type="submit" class="btn__form btn__confirmation">Save</button>
-							<button type="reset" class="btn__form btn__confirmation">Cancel</button>
-						</div>
+						${renderButtonsFooter(true)}
 					</form>
 				</div>
 			</div>
@@ -261,6 +190,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 
 		modal.querySelector('form').addEventListener('reset', (e) => {
 			const target = e.target;
+			hideSignInfo(target.querySelector('.errorSignMessage'));
 			target.querySelector('#hashtagTemplateList').textContent = '';
 		});
 
@@ -273,10 +203,80 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		return modal;
 	};
 
+	const renderModalContact = (dataOuterFlag, ...modalOverlayClass) => {
+		const modal = document.createElement('div');
+
+		modal.classList.add(...modalOverlayClass);
+		modal.innerHTML = `
+			<div class="templateModal modalContent">
+				<div class="template__header">
+					<span class="text-header">
+						Add new contacts template
+					</span>
+					<span class="menu__close">
+						<svg width="24" height="24" class="icon">
+							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
+						</svg>
+					</span>
+				</div>
+				<div class="template__body">
+					<form action="#" class="profileDataForm" id="formNewContact">
+						<input type="hidden" name="call" value="doSetContactsTemplates">
+						<div class="nameData" style="margin-top: 0;">
+							<div class="profileData__field1">
+								<label for="newContactName">Contacts template name</label>
+								<input type="text" class="input-form" name="templateName" id="newContactName" required>
+								<p class="errorSignMessage"></p>
+							</div>
+						</div>
+						<div class="nameData">
+							<div class="nameData-w-60 profileData__field3">
+								<label for="newContactEmail">Email</label>
+								<input type="email" class="input-form" name="contact_email" id="newContactEmail">
+							</div>
+							<div class="nameData-w-30 profileData__field2">
+								<label for="newContactPhone">Phone</label>
+								<input type="text" class="input-form" name="phone" id="newContactPhone">
+							</div>
+						</div>
+						<div class="nameData">
+							<div class="nameData-w-100 profileData__field5">
+								<label for="newAddress">Address</label>
+								<input type="text" class="input-form" name="address" id="newAddress">
+							</div>
+						</div>
+						${renderButtonsFooter(true)}
+					</form>
+				</div>
+			</div>
+		`;
+
+		modal.addEventListener('click', function (e) {
+			const target = e.target;
+			if (!target.closest('.modalContent') || target.closest('.menu__close')) {
+				this.querySelector('form').reset();
+				closeSignModal(this);
+			}
+		});
+
+		modal.querySelector('form').addEventListener('reset', (e) => {
+			const target = e.target;
+			hideSignInfo(target.querySelector('.errorSignMessage'));
+		});
+
+		modal.querySelector('form').addEventListener('submit', (e) => {
+			const target = e.target;
+			e.preventDefault();
+			submitContactForm(target, dataOuterFlag, document.querySelector(`.${modalOverlayClass}`));
+		});
+
+		return modal;
+	}
+
 	const submitHashtagForm = (form, dataOuterFlag, modal = null) => {
 		const requestProps = {};
 		const formData = new FormData(form);
-		let call = 'doSetHashtagTemplates';
+		// let call = 'doSetHashtagTemplates';
 		let fieldValue = '';
 		for (let [key, value] of formData.entries()) {
 			fieldValue = value;
@@ -300,21 +300,83 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					}
 				}
 			}
-			if (key === 'id') {
-				call = 'doUpdHashtagTemplates';
+			// if (key === 'id') {
+			// 	call = 'doUpdHashtagTemplates';
+			// }
+			requestProps[key] = fieldValue;
+		}
+		// requestProps.call = call;
+		if (requestProps.templateName && requestProps.templateName.trim() !== '' 
+			&& requestProps.hashtagTemplateList.length > 3
+			&& hashtagDataCheckSum !== hash.MD5({
+				templateName: requestProps.templateName,
+				hashtagTemplateList: requestProps.hashtagTemplateList,
+			})) {
+			postAPIRequest(requestProps).then((data) => {
+				hideSignInfo(form.querySelector('.errorSignMessage'));
+				if (data.message == "hashtag list updating error" || 
+					data.message == "hashtag list adding error") {
+					showSignInfo(form.querySelector('.errorSignMessage'), data.errors);
+					return false;
+				}
+				getTemplate('hashtag').then((data) => {
+					if (modal) {
+						modal.querySelector('.menu__close').click();
+					}
+					localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
+					profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
+				});
+			});
+		}
+	};
+
+	const submitContactForm = (form, dataOuterFlag, modal = null, hiddenAttrHandler = null) => {
+		const requestProps = {};
+		const formData = new FormData(form);
+		let fieldValue = '';
+		for (let [key, value] of formData.entries()) {
+			fieldValue = value;
+			if (form.elements[key].getAttribute('type') === 'hidden' &&
+				form.elements[key].getAttribute(dataOuterFlag) !== null) {
+				try {
+					fieldValue = form.querySelector(`#${key}`).textContent.trim();
+					if (hiddenAttrHandler) {
+						fieldValue = hiddenAttrHandler(fieldValue);
+					}
+				} catch (e) {
+					if (e instanceof TypeError) {
+						console.error(e.message + `, Element ${key} can't find container with data`);
+					} else {
+						throw e;
+					}
+				}
 			}
 			requestProps[key] = fieldValue;
 		}
-		requestProps.call = call;
-		postAPIRequest(requestProps).then(() => {
-			getHashtagTemplate().then((data) => {
-				if (modal) {
-					modal.querySelector('.menu__close').click();
+
+		if (requestProps.templateName && requestProps.templateName.trim() !== '' 
+			&&  contactDataCheckSum !== hash.MD5({
+				templateName: requestProps.templateName,
+				contact_email: requestProps.contact_email,
+				phone: requestProps.phone,
+				address: requestProps.address
+			})) {
+			postAPIRequest(requestProps).then((data) => {
+				hideSignInfo(form.querySelector('.errorSignMessage'));
+				if (data.message == "contact update failed" || 
+					data.message == "contact adding error") {
+					showSignInfo(form.querySelector('.errorSignMessage'), data.errors);
+					return false;
 				}
-				localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
-				profileProps.hashtags.callback(hashtagSection, localProfile.hashagsList);
+				getTemplate('contact').then((data) => {
+					if (modal) {
+						modal.querySelector('.menu__close').click();
+					}
+					localProfile.contactsList = JSON.parse(JSON.stringify(data.contactsList));
+					profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
+				});
 			});
-		});
+		}
 	};
 
 	const submitSettingsForm = (form) => {
@@ -342,26 +404,40 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				}
 			} catch (e) {}
 		}
-		postAPIRequest(requestProps).then((data) => {
-			if (data.errors) {
-				console.log(data.errors);
-			}
-			else if (data.code && data.code === 1) {
-				if ( data.message === "avatar set") {
-					localProfile.personalData.user_picture = userAvatar(data.user_picture);
-				} else {
-					localProfile.personalData = JSON.parse(JSON.stringify({
-						contact_email: data.profile.contact_email, 
-						contact_phone: data.profile.contact_phone, 
-						user_name: data.profile.user_name, 
-						user_picture: userAvatar(data.profile.user_picture),
-						user_descr: data.profile.user_descr, 
-						email: data.profile.email
-					}));
+		if (personalDataCheckSum !== hash.MD5({
+				contact_email: requestProps.contact_email,
+				contact_phone: requestProps.phone, 
+				user_name: requestProps.user_name,
+				user_descr: requestProps.user_descr
+			})) {
+				postAPIRequest(requestProps).then((data) => {
+				if (data.errors) {
+					// console.log(data.errors);
 				}
-				refreshPersonalForm();
-			}
-		});
+				else if (data.code && data.code === 1) {
+					if ( data.message === "avatar set") {
+						localProfile.personalData.user_picture = userAvatar(data.user_picture);
+					} else {
+						personalDataCheckSum = hash.MD5({
+							contact_email: data.profile.contact_email,
+							contact_phone: data.profile.contact_phone, 
+							user_name: data.profile.user_name,
+							user_descr: data.profile.user_descr
+						});
+						localProfile.personalData = JSON.parse(JSON.stringify({
+							contact_email: data.profile.contact_email, 
+							contact_phone: data.profile.contact_phone, 
+							user_name: data.profile.user_name, 
+							user_picture: userAvatar(data.profile.user_picture),
+							user_descr: data.profile.user_descr, 
+							email: data.profile.email
+						}));
+					}
+					refreshPersonalForm();
+				}
+			});
+		}
+
 	};
 
 	const renderHashtagForm = (dataOuterFlag) => {
@@ -369,12 +445,14 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		formContainer.classList.add('profile-item-detail', 'border-elements');
 		formContainer.insertAdjacentHTML('beforeend', `
 			<form action="#" class="hashtagsDataForm" id="hashtagsDataForm">
+				<input type="hidden" name="call" value="doUpdHashtagTemplates">
 				<input type="hidden" name="id" value="" id="id">
 				<input type="hidden" name="hashtagTemplateList" ${dataOuterFlag}>
 				<div class="nameData" style="margin-top: 0;">
 					<div class="profileData__field1">
 						<label for="templateName">Hashtag template name</label>
 						<input type="text" class="input-form" name="templateName" id="templateName" value="" required>
+						<p class="errorSignMessage"></p>
 					</div>
 				</div>
 				<div class="nameData">
@@ -385,9 +463,43 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						</div>
 					</div>
 				</div>
-				<div class="form-profile-footer">
-					<button type="submit" class="btn__form btn__confirmation">Save Changes</button>
+				${renderButtonsFooter()}
+			</form>
+		`);
+		return formContainer;
+	};
+
+	const renderContactForm = () => {
+		const formContainer = document.createElement('div');
+		formContainer.classList.add('profile-item-detail', 'border-elements');
+		formContainer.insertAdjacentHTML('beforeend', `
+			<form action="#" class="profileDataForm" id="profileDataForm">
+				<input type="hidden" name="call" value="doUpdContactsTemplates">
+				<input type="hidden" name="id" value="" id="contact_id">
+				<div class="nameData" style="margin-top: 0;">
+					<div class="profileData__field1">
+						<label for="contactName">Contacts template name</label>
+						<input type="text" class="input-form" name="templateName" id="contactName" required>
+						<p class="errorSignMessage"></p>
+					</div>
 				</div>
+				<div class="nameData">
+					<div class="nameData-w-60 profileData__field3">
+						<label for="contactEmail">Email</label>
+						<input type="email" class="input-form" name="contact_email" id="contactEmail">
+					</div>
+					<div class="nameData-w-30 profileData__field2">
+						<label for="contactPhone">Phone</label>
+						<input type="text" class="input-form" name="phone" id="contactPhone">
+					</div>
+				</div>
+				<div class="nameData">
+					<div class="nameData-w-100 profileData__field5">
+						<label for="address">Address</label>
+						<input type="text" class="input-form" name="address" id="address">
+					</div>
+				</div>
+				${renderButtonsFooter()}
 			</form>
 		`);
 		return formContainer;
@@ -395,6 +507,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 
 	const renderPersonalForm = ((dataOuterFlag) => {
 		const formContainer = document.createElement('section');
+
 		formContainer.classList.add('profile-personal');
 		formContainer.insertAdjacentHTML('beforeend', `
 			<h3 class="profile-h3">Personal Data</h3>
@@ -405,6 +518,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					<div class="nameData__field1">
 						<label for="user_name">Username (required)</label>
 						<input type="text" class="input-form" name="user_name" id="user_name" value="" required>
+						<p class="errorSignMessage"></p>
 					</div>
 				</div>
 				<div class="nameData">
@@ -415,7 +529,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					</div>
 				</div>
 				<div class="nameData">
-					<div class="nameData-w-70 nameData__field1">
+					<div class="nameData-w-60 nameData__field1">
 						<label for="email">Email</label>
 						<input type="email" class="input-form" name="email" id="email" disabled>
 					</div>
@@ -427,23 +541,131 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					</div>
 				</div>
 				<div class="nameData">
-					<div class="nameData-w-70 mr-1 nameData__field1">
+					<div class="nameData-w-60 mr-1 nameData__field1">
 						<label for="contact_email">Email (public)</label>
 						<input type="email" class="input-form" name="contact_email" id="contact_email" value="">
 					</div>
-					<div class="nameData-w-30 mr-1 nameData__field1">
+					<div class="nameData-w-30 nameData__field1">
 						<label for="phone">Phone (public)</label>
 						<input type="text" class="input-form" name="phone" id="phone" value="">
 					</div>
 				</div>
-				<div class="nameData">
+				${renderButtonsFooter()}
+				<!--<div class="nameData">
 					<button type="submit" class="btn__form btn__confirmation">Save Data</button>
-				</div>
+				</div>-->
 			</form>
 			`
 		);
+
+		const userName = formContainer.querySelector('#user_name');
+
+		const hasNameChanged = () => {
+			const user_name = userName.value.trim();
+			if (localProfile.personalData.user_name !== user_name && user_name !== '') {
+				hideSignInfo(formContainer.querySelector('.errorSignMessage'));
+				checkUserName(user_name).then((data) => {
+					if (data.message === 'error user_name') {
+						showSignInfo(formContainer.querySelector('.errorSignMessage'), data.errors);
+					}
+				});
+			}
+		};
+
+		userName.addEventListener('blur', hasNameChanged);
+
 		return formContainer;
 	});
+
+	function renderContactSection(contactsList) {
+		const section = document.createElement('div');
+		contactsList.forEach((item) => {
+			const header = `
+				<div class="profile-item-wrapper" data-id="${item.id}">
+					<div class="profile-item-info border-elements">
+						<div class="profile-main-info">
+							<div class="profile-name">${item.templateName}</div>
+							<div class="profile-phone">${item.phone}</div>
+							<div class="profile-address">${item.address}</div>
+							<div class="profile-email" style="display:none;">${item.contact_email}</div>
+						</div>
+						<div class="profile-buttons">
+							<a href="#" class="profile-button d-none" data-id="${item.id}" data-default="none" data-delete="contact">
+								<svg width="24" height="24" class="icon icon__profile-open">
+									<use xlink:href="assets/workber_img/icons.svg#btn-trash"></use>
+								</svg>
+							</a>
+							<a href="#" class="profile-button d-none" data-default="none">
+								<svg width="24" height="24" class="icon icon__profile-open">
+									<use xlink:href="assets/workber_img/icons.svg#btn-toggleup"></use>
+								</svg>
+							</a>
+							<a href="#" class="profile-button" data-showned="down">
+								<svg width="24" height="24" class="icon icon__profile-close">
+									<use xlink:href="assets/workber_img/icons.svg#btn-toggledown"></use>
+								</svg>
+							</a>
+						</div>
+					</div>
+				</dir>
+			`;
+			section.insertAdjacentHTML('beforeend', header);
+		});
+
+		section.querySelectorAll('.profile-buttons').forEach((item)=> {
+			item.addEventListener('click', (e) => {
+				e.preventDefault();
+				const target = e.target;
+				const button = target.closest('.profile-button');
+				const parent = target.closest('.profile-item-wrapper');
+
+				if (button) {
+					const btnDelete = button.getAttribute('data-delete');
+					if (btnDelete !== null) {
+						deleteTemplate(btnDelete, button.dataset.id).then(() => {
+							getTemplate(btnDelete).then((data) => {
+								localProfile.contactsList = JSON.parse(JSON.stringify(data.contactsList));
+								profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);				
+							});
+						});
+						return;
+					}
+					contactForm.remove();
+					section.querySelectorAll('.profile-item .profile-item-wrapper').forEach((wrapper) => {
+						wrapper.querySelectorAll('.profile-buttons a').forEach((item) => {
+							if (item.dataset.default === 'none') {
+								item.classList.add('d-none');
+							} else {
+								item.classList.remove('d-none');
+							}
+						});
+					});
+					if (button.dataset.showned === 'down') {
+						parent.append(fillForm(contactForm, [
+							{id: '#contact_id', inputType: 'value', value: parent.dataset['id']},
+							{id: '#contactName', inputType: 'value', value: parent.querySelector('.profile-name').textContent},
+							{id: '#contactPhone', inputType: 'value', value: parent.querySelector('.profile-phone').textContent},
+							{id: '#address', inputType: 'value', value: parent.querySelector('.profile-address').textContent},
+							{id: '#contactEmail', inputType: 'value', value: parent.querySelector('.profile-email').textContent},
+						]));
+						contactDataCheckSum = hash.MD5({
+							templateName: parent.querySelector('.profile-name').textContent,
+							contact_email: parent.querySelector('.profile-email').textContent,
+							phone: parent.querySelector('.profile-phone').textContent,
+							address: parent.querySelector('.profile-address').textContent
+						});
+						parent.querySelectorAll('.profile-buttons a').forEach((item) => {
+							item.classList.toggle('d-none');
+						});
+					} else if (button.dataset.showned === 'up') {
+						contactForm.remove();
+					}
+				}
+			});
+		});
+
+		return section;
+	}
 
 	function renderHashtagSection(hashtagsList) {
 		const section = document.createElement('div');
@@ -456,7 +678,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						<div class="hashtags-list-cutted d-none">${item.hashtagList}</div>
 					</div>
 					<div class="profile-buttons">
-						<a href="#" data-id="${item.id}" class="delete-hashatag profile-button d-none" data-default="none" data-showned="">
+						<a href="#" data-id="${item.id}" class="profile-button d-none" data-default="none" data-showned="" data-delete="hashtag">
 							<svg width="24" height="24" class="icon icon__profile-open">
 								<use xlink:href="assets/workber_img/icons.svg#btn-trash"></use>
 							</svg>
@@ -486,11 +708,12 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				const parent = target.closest('.profile-item-wrapper');
 
 				if (button) {
-					if (button.classList.contains('delete-hashatag')) {
-						deleteHashtagTemplate(button.dataset.id).then(() => {
-							getHashtagTemplate().then((data) => {
+					const btnDelete = button.getAttribute('data-delete');
+					if (btnDelete !== null) {
+						deleteTemplate(btnDelete, button.dataset.id).then(() => {
+							getTemplate(btnDelete).then((data) => {
 								localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
-								profileProps.hashtags.callback(hashtagSection, localProfile.hashagsList);					
+								profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);				
 							});
 						});
 						return;
@@ -511,6 +734,10 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 							{id: '#templateName', inputType: 'value', value: parent.querySelector('.profile-name').textContent},
 							{id: '#hashtagTemplateList', inputType: 'content', value: parent.querySelector('.hashtags-list-cutted').textContent}
 						]));
+						hashtagDataCheckSum = hash.MD5({
+							templateName: parent.querySelector('.profile-name').textContent,
+							hashtagTemplateList: parent.querySelector('.hashtags-list-cutted').textContent
+						});
 						parent.querySelectorAll('.profile-buttons a').forEach((item) => {
 							item.classList.toggle('d-none');
 						});
@@ -525,14 +752,20 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 	}
 
 	const hashtagForm = renderHashtagForm(dataOuterFlag),
+		contactForm = renderContactForm(),
 		personalForm = renderPersonalForm(dataOuterFlag);
 
-	// const hashtagModalForm = renderModalHashtag(dataOuterFlag, 'modal-overlay', 'hashtagModalForm');
+
 	const modalForms = {};
 	modalForms.hashtagModalForm = renderModalHashtag(dataOuterFlag, 'modal-overlay', 'hashtagModalForm');
+	modalForms.contactModalForm = renderModalContact(dataOuterFlag, 'modal-overlay', 'contactModalForm');
 
 	const fillForm = (formContainer, formData) => {
-		formContainer.querySelector('form').reset();
+		// console.log(formContainer);
+		try {
+			formContainer.querySelector('form').reset();
+			hideSignInfo(formContainer.querySelector('form').querySelector('.errorSignMessage'));
+		} catch (e) {}
 		for (const item of formData) {
 			try {
 				const formInput = formContainer.querySelector(item.id);
@@ -560,13 +793,18 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 			{id: '#contact_email', inputType: 'value', value: localProfile.personalData.contact_email},
 			{id: '#phone', inputType: 'value', value: localProfile.personalData.contact_phone},
 		]));
+		
 	};
 
 	const hashtagSection = profileContainer.querySelector('.profile-hashtags .profile-item'),
+		contactSection = profileContainer.querySelector('.profile-contacts .profile-item'),
 		profileAvatar = profileContainer.querySelector('.profile-avatar-change'),
 		formSetAvatar = profileContainer.querySelector('#formSetAvatar'),
-		fileAvatar = formSetAvatar.querySelector('#fileAvatar'),
-		hashtagsTemplatesCount = profileContainer.querySelector('#hashtagsTemplatesCount');
+		hashtagsTemplatesCount = profileContainer.querySelector('#hashtagsTemplatesCount'),
+		contactsTemplatesCount = profileContainer.querySelector('#contactsTemplatesCount'),
+		fileAvatar = formSetAvatar.querySelector('#fileAvatar');
+
+	refreshPersonalForm();
 
 	profileContainer.querySelectorAll('.btn__add-profile').forEach(item => {
 		item.addEventListener('click', (e) => {
@@ -583,24 +821,19 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		submitHashtagForm(e.target, dataOuterFlag);
 	});
 
+	contactForm.querySelector('form').addEventListener('submit', (e) => {
+		e.preventDefault();
+		submitContactForm(e.target, dataOuterFlag);
+	});
+
 	formSetAvatar.addEventListener('submit', (e) => {
 		e.preventDefault();
-		// const form = e.target;
-		// const formData = new FormData(form);
-		// for (let [key, value] of formData.entries()) {
-		// 	// console.log(key, value);
-		// 	formData.append('file', target.files[0]);
-		// }
 		submitSettingsForm(e.target);
 	});
 
 	fileAvatar.addEventListener('change', (e) => {
 		formSetAvatar.requestSubmit();
 	});
-	// btnAddHashtag.addEventListener('click', (e) => {
-	// 	e.preventDefault();
-	// 	document.body.append(hashtagModalForm);
-	// });
 
 	iconSettings.addEventListener('click', (e) => {
 		e.preventDefault();
@@ -612,8 +845,6 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 			});
 		}
 	});
-
-	refreshPersonalForm();
 
 	profileContainer.querySelectorAll('form').forEach((form) => {
 		if (form.getAttribute('data-batch') !== null) {
@@ -639,12 +870,18 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						location.reload();
 					});
 					return false;
+				} else if (menuItem.dataset['container'] === 'deleteAccount') {
+					if (confirm('Are you sure? We will send you email with confirmation link')) {
+						deleteAccount();
+					}
+					return false;
 				}
 				profileContainer.querySelectorAll('.profile-unit').forEach((item) => {
 					item.classList.add('d-none');
 				});
 				profileContainer.querySelector(`.${menuItem.dataset['container']}`).classList.remove('d-none');
-				profileProps.hashtags.callback(hashtagSection, localProfile.hashagsList);
+				profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
+				profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
 				profileContainer.querySelectorAll('.profile-menu>LI').forEach((item) => {
 					item.classList.remove('active');
 				});

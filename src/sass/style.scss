@@ -1243,7 +1243,6 @@ a {
 	LI {
 		padding: 8px 17px 8px 17px;
 		font-weight: 600;
-		font-size: 14px;
 		line-height: 24px;
 		color: #9AA0A8;
 		cursor: pointer;
@@ -1252,6 +1251,9 @@ a {
 			background: #EAEDF3;
 			border-radius: 4px;
 			color: #47434F;
+		}
+		&:hover {
+			background: #eaedf366;
 		}
 	}
 }
@@ -1292,6 +1294,9 @@ a {
 	margin-top: 32px;
 } */
 
+.profileDataForm {
+	width: 664px;
+}
 .personalDataForm LABEL,
 .profileDataForm LABEL,
 .hashtagsDataForm LABEL {
@@ -1338,17 +1343,32 @@ a {
 	display: flex;
 }
 
-.profile-name {
-	font-weight: 700;
-	width: 152px;
-	margin-right: 24px;
+.profile {
+	&-name {
+		font-weight: 700;
+		width: 152px;
+		margin-right: 24px;
+	}
+	&-phone {
+		width: 163px;
+		margin-right: 24px;
+	}
+	&-address {
+		width: 220px;
+		margin-right: 24px;
+	}
 }
+// .profile-name {
+// 	font-weight: 700;
+// 	width: 152px;
+// 	margin-right: 24px;
+// }
 
-.profile-phone,
-.profile-address {
-	width: 163px;
-	margin-right: 24px;
-}
+// .profile-phone,
+// .profile-address {
+// 	width: 163px;
+// 	margin-right: 24px;
+// }
 
 .color-pale {
 	color: #CACFD9;
@@ -1366,8 +1386,20 @@ a {
 	.text-center {
 		text-align: center;
 	}
+	&-w-20 {
+		width: 20%;
+	}
 	&-w-30 {
 		width: 30%;
+	}
+	&-w-40 {
+		width: 40%;
+	}
+	&-w-50 {
+		width: 50%;
+	}
+	&-w-60 {
+		width: 60%;
 	}
 	&-w-70 {
 		width: 70%;

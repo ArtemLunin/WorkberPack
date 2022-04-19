@@ -2,8 +2,6 @@ import {getLocation} from './storage';
 import {setPositionOnMap} from './map';
 import {hideSignInfo, submitSignForm, submitVerifyForm, submitResendForm, submitRestoreForm, submitPasswordForm} from './forms';
 import {registrationID, storeLinks} from './config';
-// import {submitHashtagForm} from './domElements';
-// import {submitHashtagForm} from './appState';
 
 export const commonModalOpenClass = 'modal-open-class';
 
@@ -423,6 +421,39 @@ export const closeSignModal = (container) => {
 	container.remove();
 	enableScroll();
 };
+
+// export const renderModalDeleteAccount = () => {
+// 	const modal = document.createElement('div');
+
+// 	modal.classList.add(modalOverlayClass);
+// 	modal.innerHTML = `
+// 		<div class="signModal">
+// 			<div class="modal-header justify-end">
+// 				<span class="menu__close">
+// 					<svg width="24" height="24" class="icon">
+// 						<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
+// 					</svg>
+// 				</span>
+// 			</div>
+// 			<div class="modal-body">
+// 				<h2 class="modal-title">Delete account</h2>
+// 				<p style="margin-bottom: 32px;">Please, choose your password.</p>
+// 				<form id="deleteAccountForm">
+// 					<button type="submit" class="btn__sign btn__confirmation">Done</button>
+// 				</form>
+// 			</div>
+// 		</div>
+// 	`;
+
+// 	const changePasswordForm = modalChangePassword.querySelector('#changePasswordForm');
+
+// 	modalChangePassword.addEventListener('click', (e) => {
+// 		const target = e.target;
+// 		if (!target.closest('.signModal') || target.closest('.menu__close')) {
+// 			closeSignModal(modalChangePassword);
+// 		}
+// 	});
+// };
 
 const disableScroll = () => {
 	const widthScroll = window.innerWidth - document.body.offsetWidth;

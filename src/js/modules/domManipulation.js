@@ -32,3 +32,12 @@ export const controlElems = (classElems, todo) => {
 		}
 	});
 };
+
+export const renderButtonsFooter = (renderReset = false) => {
+	return `
+		<div class="form-profile-footer">
+			<button type="submit" class="btn__form btn__confirmation">Save</button>
+			${(renderReset) ? '<button type="reset" class="btn__form btn__confirmation">Cancel</button>' : ''}
+		</div>
+	`;
+}

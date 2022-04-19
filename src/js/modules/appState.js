@@ -14,7 +14,8 @@ export const getUserProfile = async () => {
 			if (refreshToken && refreshToken != '') {
 				const data = await refreshTokens(token, refreshToken)
 				.then(async (objData) => {
-					if (objData !== false) {
+					if (objData !== false 
+							&& objData.message !== "There is no such refresh token") {
 						storage.setGlobalItem({
 							sid: objData.sid,
 							refresh_token: objData.refresh_token,
@@ -54,11 +55,31 @@ export const postAPIRequest = async (hashtagRequestData) => {
 	return false;
 };
 
-export const deleteHashtagTemplate = async (id) => {
+// export const deleteHashtagTemplate = async (id) => {
+// 	let token = storage.getGlobalItem('sid');
+// 	if (token) {
+// 		const data = await sendGetRequest({
+// 			call: 'doDelHashtagTemplates',
+// 			token: token,
+// 			id: id
+// 		}, 
+// 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
+// 		return data;
+// 	}
+// 	return false;
+// };
+
+export const deleteTemplate = async (typeTemplate, id) => {
 	let token = storage.getGlobalItem('sid');
-	if (token) {
+	let call = null;
+	if (typeTemplate === 'hashtag') {
+		call = 'doDelHashtagTemplates';
+	} else if (typeTemplate === 'contact') {
+		call = 'doDelContactsTemplates'
+	}
+	if (token && call) {
 		const data = await sendGetRequest({
-			call: 'doDelHashtagTemplates',
+			call: call,
 			token: token,
 			id: id
 		}, 
@@ -68,11 +89,44 @@ export const deleteHashtagTemplate = async (id) => {
 	return false;
 };
 
-export const getHashtagTemplate = async () => {
+// export const getHashtagTemplate = async () => {
+// 	let token = storage.getGlobalItem('sid');
+// 	if (token) {
+// 		const data = await sendGetRequest({
+// 			call: 'doGetHashtagTemplates',
+// 			token: token,
+// 		}, 
+// 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
+// 		return data;
+// 	}
+// 	return false;
+// };
+
+export const getTemplate = async (typeTemplate) => {
+	let token = storage.getGlobalItem('sid');
+	let call = null;
+	if (typeTemplate === 'hashtag') {
+		call = 'doGetHashtagTemplates';
+	} else if (typeTemplate === 'contact') {
+		call = 'doGetContactsTemplates'
+	}
+	if (token && call) {
+		const data = await sendGetRequest({
+			call: call,
+			token: token,
+		}, 
+		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
+		return data;
+	}
+	return false;
+};
+
+export const checkUserName = async (user_name) => {
 	let token = storage.getGlobalItem('sid');
 	if (token) {
 		const data = await sendGetRequest({
-			call: 'doGetHashtagTemplates',
+			call: 'doCheckUserName',
+			user_name: user_name,
 			token: token,
 		}, 
 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
@@ -100,6 +154,7 @@ const storeProfileInfo = ({profile, sid}) => {
 	}
 };
 
+
 export const logout = async () => {
 	let token = storage.getGlobalItem('sid');
 	if (token) {
@@ -109,6 +164,18 @@ export const logout = async () => {
 		}, null);
 	}
 	storage.removeLocalLoginInfo();
+	return true;
+};
+
+export const deleteAccount = async () => {
+	let token = storage.getGlobalItem('sid');
+	if (token) {
+		await sendGetRequest({
+			call: 'doDeleteAccount',
+			token: token,
+		},
+		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
+	}
 	return true;
 };
 
