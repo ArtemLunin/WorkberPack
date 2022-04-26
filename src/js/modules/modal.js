@@ -1,16 +1,49 @@
-import {getLocation} from './storage';
+import { firebaseGoogleAuth } from "./firebase";
+import {getLocation, getAppItem} from './storage';
 import {setPositionOnMap} from './map';
 import {hideSignInfo, submitSignForm, submitVerifyForm, submitResendForm, submitRestoreForm, submitPasswordForm} from './forms';
-import {registrationID, storeLinks} from './config';
+import {registrationID, storeLinks, termsHTML, privacyHTML} from './config';
 
 export const commonModalOpenClass = 'modal-open-class';
 
+
+export const showModalMap = (sourceForm) => {
+	const locationOverlay = document.querySelector('.location-overlay');
+	const locationBtnClose = document.querySelector('.location__btn-close');
+	setPositionOnMap(sourceForm.form.querySelector(sourceForm.lat).value, sourceForm.form.querySelector(sourceForm.lng).value);
+	locationOverlay.classList.add('location-overlay-open', commonModalOpenClass);
+	disableScroll();
+	
+	const closeModalMap = (e) => {
+		const target = e.target;
+		if (target.matches('.location__btn-close') || target.matches('.location-overlay')) {
+			let [latOld, lngOld] = getLocation();
+			const lat = getAppItem('lat'),
+				lng = getAppItem('lng');
+			if (Math.abs(lat - parseFloat(latOld)) > 0.00001 || 
+				Math.abs(lng - parseFloat(lngOld)) > 0.00001) {
+				sourceForm.form.querySelector(sourceForm.lat).value = lat;
+				sourceForm.form.querySelector(sourceForm.lng).value = lng;
+				sourceForm.form.querySelector(sourceForm.homeLocation).textContent = getAppItem('address');
+			}
+			locationOverlay.removeEventListener('click', closeModalMap);
+			locationOverlay.classList.remove('location-overlay-open', commonModalOpenClass);
+			enableScroll();
+		}
+		
+	};
+	
+	locationOverlay.addEventListener('click', closeModalMap);
+};
+
 export const modalMap = (settingsSelector, btnCloseSelector, overlaySelector, overlayOpenClass) => {
+
 	const iconSettings = document.querySelector(settingsSelector);
 	const locationBtnClose = document.querySelector(btnCloseSelector);
 	const locationOverlay = document.querySelector(overlaySelector);
 
-	const settingsModalOpen = () => {
+	const settingsModalOpen = (e) => {
+		e.preventDefault();
 		const [lat, lng] = getLocation();
 
 		locationBtnClose.dataset['lat'] = lat;
@@ -24,9 +57,11 @@ export const modalMap = (settingsSelector, btnCloseSelector, overlaySelector, ov
 	const settingsModalClose = () => {
 		locationOverlay.classList.remove(overlayOpenClass);
 		enableScroll();
-		const [lat, lng] = getLocation();
-		if(lat !== parseFloat(locationBtnClose.dataset['lat']) || lng !== parseFloat(locationBtnClose.dataset['lng'])) {
-			reloadCurrentPage();
+		console.log(getAppItem('lat'), parseFloat(locationBtnClose.dataset['lat']));
+		console.log(getAppItem('lng'), parseFloat(locationBtnClose.dataset['lng']));
+		if(getAppItem('lat') !== parseFloat(locationBtnClose.dataset['lat']) || getAppItem('lng') !== parseFloat(locationBtnClose.dataset['lng'])) {
+			// reloadCurrentPage();
+			console.log('position changed');
 		}
 	};
 
@@ -36,11 +71,12 @@ export const modalMap = (settingsSelector, btnCloseSelector, overlaySelector, ov
 			settingsModalClose();
 		}
 	});
-	iconSettings.addEventListener('click', settingsModalOpen);
+
+	// iconSettings.addEventListener('click', settingsModalOpen); 
 };
 
 export const renderModalSign = (modalOverlayClass, settingsSelector) => {
-	const iconSettings = document.querySelector(settingsSelector);
+	const iconProfile = document.querySelector(settingsSelector);
 	const modalSign = document.createElement('div');
 
 	modalSign.classList.add(modalOverlayClass, commonModalOpenClass);
@@ -67,17 +103,16 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 					<input type="password" class="icon__modal icon-password2 modal-signup" name="password-repeat" id=""
 						placeholder="Repeat password" required>
 					<div class="modal-signin modal-checkbox">
-						<span>
+						<!--<span>
 							<input type="checkbox" name="remember" id="cbRemember" class="modal-signin">
 							<label for="cbRemember">Remember me</label>
-						</span>
+						</span>-->
 						<a href="#" class="modal-sign-forgot">Forgot password?</a>
 					</div>
 					<div class="modal-signup modal-checkbox">
 						<span>
 							<input type="checkbox" name="policy-agree" id="cbAgree" class="modal-signup" data-control="btn__sign-up">
-							<label for="cbAgree">I agree with the <a href="#" target="_blank">Terms and
-									conditions</a> and <a href="#" target="_blank">Privacy policy</a>
+							<label for="cbAgree">I agree with the <a href="${termsHTML}" target="_blank">Terms and conditions</a> and <a href="${privacyHTML}" target="_blank">Privacy policy</a>
 							</label>
 						</span>
 					</div>
@@ -85,20 +120,23 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 					<button type="submit" class="modal-signup btn__sign btn__sign-up" id="btn__sign-up">SIGN UP</button>
 					<p class="errorSignMessage"></p>
 					<input type="hidden" name="registrationID" id="registrationID" value=${registrationID}>
+					<input type="hidden" name="uid" id="uid" value="">
 				</form>
 			</div>
 			<div class="modal-footer">
 				<p class="login-social">Or sign in via</p>
 				<div class="social-buttons">
-					<svg width="36" height="36" class="icon">
+					<!--<svg width="36" height="36" class="icon">
 						<use xlink:href="assets/workber_img/icons.svg#btn-facebook"></use>
 					</svg>
 					<svg width="36" height="36" class="icon">
 						<use xlink:href="assets/workber_img/icons.svg#btn-twitter"></use>
-					</svg>
-					<svg width="36" height="36" class="icon">
-						<use xlink:href="assets/workber_img/icons.svg#btn-google"></use>
-					</svg>
+					</svg>-->
+					<a href="#" class="btn-auth" data-auth_provider="google">
+						<svg width="36" height="36" class="icon">
+							<use xlink:href="assets/workber_img/icons.svg#btn-google"></use>
+						</svg>
+					</a>
 				</div>
 			</div>
 		</div>
@@ -321,6 +359,28 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		return modalChangePassword;
 	};
 
+	const authSocial = (e) => {
+		e.preventDefault();
+		const target = e.target;
+		const parent = target.closest('.btn-auth');
+		if (parent) {
+			const authProvider = parent.dataset.auth_provider;
+			if (authProvider === "google") {
+				firebaseGoogleAuth().then((uid) => {
+					if (uid) {
+						loginForm.uid.value = uid;
+						loginForm.querySelector('#btn__sign-in').focus();
+						submitSignForm(loginForm, '.errorSignMessage', modalSign, null);
+						// loginForm.requestSubmit(loginForm.querySelector('#btn__sign-in'));
+						// loginForm.submit();
+					}
+					// console.log(data);
+				});
+			}
+			// console.log(authProvider);
+		}
+	};
+
 	const switchMenu = (e) => {
 		const target = e.target;
 		if (target.classList.contains('menu__sign')) {
@@ -329,6 +389,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 			} else {
 				switchSignMethod(modalSign, '.menu__sign-up');
 			}
+			hideSignInfo(loginForm.querySelector('.errorSignMessage'));
 		}
 	};
 
@@ -370,8 +431,10 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 	});
 
 	modalSign.querySelector('.modal-header').addEventListener('click', switchMenu);
+	modalSign.querySelector('.social-buttons').addEventListener('click', authSocial);
+	
 
-	iconSettings.addEventListener('click', () => {
+	iconProfile.addEventListener('click', () => {
 		switchSignMethod(modalSign, '.menu__sign-in');
 		modalSign.querySelector('.menu__close').dataset.reloadPage = '';
 		document.body.append(modalSign);

@@ -76,11 +76,11 @@
 							<a href="#" class="locality locality-home">Home</a>
 							<a href="#" class="locality locality-local locality-selected">Local</a>
 						</div>
-						<a href="#" class="navigation-link icon-login" title="Set home location">
+						<!-- <a href="#" class="navigation-link icon-login" title="Set home location">
 							<svg width="25" height="24" class="icon">
 								<use xlink:href="assets/workber_img/icons.svg#btn-location"></use>
 							</svg>
-						</a>
+						</a> -->
 					</div>
 				</div>
 
@@ -112,9 +112,12 @@
 						</a>
 						<a href="#" class="navigation-link icon-create d-none">Create</a>
 					</div>
-					<div class="avatar">
-						<img class="avatar-img" src="assets/workber_img/avatar.png" alt="Avatar">
-					</div>
+					<a class="avatar" id="login_acc" title="SignIn">
+						<svg width="25" height="24" class="icon">
+							<use xlink:href="assets/workber_img/icons.svg#btn-no_acc"></use>
+						</svg>
+					</a>
+					<a class="avatar d-none" id="small_avatar"></a>
 				</div>
 			</div>
 			<div class="dist-text-header">

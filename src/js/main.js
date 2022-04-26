@@ -7,12 +7,11 @@ import {createRequestParams} from './modules/requests';
 import {sendRequest} from './modules/network';
 import {getUserProfile, URImod} from './modules/appState';
 import {toggleService, hidePageElems, showPageElems} from './modules/domManipulation';
-import {getCurrentPage, cropDescription} from './modules/domHelpers'
+import {getCurrentPage, cropDescription, visible} from './modules/domHelpers'
 import {renderProfile} from './modules/domElements';
 
 
 window.addEventListener('DOMContentLoaded', () => {
-
 
 	/*jshint camelcase: false */
 
@@ -60,7 +59,8 @@ const searchService = document.querySelector('.search-service');
 const searchProject = document.querySelector('.search-project');
 const searchAll = document.querySelector('.service-search-all');
 const iconSearchPage = document.querySelector('.icon-search-page');
-
+const smallAvatar = document.querySelector('#small_avatar'),
+	btnloginAccount = document.querySelector('#login_acc');
 
 const notFound = document.querySelector('.not-found');
 const noMorePosts = document.querySelector('.no-more-posts');
@@ -141,7 +141,8 @@ const showControl = {
 		'container': postsOne,
 	},
 	'profile': {
-		'hide': ['posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'distance-info', 'dist-text-header', 'distances', 'tabs-service'],
+		'hide': ['posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service'],
+		'show': ['back-menu'],
 	}
 };
 
@@ -176,8 +177,6 @@ postsStart.textContent = '';
 
 const renderOnePost = (postData, postsContainer) => {
 	postsContainer.textContent = '';
-	// const aMain = backMenu.querySelector('a');
-	// aMain.href = '.';
 	if (postData && postData.post) {
 		const post = createPost(postData.post, isLogined);
 		postsContainer.append(post);
@@ -423,7 +422,6 @@ const showOnePost = postid => {
 	const onePostFeed = document.querySelector('#' + currentPage + '_postid_'+postid);
 	if(!!onePostFeed) {
 		showControl[currentPage].scrollYPos = window.pageYOffset;
-		try {
 			scrollFeed = window.pageYOffset;
 			onePostShowned = 1;
 			postsOne.textContent = '';
@@ -452,16 +450,16 @@ const showOnePost = postid => {
 			const lat = parseFloat(postContent.dataset.lat);
 			const lng = parseFloat(postContent.dataset.lng);
 			postsOne.append(post);
-			setPostCoordsMap(lat, lng, city);
 			document.querySelector('.hashtags-links').addEventListener('click', searchByTag);
 
 			hidePageElems(showPageName, showControl);
 			showPageElems(showPageName, showControl);
 			noMorePosts.classList.add('d-none');
 			window.scroll(0, 0);
-		} catch (error) {
-			console.log(error);
+		try {
+			setPostCoordsMap(lat, lng, city);
 		}
+		catch (error) {	}
 	}
 };
 
@@ -521,7 +519,7 @@ const searchByTag = (e) => {
 };
 
 const postsScroll = ( e, setZoneName = 0) => {
-	return false;
+	// return false;
 	const postsContainer = showControl[currentPage].container;
 	const allVisible = Array.from(postsContainer.querySelectorAll('.post-feed')).filter(visible);
 	if (!!allVisible[0] && !!allVisible[0].querySelector('.post-content')) {
@@ -533,21 +531,14 @@ const postsScroll = ( e, setZoneName = 0) => {
 	// if(scrollSearchActivated || onePostShowned || setZoneName) {
 	// 	return false;
 	// }
-	if(!scrollSearchActivated && !onePostShowned && (!document.querySelector(`.${commonModalOpenClass}`))) {
+
+	// if (!scrollSearchActivated && !onePostShowned && (!document.querySelector(`.${commonModalOpenClass}`))) {
+	if (!scrollSearchActivated && window.getComputedStyle(backMenu).display === 'none' && (!document.querySelector(`.${commonModalOpenClass}`))) {
 		let windowRelativeBottom = document.documentElement.getBoundingClientRect().bottom;
 		if (windowRelativeBottom <= document.documentElement.clientHeight + 120) {
 			doUploadPosts();
 		}
 	}
-};
-
-const visible = elem => {
-  const rect = elem.getBoundingClientRect(); 
-  if(rect.top > -1000 || rect.bottom < 1000) {
-	  let cond = (rect.top + 400 >= 0 && rect.bottom - 400 <= (window.innerHeight || document.documentElement.clientHeight));
-	  return cond;
-  }
-  return false;
 };
 
 const switchLocality = (e) => {
@@ -638,17 +629,17 @@ const clearSearchParam = () => {
 	// tabsServices.classList.add('d-hidden');
 };
 
-const checkScrollBottom = () => {
-	if(!scrollSearchActivated && !onePostShowned /* && !scrollDisabled */ && (!document.querySelector(`.${commonModalOpenClass}`))) {
-		let windowRelativeBottom = document.documentElement.getBoundingClientRect().bottom;
-		if (windowRelativeBottom <= document.documentElement.clientHeight + 120) {
-			doUploadPosts();
-		}
-	}
-	setTimeout(() => {
-		checkScrollBottom();
-	}, 100000);
-};
+// const checkScrollBottom = () => {
+// 	if(!scrollSearchActivated && !onePostShowned /* && !scrollDisabled */ && (!document.querySelector(`.${commonModalOpenClass}`))) {
+// 		let windowRelativeBottom = document.documentElement.getBoundingClientRect().bottom;
+// 		if (windowRelativeBottom <= document.documentElement.clientHeight + 120) {
+// 			doUploadPosts();
+// 		}
+// 	}
+// 	setTimeout(() => {
+// 		checkScrollBottom();
+// 	}, 100000);
+// };
 
 const doUploadPosts = () => {
 	const postsContainer = showControl[currentPage].container;
@@ -732,15 +723,30 @@ if (workberLogo) {
 	workberLogo.src = workberImages + '/site' + '/Workber-logo.svg';
 }
 
-	renderModalSign('modal-overlay', '.icon-login');
+	// renderModalSign('modal-overlay', '.icon-login');
+	renderModalSign('modal-overlay', '#login_acc');
 	mapLoader();
+	// modalMap('.icon-settings', '.location__btn-close', '.location-overlay', 'location-overlay-open');
 
 	getUserProfile().then(profile => {
 		
 		let profileContainer;
 
 		if (profile) {
-			profileContainer = renderProfile(profile.profile, '.icon-settings', showControl);
+			if (userMenu) {
+				btnloginAccount.classList.add('d-none');
+				userMenu.classList.remove('d-none');
+				// smallAvatar.textContent = '';
+				// smallAvatar.insertAdjacentHTML('beforeend',`
+				// 	<img class="profile-avatar-small" src="${profile.profile.user_picture}" alt="user avatar">
+				// `);
+				// smallAvatar.classList.remove('d-none');
+				// userMenu.classList.remove('d-none');
+			}
+			// const iconSettings = document.querySelector(settingsSelector);
+			// profileContainer = renderProfile(profile.profile, '.icon-settings', showControl);
+			profileContainer = renderProfile(profile.profile, '#small_avatar', showControl);
+			// console.log(profileContainer);
 			const profileDescription = profileContainer.querySelector('#user_descr');
 			const descriptionCounter = profileContainer.querySelector('#descriptionCounter');
 			// profileDescription.innerText = profileDescription.innerText.trim().substring(0, maxDescriptionLength);
@@ -749,11 +755,22 @@ if (workberLogo) {
 				cropDescription(e.target, descriptionCounter, maxDescriptionLength);
 			});
 			profileDescription.dispatchEvent(new Event('keyup'));
+
+			document.querySelector('#small_avatar').addEventListener('click', (e) => {
+				e.preventDefault();
+				if (!document.body.contains(profileContainer)) {
+					hidePageElems('profile', showControl);
+					showPageElems('profile', showControl, profileContainer);
+					URImod({
+						'page': 'profile',
+					});
+				}
+			});
 		}
-		if (!profile && userMenu)
-		{
-			userMenu.classList.add('d-none');
-		}
+		// if (!profile && userMenu)
+		// {
+		// 	userMenu.classList.add('d-none');
+		// }
 
 		if (!!mainPage) {
 			storage.iniBrowserLocation();
@@ -767,8 +784,9 @@ if (workberLogo) {
 					getPostByID(postid, postsOne, renderOnePost);
 				} else if (paramPage === 'profile') {
 					if (profile) {
-						
-						document.body.append(profileContainer);
+						hidePageElems(paramPage, showControl);
+						showPageElems(paramPage, showControl, profileContainer);
+						// document.body.append(profileContainer);
 						// showControl[currentPage].container.classList.add('d-none');
 					} else {
 						clickHomeButton();

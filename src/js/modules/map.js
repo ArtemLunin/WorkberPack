@@ -1,4 +1,6 @@
 import { Loader } from "@googlemaps/js-api-loader"
+import {googleMapKey} from './config';
+import * as storage from './storage';
 
 let lat = 43.7181552;
 let lng = -79.5184839;
@@ -8,13 +10,13 @@ let geocoder;
 
 export const mapLoader = () => {
 	const loader = new Loader({
-		apiKey: "AIzaSyAGnP5m0Jp0I9otFx-pJXAktVQ7DGyrRhY",
+		apiKey: googleMapKey,
 		version: "weekly",
 	});
 
 	loader.load().then(() => {
 		map = new google.maps.Map(document.querySelector("#map"), {
-			zoom: 15,
+			zoom: 17,
 			center: { lat: lat, lng: lng },
 			mapTypeControl: false,
 			streetViewControl: false,
@@ -63,32 +65,34 @@ export const mapLoader = () => {
 
 export function setPostCoordsMap(postLat, postLng, postCity) {
   let [lat, lng] = [postLat, postLng];
-  postMap = new google.maps.Map(document.querySelector("#post-map-show"), {
-    zoom: 15,
-    mapTypeControl: false,
-    rotateControl: false,
-  });
-  if (lat && lng) {
-    setMarkerToMap(lat, lng, postMap);
-  } else {
-    geocoder
-      .geocode({
-        address: postCity
-      })
-      .then((result) => {
-        const {
-          results
-        } = result;
-        lat = +results[0].geometry.location.lat().toFixed(5);
-        lng = +results[0].geometry.location.lng().toFixed(5);
-        setMarkerToMap(lat, lng, postMap);
-        return results;
-      })
-      .catch((e) => {
-        alert("Geocode was not successful for the following reason: " + e);
-      });
-  }
-}
+  try {
+	postMap = new google.maps.Map(document.querySelector("#post-map-show"), {
+		zoom: 15,
+		mapTypeControl: false,
+		rotateControl: false,
+	});
+	if (lat && lng) {
+		setMarkerToMap(lat, lng, postMap);
+	} else {
+		geocoder
+		.geocode({
+			address: postCity
+		})
+		.then((result) => {
+			const {
+			results
+			} = result;
+			lat = +results[0].geometry.location.lat().toFixed(5);
+			lng = +results[0].geometry.location.lng().toFixed(5);
+			setMarkerToMap(lat, lng, postMap);
+			return results;
+		})
+		.catch((e) => {
+			alert("Geocode was not successful for the following reason: " + e);
+		});
+	}
+  } catch (e) {}
+};
 
 export const setPositionOnMap = (lat, lng) => {
 	setMarkerToMap(lat, lng, map);
@@ -103,13 +107,12 @@ function geocode(request) {
   geocoder
     .geocode(request)
     .then((result) => {
-      const { results } = result;
+		const { results } = result;
       lat = +results[0].geometry.location.lat().toFixed(5);
       lng = +results[0].geometry.location.lng().toFixed(5);
-      setLocation(lat, lng);
-    //   map.setCenter(results[0].geometry.location);
-    //   marker.setPosition(results[0].geometry.location);
-    //   marker.setMap(map);
+	  storage.setAppItem('lat', lat);
+	  storage.setAppItem('lng', lng);
+	  storage.setAppItem('address', results[0].formatted_address);
 	  setPositionOnMap(lat, lng);
       return results;
     })
@@ -118,20 +121,38 @@ function geocode(request) {
     });
 }
 
-const setLocation = (lat, lng) => {
-	let locationTrue = 0;
-	if(!!lat && Math.abs(lat) <= 90 ) {
-		locationTrue++;
-		if(!!lng && Math.abs(lng) <= 180 ) {
-			locationTrue++;
-		} 
-	}
-	if(locationTrue === 2)
-	{
-		localStorage.setItem('lat', lat);
-		localStorage.setItem('lng', lng);
-	}
+export const getPlaceByCoord = async (lat, lng) => {
+	let place = await geocoder
+    .geocode({
+		location: {
+			lat: parseFloat(lat),
+			lng: parseFloat(lng),
+		}
+	})
+	.then((result) => {
+		const { results } = result;
+		return results[0].formatted_address;
+	})
+	.catch((e) => {
+		return '';
+    });
+	return place;
 };
+
+// const setLocation = (lat, lng) => {
+// 	let locationTrue = 0;
+// 	if(!!lat && Math.abs(lat) <= 90 ) {
+// 		locationTrue++;
+// 		if(!!lng && Math.abs(lng) <= 180 ) {
+// 			locationTrue++;
+// 		} 
+// 	}
+// 	if(locationTrue === 2)
+// 	{
+// 		localStorage.setItem('lat', lat);
+// 		localStorage.setItem('lng', lng);
+// 	}
+// };
 
 function setMarkerToMap(postLat, postLng, mapID) {
   const mapLocation = new google.maps.LatLng(postLat, postLng);

@@ -3,6 +3,7 @@
 a {
 	text-decoration: none;
 	color: #72A1E5;
+	cursor: pointer;
 }
 
 .border-elements {
@@ -15,12 +16,13 @@ a {
 	margin: auto;
 	max-width: 1920px;
 	padding-top: 16px;
-	background-color: ghostwhite;
+	background-color: #FFFFFF;
 	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
 	z-index: 99;
+	border-bottom: 14px solid #f2f2f2;
 }
 
 .header-block {
@@ -441,7 +443,7 @@ a {
 	align-items: center;
 	width: 73px;
 	justify-content: space-between;
-	background-color: ghostwhite;
+	// background-color: ghostwhite;
 
 	.dist-text {
 		font-weight: 600;
@@ -479,7 +481,7 @@ a {
 .posts-start {
 	margin-top: 80px;
 	margin-bottom: 48px;
-	background-color: ghostwhite;
+	// background-color: ghostwhite;
 }
 
 .post-one {
@@ -1147,7 +1149,7 @@ a {
 }
 
 .modal-footer {
-	padding: 32px 48px 0 48px;
+	padding: 0 48px;
 	text-align: center;
 }
 
@@ -1187,7 +1189,7 @@ a {
 	&-change {
 		cursor: pointer;
 		position: absolute;
-		bottom: 0;
+		bottom: 3px;
 		left: 0;
 		width: 100%;
 		font-weight: 600;
@@ -1199,6 +1201,11 @@ a {
 	}
 	&-hint {
 		display: flex;
+	}
+	&-small {
+		width: 36px;
+		height: 36px;
+		border-radius: 18px;
 	}
 }
 

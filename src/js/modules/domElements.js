@@ -1,10 +1,12 @@
 import hash from 'object-hash';
-import {hidePageElems, renderButtonsFooter} from './domManipulation';
-import {closeSignModal} from './modal';
+import {hidePageElems, showPageElems, renderButtonsFooter} from './domManipulation';
+import {closeSignModal, showModalMap} from './modal';
 import {URImod, checkUserName, postAPIRequest, logout, deleteTemplate, getTemplate, deleteAccount} from './appState';
 import {hideSignInfo, showSignInfo} from './forms';
+import {getPlaceByCoord} from './map';
+// import {setCurrentContainer} from './storage';
 
-export const renderProfile = ({contact_email, contact_phone, user_name, user_picture, user_descr, email, hashtagsList, contactsList}, settingsSelector, showControl) => {
+export const renderProfile = ({contact_email, contact_phone, user_name, user_picture, user_descr, email, lat, lng, hashtagsList, contactsList}, settingsSelector, showControl) => {
 	
 	const dataOuterFlag = 'data-outer';
 	
@@ -14,11 +16,11 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		hashagsList: JSON.parse(JSON.stringify(hashtagsList)),
 		contactsList: JSON.parse(JSON.stringify(contactsList)),
 		personalData: JSON.parse(JSON.stringify({
-			contact_email, contact_phone, user_name, user_picture: userAvatar(user_picture), user_descr, email
+			contact_email, contact_phone, user_name, user_picture: userAvatar(user_picture), user_descr, email, lat, lng
 		})),
 	};
 
-	let personalDataCheckSum = hash.MD5({contact_email, contact_phone, user_name,user_descr}),
+	let personalDataCheckSum = hash.MD5({contact_email, contact_phone, user_name, user_descr, lat, lng}),
 		contactDataCheckSum = '',
 		hashtagDataCheckSum = '';
 
@@ -39,10 +41,11 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		}
 	};
 
-	const iconSettings = document.querySelector(settingsSelector);
+	// const iconSettings = document.querySelector(settingsSelector);
 	const profileContainer = document.createElement('section') ;
 
 	profileContainer.classList.add('posts-block', 'profile-container');
+	// profileContainer.dataset.container
 	profileContainer.innerHTML = `
 		<aside class="profile-sidebar">
 			<div class="profile-user">
@@ -70,7 +73,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					<li data-container="profile-settings-main" class="menu-item active">Personal data</li>
 					<li data-container="profile-contacts" class="menu-item">Contact information</li>
 					<li data-container="profile-hashtags" class="menu-item">Hashtags</li>
-					<li data-container="profile-privacy" class="menu-item">Privacy</li>
+					<!--<li data-container="profile-privacy" class="menu-item">Privacy</li>-->
 					<li>
 						<hr class="divider">
 					</li>
@@ -408,11 +411,13 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				contact_email: requestProps.contact_email,
 				contact_phone: requestProps.phone, 
 				user_name: requestProps.user_name,
-				user_descr: requestProps.user_descr
+				user_descr: requestProps.user_descr,
+				lat: parseFloat(requestProps.lat),
+				lng: parseFloat(requestProps.lng),
 			})) {
+				console.log(localProfile.personalData.lat, parseFloat(requestProps.lat));
 				postAPIRequest(requestProps).then((data) => {
 				if (data.errors) {
-					// console.log(data.errors);
 				}
 				else if (data.code && data.code === 1) {
 					if ( data.message === "avatar set") {
@@ -422,7 +427,9 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 							contact_email: data.profile.contact_email,
 							contact_phone: data.profile.contact_phone, 
 							user_name: data.profile.user_name,
-							user_descr: data.profile.user_descr
+							user_descr: data.profile.user_descr,
+							lat: data.profile.lat,
+							lng: data.profile.lng,
 						});
 						localProfile.personalData = JSON.parse(JSON.stringify({
 							contact_email: data.profile.contact_email, 
@@ -430,7 +437,9 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 							user_name: data.profile.user_name, 
 							user_picture: userAvatar(data.profile.user_picture),
 							user_descr: data.profile.user_descr, 
-							email: data.profile.email
+							email: data.profile.email,
+							lat: data.profile.lat,
+							lng: data.profile.lng,
 						}));
 					}
 					refreshPersonalForm();
@@ -513,6 +522,8 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 			<h3 class="profile-h3">Personal Data</h3>
 			<form action="#" class="personalDataForm" id="personalDataForm" data-batch>
 			<input type="hidden" name="call" value="doUpdateProfile">
+			<input type="hidden" name="lat" id="lat">
+			<input type="hidden" name="lng" id="lng">
 			<input type="hidden" name="user_descr" ${dataOuterFlag}>
 				<div class="nameData">
 					<div class="nameData__field1">
@@ -535,9 +546,10 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					</div>
 				</div>
 				<div class="nameData">
-					<div class="nameData__field2">
+					<div class="nameData-w-100 nameData__field2">
 						<label for="homeLocation">Home location</label>
-						<input type="text" class="input-form" name="homeLocation" id="homeLocation">
+						<!--<input type="text" class="input-form" name="homeLocation" id="homeLocation" disabled>-->
+						<div class="input-form" id="homeLocation">&nbsp;</div>
 					</div>
 				</div>
 				<div class="nameData">
@@ -573,6 +585,16 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		};
 
 		userName.addEventListener('blur', hasNameChanged);
+
+		formContainer.querySelector('#homeLocation').addEventListener('click', (e) => {
+			e.preventDefault();
+			showModalMap({
+				form: formContainer,
+				lat: '#lat',
+				lng: '#lng',
+				homeLocation: '#homeLocation'
+			});
+		});
 
 		return formContainer;
 	});
@@ -782,8 +804,19 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		return formContainer;
 	};
 
-	const refreshPersonalForm = () => {
+	const refreshPersonalForm =  () => {
 		personalForm.remove();
+		const smallAvatar = document.querySelector(settingsSelector);
+		smallAvatar.textContent = '';
+		smallAvatar.insertAdjacentHTML('beforeend',`
+			<img class="profile-avatar-small" src="${localProfile.personalData.user_picture}" alt="user avatar">
+		`);
+		smallAvatar.classList.remove('d-none');
+		
+		getPlaceByCoord(localProfile.personalData.lat, localProfile.personalData.lng)
+			.then((place) => {
+				profileContainer.querySelector('#homeLocation').textContent = place;
+			});
 		profileContainer.querySelector('#imgAvatar').src = localProfile.personalData.user_picture;
 		profileContainer.querySelector('#titleUserName').textContent = localProfile.personalData.user_name;
 		profileContainer.querySelector('.profile-settings-main').append(fillForm(personalForm, [
@@ -792,6 +825,8 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 			{id: '#email', inputType: 'value', value: localProfile.personalData.email},
 			{id: '#contact_email', inputType: 'value', value: localProfile.personalData.contact_email},
 			{id: '#phone', inputType: 'value', value: localProfile.personalData.contact_phone},
+			{id: '#lat', inputType: 'value', value: localProfile.personalData.lat},
+			{id: '#lng', inputType: 'value', value: localProfile.personalData.lng},
 		]));
 		
 	};
@@ -835,16 +870,17 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		formSetAvatar.requestSubmit();
 	});
 
-	iconSettings.addEventListener('click', (e) => {
-		e.preventDefault();
-		if (!document.body.contains(profileContainer)) {
-			hidePageElems('profile', showControl);
-			document.body.append(profileContainer);
-			URImod({
-				'page': 'profile',
-			});
-		}
-	});
+	// iconSettings.addEventListener('click', (e) => {
+	// 	e.preventDefault();
+	// 	if (!document.body.contains(profileContainer)) {
+			
+	// 		hidePageElems('profile', showControl);
+	// 		showPageElems('profile', showControl, profileContainer);
+	// 		URImod({
+	// 			'page': 'profile',
+	// 		});
+	// 	}
+	// });
 
 	profileContainer.querySelectorAll('form').forEach((form) => {
 		if (form.getAttribute('data-batch') !== null) {

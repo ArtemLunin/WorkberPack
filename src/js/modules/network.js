@@ -4,7 +4,6 @@ export async function sendRequest(url, body) {
 		method: 'POST',
 		body: body,
 	};
-
 	const response = await fetch(url, requestOptions);
 	if(response.ok) {
 		const data = await response.json();

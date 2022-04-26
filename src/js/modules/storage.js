@@ -7,6 +7,22 @@ export const getLocation = () => {
 	return [lat,lng];
 };
 
+export const setAppItem = (key, value) => {
+	appState[key] = value;
+};
+
+export const getAppItem = (key) => appState[key];
+
+export const setCurrentContainer = (container) => {
+	appState.container = container;
+};
+
+export const getCurrentContainer = () => appState.container;
+
+export const removeCurrentContainer = () => {
+	appState.container = null;
+};
+
 export const storeProfile = (profile, localData) => {
 	setGlobalItem(localData);
 	appState.profile = clonedeep(profile);

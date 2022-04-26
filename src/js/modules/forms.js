@@ -8,7 +8,7 @@ export const checkPassword = (passwords) => {
 		errorMessage = 'Passwords do not match';
 	} else if (passwords.length == 0) {
 		errorMessage = 'No password set';
-	} 
+	}
 	return errorMessage;
 };
 
@@ -29,16 +29,24 @@ export const submitSignForm = (form, errorSignSelector, modalSign, modalVerifica
 	const passwords = new Set();
 	let errorMsg = '';
 	let call = '';
+	let uid = null;
 	const formData = new FormData(form);
 	for (let [key, value] of formData.entries()) {
 		if (form.elements[key].getAttribute('type') === 'password') {
 			passwords.add(value);
+		} else if (key === 'uid' && value != '') {
+			uid = value;
 		}
 	}
-	errorMsg = checkPassword([...passwords]);
-	if (errorMsg !== '') {
-		showSignInfo(form.querySelector(errorSignSelector), [{error: errorMsg}]);
-		return false;
+	if (!uid) {
+		errorMsg = checkPassword([...passwords]);
+		if (errorMsg !== '') {
+			showSignInfo(form.querySelector(errorSignSelector), [{error: errorMsg}]);
+			return false;
+		}
+	} else {
+		formData.delete('email');
+		formData.delete('pwd');
 	}
 
 	hideSignInfo(form.querySelector(errorSignSelector));
@@ -65,6 +73,7 @@ export const submitSignForm = (form, errorSignSelector, modalSign, modalVerifica
 					case "user has logined":
 						storage.storeProfile(objData.profile, {
 							sid: objData.sid,
+							isLogined: 1,
 							refresh_token: objData.refresh_token,
 							lifetime: objData.lifetime,
 							lat: objData.profile.lat,
@@ -109,6 +118,7 @@ export const submitVerifyForm = (form, parentContainerClass, errorSignSelector, 
 			} else {
 				storage.storeProfile(objData.profile, {
 					sid: objData.sid,
+					isLogined: 1,
 					refresh_token: objData.refresh_token,
 					lifetime: objData.lifetime,
 					lat: objData.profile.lat,
@@ -186,6 +196,7 @@ export const submitPasswordForm = (form, errorSignSelector, modalChangePassword)
 			const objData = data.success;
 			storage.storeProfile(objData.profile, {
 					sid: objData.sid,
+					isLogined: 1,
 					refresh_token: objData.refresh_token,
 					lifetime: objData.lifetime,
 					lat: objData.profile.lat,
