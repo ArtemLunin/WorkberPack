@@ -52,3 +52,41 @@ export const renderButtonsFooter = (renderReset = false) => {
 		</div>
 	`;
 }
+
+export const renderFavButton = (disabledState, postid, actionProps) => {
+	return `
+		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-postid="${postid}">
+			<svg width="24" height="24" class="icon ${actionProps.icon_save}">
+				<use xlink:href="assets/workber_img/icons.svg#btn-save"></use>
+			</svg>
+			<span class="save_out">${actionProps.text_save}</span>
+		</button>
+	`;
+};
+
+export const renderLikeButton = (disabledState, postid, actionProps) => {
+	return `
+		<button ${disabledState} class="post-action post-like ${actionProps.like_selected}" data-call="doLike" data-param="like" data-value="${actionProps.like_value}" data-postid="${postid}">
+			<svg width="24" height="24" class="icon ${actionProps.icon_like}">
+				<use xlink:href="assets/workber_img/icons.svg#btn-like"></use>
+			</svg>
+			<span class="likes_out">${actionProps.likes_count}</span>
+		</button>
+		`
+};
+
+/**
+ * update state for likes and favourites buttons
+ * @module domManipulation
+ * @param {string} postDocumentId
+ * @param {object} postUpdatedObject
+ * @return {void}
+ */
+export const updatePostActionData = (postDocumentId, postUpdatedObject) => {
+	try {
+		const post = document.querySelector(postDocumentId);
+		for (let key in postUpdatedObject) {
+			post.querySelector(key).innerText = postUpdatedObject[key];
+		}
+	} catch (e) {}
+};

@@ -20,3 +20,47 @@ export const visible = elem => {
 	}
 	return false;
 };
+
+/**
+ * 
+ * @module domHelpers
+ * @param {number} likes
+ * @return {string} likes 100, 10K, 1M...
+ */
+const normalizeLikes = likes => 
+	(likes < 1000) ? `${likes}` : 
+		(likes < 1000000) ? `${Math.floor(likes / 1000)}K` :
+		`${Math.floor(likes / 1000000)}M`;
+
+/**
+ * fill likes and favourite props for post buttons
+ * @module domHelpers
+ * @param {string} likes
+ * @param {string} is_likes
+ * @param {string} is_bookmarks
+ * @return {object} likes&fav props
+ */
+export const getActionProps = (likes, is_likes, is_bookmarks) => {
+	const likes_count = normalizeLikes(+likes);
+	let like_selected = '',
+		save_selected = '',
+		icon_like = '',
+		icon_save = '',
+		text_save = 'SAVE',
+		like_value = 1,
+		fav_value = 1;
+	if (+is_likes) {
+		like_selected = 'like-selected';
+		icon_like = 'icon-selected';
+		like_value = 0;
+	}
+	if (+is_bookmarks) {
+		save_selected = 'save-selected';
+		icon_save = 'icon-selected';
+		fav_value = 0;
+		text_save = '';
+	}
+	return {
+		likes_count, like_selected, save_selected, icon_like, icon_save, text_save, like_value, fav_value
+	};
+};

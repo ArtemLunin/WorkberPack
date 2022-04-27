@@ -36,44 +36,43 @@ export const showModalMap = (sourceForm) => {
 	locationOverlay.addEventListener('click', closeModalMap);
 };
 
-export const modalMap = (settingsSelector, btnCloseSelector, overlaySelector, overlayOpenClass) => {
+// export const modalMap = (settingsSelector, btnCloseSelector, overlaySelector, overlayOpenClass) => {
 
-	const iconSettings = document.querySelector(settingsSelector);
-	const locationBtnClose = document.querySelector(btnCloseSelector);
-	const locationOverlay = document.querySelector(overlaySelector);
+// 	// const iconSettings = document.querySelector(settingsSelector);
+// 	const locationBtnClose = document.querySelector(btnCloseSelector);
+// 	const locationOverlay = document.querySelector(overlaySelector);
 
-	const settingsModalOpen = (e) => {
-		e.preventDefault();
-		const [lat, lng] = getLocation();
+// 	const settingsModalOpen = (e) => {
+// 		e.preventDefault();
+// 		const [lat, lng] = getLocation();
 
-		locationBtnClose.dataset['lat'] = lat;
-		locationBtnClose.dataset['lng'] = lng;
+// 		locationBtnClose.dataset['lat'] = lat;
+// 		locationBtnClose.dataset['lng'] = lng;
 
-		setPositionOnMap(lat, lng);
-		locationOverlay.classList.add(overlayOpenClass, commonModalOpenClass);
-		disableScroll();
-	};
+// 		setPositionOnMap(lat, lng);
+// 		locationOverlay.classList.add(overlayOpenClass, commonModalOpenClass);
+// 		disableScroll();
+// 	};
 
-	const settingsModalClose = () => {
-		locationOverlay.classList.remove(overlayOpenClass);
-		enableScroll();
-		console.log(getAppItem('lat'), parseFloat(locationBtnClose.dataset['lat']));
-		console.log(getAppItem('lng'), parseFloat(locationBtnClose.dataset['lng']));
-		if(getAppItem('lat') !== parseFloat(locationBtnClose.dataset['lat']) || getAppItem('lng') !== parseFloat(locationBtnClose.dataset['lng'])) {
-			// reloadCurrentPage();
-			console.log('position changed');
-		}
-	};
+// 	const settingsModalClose = () => {
+// 		locationOverlay.classList.remove(overlayOpenClass);
+// 		enableScroll();
+// 		console.log(getAppItem('lat'), parseFloat(locationBtnClose.dataset['lat']));
+// 		console.log(getAppItem('lng'), parseFloat(locationBtnClose.dataset['lng']));
+// 		if(getAppItem('lat') !== parseFloat(locationBtnClose.dataset['lat']) || getAppItem('lng') !== parseFloat(locationBtnClose.dataset['lng'])) {
+// 			// reloadCurrentPage();
+// 			console.log('position changed');
+// 		}
+// 	};
 
-	locationOverlay.addEventListener('click', event => {
-		const target = event.target;
-		if(target.matches(btnCloseSelector) || target.matches(overlaySelector)) {
-			settingsModalClose();
-		}
-	});
+// 	locationOverlay.addEventListener('click', event => {
+// 		const target = event.target;
+// 		if(target.matches(btnCloseSelector) || target.matches(overlaySelector)) {
+// 			settingsModalClose();
+// 		}
+// 	});
 
-	// iconSettings.addEventListener('click', settingsModalOpen); 
-};
+// };
 
 export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 	const iconProfile = document.querySelector(settingsSelector);

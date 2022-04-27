@@ -1,7 +1,17 @@
 import {sendGetRequest} from './requests';
 import * as storage from './storage';
 
+/**
+ * object for store app state
+ */
 export const appState = {};
+
+/**
+ * get user profile (async function)
+ * @module appState
+ * @return {object} user profile from backe-end
+ */
+
 export const getUserProfile = async () => {
 	let token = storage.getGlobalItem('sid'), 
 		refreshToken = storage.getGlobalItem('refresh_token');
@@ -44,11 +54,17 @@ export const getUserProfile = async () => {
 	return false;
 };
 
-export const postAPIRequest = async (hashtagRequestData) => {
+/**
+ * send POST request (async)
+ * @module ./appState
+ * @param {object} requestData
+ * @return {object} data from back-end
+ */
+export const postAPIRequest = async (requestData) => {
 	let token = storage.getGlobalItem('sid');
 	if (token) {
-		hashtagRequestData.token = token;
-		const data = await sendGetRequest(hashtagRequestData, 
+		requestData.token = token;
+		const data = await sendGetRequest(requestData, 
 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
 		return data;
 	}
@@ -150,6 +166,7 @@ const storeProfileInfo = ({profile, sid}) => {
 			lat: profile.lat,
 			lng: profile.lng,
 			sid: sid,
+			isLogined: 1,
 		});
 	}
 };

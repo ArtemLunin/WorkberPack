@@ -1,3 +1,6 @@
+import {getActionProps} from './domHelpers';
+import {renderFavButton, renderLikeButton} from './domManipulation';
+
 const getDefaultContactsData = contactsList => {
 	const contactsData = {
 		contact_phone: '', 
@@ -26,27 +29,20 @@ const getUserAvatar = (userPicture, userName) => {
 	return user_img;
 };
 
-export const createPost = ({user_picture, user_name, collage, post_name, text_adv, likes, hashtags, city, role_ad, contactsList}, isLogined) => {
+export const createPost = ({postid, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, city, role_ad, contactsList, is_likes, is_bookmarks}, isLogined = false) => {
 	let post_img = '';
-	let like_selected = '';
-	let save_selected = '';
-	let icon_selected = '';
 	let hide_post_img = 'd-none';
 	let hide_more = 'd-none';
 	let hashtags_str = '';
 	const user_img = getUserAvatar(user_picture, user_name);
-
-	if(collage && collage != 'null') {
+	const disabledState = (isLogined) ? '' : 'disabled';
+	const actionProps = getActionProps(likes, is_likes, is_bookmarks);
+	
+	if (collage && collage != 'null') {
 		post_img = collage.name;
 		hide_post_img = '';
 	}
-	if(isLogined) {
-		like_selected = 'like-selected';
-		save_selected = 'save-selected';
-		icon_selected = 'icon-selected';
-	}
-	if(hashtags && hashtags.length > 0)
-	{
+	if (hashtags && hashtags.length > 0) {
 		hashtags_str = hashtags.map(hashtag => `<a class="a-hashtag" data-page="${role_ad}" data-hashtag="${hashtag.substring(1)}" href="#" title="Search by hashtag">${hashtag}</a>`).join(' ');
 	}
 	const {contact_phone, contact_email, contact_address} = getDefaultContactsData(contactsList);
@@ -60,19 +56,9 @@ export const createPost = ({user_picture, user_name, collage, post_name, text_ad
 				<div class="post-content">
 					<div class="post-activities">
 						<div class="post-action-group">
-							<button disabled class="post-action post-like ${like_selected}">
-								<svg width="24" height="24" class="icon ${icon_selected}">
-									<use xlink:href="assets/workber_img/icons.svg#btn-like"></use>
-								</svg>
-								${likes}
-							</button>
-							<button disabled class="post-action post-save ${save_selected}">
-								<svg width="24" height="24" class="icon ${icon_selected}">
-									<use xlink:href="assets/workber_img/icons.svg#btn-save"></use>
-								</svg>
-								SAVE
-							</button>
-							<button disabled class="post-action post-share">
+							${renderLikeButton(disabledState, postid, actionProps)}
+							${renderFavButton(disabledState, postid, actionProps)}
+							<button class="post-action post-share">
 								<svg width="24" height="24" class="icon">
 									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
 								</svg>
@@ -122,7 +108,7 @@ export const createPost = ({user_picture, user_name, collage, post_name, text_ad
 	return div;
 };
 
-export const createStartPostFeed = ({id, user_picture, user_name, collage, post_name, text_adv, likes, role_ad, hashtags, shortlink, dist, lat, lng, city, contactsList}, currentPageName = '') => {
+export const createStartPostFeed = ({id, user_picture, user_name, collage, post_name, text_adv, likes, role_ad, hashtags, shortlink, dist, lat, lng, is_likes, is_bookmarks, city, contactsList}, currentPageName = '') => {
 	if(!id) {
 		return false;
 	}
@@ -139,7 +125,7 @@ export const createStartPostFeed = ({id, user_picture, user_name, collage, post_
 		hide_post_text = '';
 		return false;
 	}
-	if(role_ad === 'project') {
+	if (role_ad === 'project') {
 		serviceClass = 'service-need';
 		serviceInfo = 'I NEED';
 	}
@@ -151,7 +137,7 @@ export const createStartPostFeed = ({id, user_picture, user_name, collage, post_
 	div.dataset.postid = id;
 	hide_post_img = 'd-none';
 	// hide_post_text = '';
-	if(post_img !== '') {
+	if (post_img !== '') {
 		div.style.background = `no-repeat center/cover url("${post_img}")`;
 	}
 	div.innerHTML = `
@@ -160,11 +146,13 @@ export const createStartPostFeed = ({id, user_picture, user_name, collage, post_
 			<span class="post-username">${user_name}</span>
 			<p class="location-city">${city}</p>
 		</div>
-		<div class="d-none post-like">
-			${likes}
-		</div>
-		<div class="post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
-		</div>
+		<div class="d-none post-like">${likes}</div>
+		<div class="d-none post-is_likes">${is_likes}</div>
+		<div class="d-none post-is_bookmarks">${is_bookmarks}</div>
+		<div class="d-none post-role_ad">${role_ad}</div>
+		<div class="d-none post-hashtags">${JSON.stringify(hashtags)}</div>
+		<!--<div class="post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
+		</div>-->
 		<div class="${hide_post_img}">
 			<a class="post-link " href="${shortlink}" data-postid="${id}">
 				<img src="${post_img}" alt="Post image">
@@ -190,28 +178,23 @@ export const createStartPostFeed = ({id, user_picture, user_name, collage, post_
 	return div;
 };
 
-export const createPostFeed = ({id, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, shortlink, lat, lng, city, role_ad, dist, contactsList, zonesName}, isLogined,currentPageName = '') => {
+export const createPostFeed = ({id, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, shortlink, lat, lng, is_likes, is_bookmarks, city, role_ad, dist, contactsList, zonesName}, isLogined = false, currentPageName = '') => {
 	if(!id) {
 		return false;
 	}
 	let post_img = '';
-	let like_selected = '';
-	let save_selected = '';
-	let icon_selected = '';
 	let hide_post_img = 'd-none';
 	let hashtags_str = '';
-	const user_img = getUserAvatar(user_picture, user_name);
 
-	if(collage && collage != 'null') {
+	const user_img = getUserAvatar(user_picture, user_name);
+	const disabledState = (isLogined) ? '' : 'disabled';
+	const actionProps = getActionProps(likes, is_likes, is_bookmarks);
+
+	if (collage && collage != 'null') {
 		post_img = collage.name;
 		hide_post_img = '';
 	}
-	if(isLogined) {
-		like_selected = 'like-selected';
-		save_selected = 'save-selected';
-		icon_selected = 'icon-selected';
-	}
-	if(hashtags && hashtags.length > 0)
+	if (hashtags && hashtags.length > 0)
 	{
 		hashtags_str = hashtags.join(' ');
 	}
@@ -238,6 +221,9 @@ export const createPostFeed = ({id, user_picture, user_name, collage, post_name,
 				</div>
 			</div>
 			<div class="post-body">
+				<div class="d-none post-is_likes">${is_likes}</div>
+				<div class="d-none post-is_bookmarks">${is_bookmarks}</div>
+				<div class="d-none post-role_ad">${role_ad}</div>
 				<div class="post-image ${hide_post_img}">
 					<a class="post-link" href="${shortlink}" data-postid="${id}">
 						<img src="${post_img}" alt="Post image">
@@ -246,18 +232,8 @@ export const createPostFeed = ({id, user_picture, user_name, collage, post_name,
 				<div class="post-content" data-dist="${dist}" data-lat="${lat}" data-lng="${lng}" data-zones="${zonesName}">
 					<div class="post-activities">
 						<div class="post-action-group">
-							<button disabled class="post-action post-like ${like_selected}">
-								<svg width="24" height="24" class="icon ${icon_selected}">
-									<use xlink:href="assets/workber_img/icons.svg#btn-like"></use>
-								</svg>
-								${likes}
-							</button>
-							<button disabled class="post-action post-save ${save_selected}">
-								<svg width="24" height="24" class="icon ${icon_selected}">
-									<use xlink:href="assets/workber_img/icons.svg#btn-save"></use>
-								</svg>
-								SAVE
-							</button>
+							${renderLikeButton(disabledState, id, actionProps)}
+							${renderFavButton(disabledState, id, actionProps)}
 							<button class="post-action post-share new-post-share" data-link="${shortlink}" title="Copy link to post">
 								<svg width="24" height="24" class="icon">
 									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>

@@ -7,11 +7,25 @@ export const getLocation = () => {
 	return [lat,lng];
 };
 
+/**
+ * set variable to memory
+ * @module storage
+ * @param {string} key
+ * @param {any} value
+ *
+ */
 export const setAppItem = (key, value) => {
-	appState[key] = value;
+	appState.items = {};
+	appState.items[key] = value;
 };
 
-export const getAppItem = (key) => appState[key];
+/**
+ * get variable from memory
+ * @module storage
+ * @param {string} key
+ * @return {string} value of key.
+ */
+export const getAppItem = (key) => appState.items[key];
 
 export const setCurrentContainer = (container) => {
 	appState.container = container;
@@ -23,9 +37,18 @@ export const removeCurrentContainer = () => {
 	appState.container = null;
 };
 
+/**
+ * store user profile, also set up localStorage
+ * @module storage
+ * @param {object} profile to store in appState
+ * @param {object} localData to store in localStorage
+ */
 export const storeProfile = (profile, localData) => {
 	setGlobalItem(localData);
 	appState.profile = clonedeep(profile);
+	if (localData.isLogined) {
+		setAppItem('isLogined', localData.isLogined);
+	}
 };
 
 export const setGlobalItem = (item, packJSON = null) => {

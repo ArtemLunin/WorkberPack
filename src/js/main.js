@@ -1,14 +1,14 @@
 import {mapLoader, setPostCoordsMap} from './modules/map';
 import {workberBackEnd, workberImages, endSearchCode, maxDescriptionLength} from './modules/config';
 import * as storage from './modules/storage';
-import {modalMap, renderModalSign, commonModalOpenClass} from './modules/modal';
+import {renderModalSign, commonModalOpenClass} from './modules/modal';
 import {createPost, createStartPostFeed, createPostFeed} from './modules/handlerPostData';
 import {createRequestParams} from './modules/requests';
 import {sendRequest} from './modules/network';
 import {getUserProfile, URImod} from './modules/appState';
 import {toggleService, hidePageElems, showPageElems} from './modules/domManipulation';
 import {getCurrentPage, cropDescription, visible} from './modules/domHelpers'
-import {renderProfile} from './modules/domElements';
+import {renderProfile, handlePostBtn} from './modules/domElements';
 
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -50,7 +50,8 @@ const distances = document.querySelector('.distances');
 const distText = document.querySelector('.dist-text');
 const distTextHeader = document.querySelector('.dist-text-header');
 const postMenu = document.querySelector('.post-menu');
-const userMenu = document.querySelector('.user-menu');
+const userMenu = document.querySelector('.user-menu'),
+	iconsPanel = document.querySelector('.icons-panel');
 const backMenu = document.querySelector('.back-menu');
 const searchButton = document.querySelector('.search-button');
 const searchInput = document.querySelector('.search-input');
@@ -70,22 +71,6 @@ const searchBlock = document.querySelector('.search-block');
 const tabsLocality = document.querySelector('.tabs-locality');
 const localityHome = document.querySelector('.locality-home');
 const localityLocal = document.querySelector('.locality-local');
-
-// const btnSetLocation = document.querySelector('.btn__setLocation');
-
-
-// const shownedAfterLoadPage = ['tabs-service', 'distance-info', 'tabs-locality'];
-
-// const searchStorage = {
-// 	'service': {
-// 		'last_postid' : 0,
-// 		'last_dist' : 0,
-// 	},
-// 	'project': {
-// 		'last_postid' : 0,
-// 		'last_dist' : 0,
-// 	},
-// };
 
 const showControl = {
 	'service': {
@@ -178,7 +163,7 @@ postsStart.textContent = '';
 const renderOnePost = (postData, postsContainer) => {
 	postsContainer.textContent = '';
 	if (postData && postData.post) {
-		const post = createPost(postData.post, isLogined);
+		const post = createPost(postData.post, storage.getAppItem('isLogined'));
 		postsContainer.append(post);
 		const lat = parseFloat(postData.post.lat);
 		const lng = parseFloat(postData.post.lng);
@@ -211,7 +196,7 @@ const renderSearchPosts = ({zones, last_postid, last_dist, code}, postsContainer
 	postsContainer.dataset.last_postid = last_postid;
 	postsContainer.dataset.last_dist = last_dist;
 	postsContainer.dataset.code = code;
-	if(zones.length == 0 && postsContainer.textContent === '') {
+	if (zones.length == 0 && postsContainer.textContent === '') {
 		postsContainer.append(notFoundPosts());
 	} else {
 		distances.classList.remove('d-none');
@@ -219,10 +204,10 @@ const renderSearchPosts = ({zones, last_postid, last_dist, code}, postsContainer
 			const zonesName = item.name;
 			item.posts.forEach(postData => {
 				postData.zonesName = zonesName;
-				if(showControl[currentPageName].zoneName === '') {
+				if (showControl[currentPageName].zoneName === '') {
 					showControl[currentPageName].zoneName = zonesName;
 				}
-				const postFeed = createPostFeed(postData, isLogined, currentPageName);
+				const postFeed = createPostFeed(postData, storage.getAppItem('isLogined'), currentPageName);
 				if (!!postFeed) {
 					postsContainer.append(postFeed);
 				}
@@ -365,7 +350,12 @@ const addEvents = () => {
 				postMoreInfo.addEventListener('click', showMoreInfo);
 			}
 		}
-		item.addEventListener('click', e => {
+		item.querySelector('.post-action-group').addEventListener('click', (e) => {
+			e.stopPropagation();
+			e.preventDefault();
+			handlePostBtn(e.target);
+		});
+		item.addEventListener('click', (e) => {
 			e.preventDefault();
 			showOnePost(item.dataset.postid);
 		});
@@ -378,17 +368,6 @@ const addEvents = () => {
 // 	});
 // 	if(!!targetService) {
 // 		targetService.classList.add('service-selected');
-// 	}
-// };
-
-// const enableElems = () => {
-// 	if(currentlyLoad >= waitForLoad){
-// 		distanceInfo.textContent = showControl[currentPage].zoneName;
-// 		addEvents();
-// 	} else {
-// 		setTimeout(() => {
-// 			enableElems();
-// 		}, 1000);
 // 	}
 // };
 
@@ -419,8 +398,9 @@ const enableElemsStart = callName => {
 
 const showOnePost = postid => {
 	backMenu.dataset['prevPage'] = currentPage;
-	const onePostFeed = document.querySelector('#' + currentPage + '_postid_'+postid);
-	if(!!onePostFeed) {
+	const postDocumentId = '#' + currentPage + '_postid_' + postid;
+	const onePostFeed = document.querySelector(postDocumentId);
+	if (!!onePostFeed) {
 		showControl[currentPage].scrollYPos = window.pageYOffset;
 			scrollFeed = window.pageYOffset;
 			onePostShowned = 1;
@@ -430,28 +410,37 @@ const showOnePost = postid => {
 				showPageName = onePostFeed.dataset.showPageName;
 			}
 			currentPage = showPageName;
-			const user_picture = onePostFeed.querySelector('.user-data').dataset.avatar;
-			const user_name = onePostFeed.querySelector('.post-username').textContent;
 			const collage = [];
 			collage.name = onePostFeed.querySelector('.post-link img').attributes.src.value;
-			const post_name = onePostFeed.querySelector('.post-title').textContent;
-			const text_adv = onePostFeed.querySelector('.post-text').firstChild.textContent;
-			const likes = onePostFeed.querySelector('.post-like').innerText;
-			const hashtags = JSON.parse(onePostFeed.querySelector('.post-hashtags').dataset.hashtags);
-			const role_ad = onePostFeed.querySelector('.post-hashtags').dataset.role_ad;
-			const city = onePostFeed.querySelector('.location-city').textContent;
-			const contactsList = {
-				phone: onePostFeed.querySelector('.post-contact-phone').textContent,
-				contact_email: onePostFeed.querySelector('.post-contact-email').textContent,
-				address: onePostFeed.querySelector('.post-contact-address').textContent,
-			};
-			const post = createPost({user_picture, user_name, collage, post_name, text_adv, likes, hashtags, city, role_ad, contactsList});
-			const postContent = onePostFeed.querySelector('.post-content');
-			const lat = parseFloat(postContent.dataset.lat);
-			const lng = parseFloat(postContent.dataset.lng);
-			postsOne.append(post);
-			document.querySelector('.hashtags-links').addEventListener('click', searchByTag);
+			const user_picture = onePostFeed.querySelector('.user-data').dataset.avatar,
+				user_name = onePostFeed.querySelector('.post-username').textContent,
+				post_name = onePostFeed.querySelector('.post-title').textContent,
+				text_adv = onePostFeed.querySelector('.post-text').firstChild.textContent,
+				likes = onePostFeed.querySelector('.post-like').innerText,
+				is_likes = onePostFeed.querySelector('.post-is_likes').innerText,
+				is_bookmarks = onePostFeed.querySelector('.post-is_bookmarks').innerText,
+				role_ad = onePostFeed.querySelector('.post-role_ad').innerText,
+				hashtags = JSON.parse(onePostFeed.querySelector('.post-hashtags').innerText),
+				city = onePostFeed.querySelector('.location-city').textContent,
+				contactsList = {
+					phone: onePostFeed.querySelector('.post-contact-phone').textContent,
+					contact_email: onePostFeed.querySelector('.post-contact-email').textContent,
+					address: onePostFeed.querySelector('.post-contact-address').textContent,
+				};
 
+			const post = createPost({postid, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, city, role_ad, contactsList, is_likes, is_bookmarks}, storage.getAppItem('isLogined'));
+			const postContent = onePostFeed.querySelector('.post-content'),
+				lat = parseFloat(postContent.dataset.lat),
+				lng = parseFloat(postContent.dataset.lng);
+
+				// document.querySelector('.hashtags-links').addEventListener('click', searchByTag);
+			post.querySelector('.hashtags-links').addEventListener('click', searchByTag);
+			post.querySelector('.post-action-group').addEventListener('click', (e) => {
+				e.preventDefault();
+				handlePostBtn(e.target, postDocumentId);
+			});
+			postsOne.append(post);
+			
 			hidePageElems(showPageName, showControl);
 			showPageElems(showPageName, showControl);
 			noMorePosts.classList.add('d-none');
@@ -507,10 +496,10 @@ const searchByTag = (e) => {
 	e.preventDefault();
 	const target = e.target;
 	onePostShowned = 0;
-	if(target.classList.contains('a-hashtag')) {
+	if (target.classList.contains('a-hashtag')) {
 		currentPage =target.dataset['page'];
 		const hashTag = target.dataset['hashtag'];
-		if(!!hashTag && hashTag.trim().length > 2) {
+		if (!!hashTag && hashTag.trim().length > 2) {
 			searchInput.value = hashTag;
 			showControl[currentPage].callParams.keywords = hashTag;
 			reloadCurrentPage();
@@ -693,7 +682,6 @@ const doUploadPosts = () => {
 workberHome.addEventListener('click', showHome);
 tabsServices.addEventListener('click', changeSearch);
 backMenu.addEventListener('click', showFeed);
-// iconSearchPage.addEventListener('click', showFeedSearch);
 
 tabsLocality.addEventListener('click', switchLocality);
 // btnSetLocaton.addEventListener('click', setLocation);
@@ -723,19 +711,18 @@ if (workberLogo) {
 	workberLogo.src = workberImages + '/site' + '/Workber-logo.svg';
 }
 
-	// renderModalSign('modal-overlay', '.icon-login');
 	renderModalSign('modal-overlay', '#login_acc');
 	mapLoader();
-	// modalMap('.icon-settings', '.location__btn-close', '.location-overlay', 'location-overlay-open');
 
 	getUserProfile().then(profile => {
 		
 		let profileContainer;
 
 		if (profile) {
+			iconsPanel.style.display = '';
 			if (userMenu) {
 				btnloginAccount.classList.add('d-none');
-				userMenu.classList.remove('d-none');
+				// userMenu.classList.remove('d-none');
 				// smallAvatar.textContent = '';
 				// smallAvatar.insertAdjacentHTML('beforeend',`
 				// 	<img class="profile-avatar-small" src="${profile.profile.user_picture}" alt="user avatar">
@@ -743,8 +730,6 @@ if (workberLogo) {
 				// smallAvatar.classList.remove('d-none');
 				// userMenu.classList.remove('d-none');
 			}
-			// const iconSettings = document.querySelector(settingsSelector);
-			// profileContainer = renderProfile(profile.profile, '.icon-settings', showControl);
 			profileContainer = renderProfile(profile.profile, '#small_avatar', showControl);
 			// console.log(profileContainer);
 			const profileDescription = profileContainer.querySelector('#user_descr');
@@ -767,10 +752,6 @@ if (workberLogo) {
 				}
 			});
 		}
-		// if (!profile && userMenu)
-		// {
-		// 	userMenu.classList.add('d-none');
-		// }
 
 		if (!!mainPage) {
 			storage.iniBrowserLocation();

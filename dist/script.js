@@ -20531,7 +20531,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const distText = document.querySelector('.dist-text');
     const distTextHeader = document.querySelector('.dist-text-header');
     const postMenu = document.querySelector('.post-menu');
-    const userMenu = document.querySelector('.user-menu');
+    const userMenu = document.querySelector('.user-menu'),
+          iconsPanel = document.querySelector('.icons-panel');
     const backMenu = document.querySelector('.back-menu');
     const searchButton = document.querySelector('.search-button');
     const searchInput = document.querySelector('.search-input');
@@ -20548,19 +20549,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const searchBlock = document.querySelector('.search-block');
     const tabsLocality = document.querySelector('.tabs-locality');
     const localityHome = document.querySelector('.locality-home');
-    const localityLocal = document.querySelector('.locality-local'); // const btnSetLocation = document.querySelector('.btn__setLocation');
-    // const shownedAfterLoadPage = ['tabs-service', 'distance-info', 'tabs-locality'];
-    // const searchStorage = {
-    // 	'service': {
-    // 		'last_postid' : 0,
-    // 		'last_dist' : 0,
-    // 	},
-    // 	'project': {
-    // 		'last_postid' : 0,
-    // 		'last_dist' : 0,
-    // 	},
-    // };
-
+    const localityLocal = document.querySelector('.locality-local');
     const showControl = {
       'service': {
         'hide': ['posts-need', 'start-page', 'posts-all', 'post-one', 'back-menu'],
@@ -20649,7 +20638,7 @@ window.addEventListener('DOMContentLoaded', () => {
       postsContainer.textContent = '';
 
       if (postData && postData.post) {
-        const post = Object(_modules_handlerPostData__WEBPACK_IMPORTED_MODULE_7__["createPost"])(postData.post, isLogined);
+        const post = Object(_modules_handlerPostData__WEBPACK_IMPORTED_MODULE_7__["createPost"])(postData.post, _modules_storage__WEBPACK_IMPORTED_MODULE_5__["getAppItem"]('isLogined'));
         postsContainer.append(post);
         const lat = parseFloat(postData.post.lat);
         const lng = parseFloat(postData.post.lng);
@@ -20707,7 +20696,7 @@ window.addEventListener('DOMContentLoaded', () => {
               showControl[currentPageName].zoneName = zonesName;
             }
 
-            const postFeed = Object(_modules_handlerPostData__WEBPACK_IMPORTED_MODULE_7__["createPostFeed"])(postData, isLogined, currentPageName);
+            const postFeed = Object(_modules_handlerPostData__WEBPACK_IMPORTED_MODULE_7__["createPostFeed"])(postData, _modules_storage__WEBPACK_IMPORTED_MODULE_5__["getAppItem"]('isLogined'), currentPageName);
 
             if (!!postFeed) {
               postsContainer.append(postFeed);
@@ -20865,6 +20854,11 @@ window.addEventListener('DOMContentLoaded', () => {
           }
         }
 
+        item.querySelector('.post-action-group').addEventListener('click', e => {
+          e.stopPropagation();
+          e.preventDefault();
+          Object(_modules_domElements__WEBPACK_IMPORTED_MODULE_13__["handlePostBtn"])(e.target);
+        });
         item.addEventListener('click', e => {
           e.preventDefault();
           showOnePost(item.dataset.postid);
@@ -20876,16 +20870,6 @@ window.addEventListener('DOMContentLoaded', () => {
     // 	});
     // 	if(!!targetService) {
     // 		targetService.classList.add('service-selected');
-    // 	}
-    // };
-    // const enableElems = () => {
-    // 	if(currentlyLoad >= waitForLoad){
-    // 		distanceInfo.textContent = showControl[currentPage].zoneName;
-    // 		addEvents();
-    // 	} else {
-    // 		setTimeout(() => {
-    // 			enableElems();
-    // 		}, 1000);
     // 	}
     // };
 
@@ -20920,7 +20904,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const showOnePost = postid => {
       backMenu.dataset['prevPage'] = currentPage;
-      const onePostFeed = document.querySelector('#' + currentPage + '_postid_' + postid);
+      const postDocumentId = '#' + currentPage + '_postid_' + postid;
+      const onePostFeed = document.querySelector(postDocumentId);
 
       if (!!onePostFeed) {
         showControl[currentPage].scrollYPos = window.pageYOffset;
@@ -20934,22 +20919,25 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         currentPage = showPageName;
-        const user_picture = onePostFeed.querySelector('.user-data').dataset.avatar;
-        const user_name = onePostFeed.querySelector('.post-username').textContent;
         const collage = [];
         collage.name = onePostFeed.querySelector('.post-link img').attributes.src.value;
-        const post_name = onePostFeed.querySelector('.post-title').textContent;
-        const text_adv = onePostFeed.querySelector('.post-text').firstChild.textContent;
-        const likes = onePostFeed.querySelector('.post-like').innerText;
-        const hashtags = JSON.parse(onePostFeed.querySelector('.post-hashtags').dataset.hashtags);
-        const role_ad = onePostFeed.querySelector('.post-hashtags').dataset.role_ad;
-        const city = onePostFeed.querySelector('.location-city').textContent;
-        const contactsList = {
+        const user_picture = onePostFeed.querySelector('.user-data').dataset.avatar,
+              user_name = onePostFeed.querySelector('.post-username').textContent,
+              post_name = onePostFeed.querySelector('.post-title').textContent,
+              text_adv = onePostFeed.querySelector('.post-text').firstChild.textContent,
+              likes = onePostFeed.querySelector('.post-like').innerText,
+              is_likes = onePostFeed.querySelector('.post-is_likes').innerText,
+              is_bookmarks = onePostFeed.querySelector('.post-is_bookmarks').innerText,
+              role_ad = onePostFeed.querySelector('.post-role_ad').innerText,
+              hashtags = JSON.parse(onePostFeed.querySelector('.post-hashtags').innerText),
+              city = onePostFeed.querySelector('.location-city').textContent,
+              contactsList = {
           phone: onePostFeed.querySelector('.post-contact-phone').textContent,
           contact_email: onePostFeed.querySelector('.post-contact-email').textContent,
           address: onePostFeed.querySelector('.post-contact-address').textContent
         };
         const post = Object(_modules_handlerPostData__WEBPACK_IMPORTED_MODULE_7__["createPost"])({
+          postid,
           user_picture,
           user_name,
           collage,
@@ -20959,13 +20947,20 @@ window.addEventListener('DOMContentLoaded', () => {
           hashtags,
           city,
           role_ad,
-          contactsList
+          contactsList,
+          is_likes,
+          is_bookmarks
+        }, _modules_storage__WEBPACK_IMPORTED_MODULE_5__["getAppItem"]('isLogined'));
+        const postContent = onePostFeed.querySelector('.post-content'),
+              lat = parseFloat(postContent.dataset.lat),
+              lng = parseFloat(postContent.dataset.lng); // document.querySelector('.hashtags-links').addEventListener('click', searchByTag);
+
+        post.querySelector('.hashtags-links').addEventListener('click', searchByTag);
+        post.querySelector('.post-action-group').addEventListener('click', e => {
+          e.preventDefault();
+          Object(_modules_domElements__WEBPACK_IMPORTED_MODULE_13__["handlePostBtn"])(e.target, postDocumentId);
         });
-        const postContent = onePostFeed.querySelector('.post-content');
-        const lat = parseFloat(postContent.dataset.lat);
-        const lng = parseFloat(postContent.dataset.lng);
         postsOne.append(post);
-        document.querySelector('.hashtags-links').addEventListener('click', searchByTag);
         Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["hidePageElems"])(showPageName, showControl);
         Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["showPageElems"])(showPageName, showControl);
         noMorePosts.classList.add('d-none');
@@ -21229,8 +21224,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     workberHome.addEventListener('click', showHome);
     tabsServices.addEventListener('click', changeSearch);
-    backMenu.addEventListener('click', showFeed); // iconSearchPage.addEventListener('click', showFeedSearch);
-
+    backMenu.addEventListener('click', showFeed);
     tabsLocality.addEventListener('click', switchLocality); // btnSetLocaton.addEventListener('click', setLocation);
 
     searchButton.addEventListener('click', searchPosts);
@@ -21254,27 +21248,25 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (workberLogo) {
       workberLogo.src = _modules_config__WEBPACK_IMPORTED_MODULE_4__["workberImages"] + '/site' + '/Workber-logo.svg';
-    } // renderModalSign('modal-overlay', '.icon-login');
-
+    }
 
     Object(_modules_modal__WEBPACK_IMPORTED_MODULE_6__["renderModalSign"])('modal-overlay', '#login_acc');
-    Object(_modules_map__WEBPACK_IMPORTED_MODULE_3__["mapLoader"])(); // modalMap('.icon-settings', '.location__btn-close', '.location-overlay', 'location-overlay-open');
-
+    Object(_modules_map__WEBPACK_IMPORTED_MODULE_3__["mapLoader"])();
     Object(_modules_appState__WEBPACK_IMPORTED_MODULE_10__["getUserProfile"])().then(profile => {
       let profileContainer;
 
       if (profile) {
+        iconsPanel.style.display = '';
+
         if (userMenu) {
-          btnloginAccount.classList.add('d-none');
-          userMenu.classList.remove('d-none'); // smallAvatar.textContent = '';
+          btnloginAccount.classList.add('d-none'); // userMenu.classList.remove('d-none');
+          // smallAvatar.textContent = '';
           // smallAvatar.insertAdjacentHTML('beforeend',`
           // 	<img class="profile-avatar-small" src="${profile.profile.user_picture}" alt="user avatar">
           // `);
           // smallAvatar.classList.remove('d-none');
           // userMenu.classList.remove('d-none');
-        } // const iconSettings = document.querySelector(settingsSelector);
-        // profileContainer = renderProfile(profile.profile, '.icon-settings', showControl);
-
+        }
 
         profileContainer = Object(_modules_domElements__WEBPACK_IMPORTED_MODULE_13__["renderProfile"])(profile.profile, '#small_avatar', showControl); // console.log(profileContainer);
 
@@ -21297,11 +21289,7 @@ window.addEventListener('DOMContentLoaded', () => {
             });
           }
         });
-      } // if (!profile && userMenu)
-      // {
-      // 	userMenu.classList.add('d-none');
-      // }
-
+      }
 
       if (!!mainPage) {
         _modules_storage__WEBPACK_IMPORTED_MODULE_5__["iniBrowserLocation"]();
@@ -21379,7 +21367,17 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+/**
+ * object for store app state
+ */
+
 const appState = {};
+/**
+ * get user profile (async function)
+ * @module appState
+ * @return {object} user profile from backe-end
+ */
+
 const getUserProfile = async () => {
   let token = _storage__WEBPACK_IMPORTED_MODULE_3__["getGlobalItem"]('sid'),
       refreshToken = _storage__WEBPACK_IMPORTED_MODULE_3__["getGlobalItem"]('refresh_token');
@@ -21424,12 +21422,19 @@ const getUserProfile = async () => {
 
   return false;
 };
-const postAPIRequest = async hashtagRequestData => {
+/**
+ * send POST request (async)
+ * @module ./appState
+ * @param {object} requestData
+ * @return {object} data from back-end
+ */
+
+const postAPIRequest = async requestData => {
   let token = _storage__WEBPACK_IMPORTED_MODULE_3__["getGlobalItem"]('sid');
 
   if (token) {
-    hashtagRequestData.token = token;
-    const data = await Object(_requests__WEBPACK_IMPORTED_MODULE_2__["sendGetRequest"])(hashtagRequestData, {
+    requestData.token = token;
+    const data = await Object(_requests__WEBPACK_IMPORTED_MODULE_2__["sendGetRequest"])(requestData, {
       token: token,
       refreshToken: _storage__WEBPACK_IMPORTED_MODULE_3__["getGlobalItem"]('refresh_token')
     });
@@ -21545,7 +21550,8 @@ const storeProfileInfo = ({
     _storage__WEBPACK_IMPORTED_MODULE_3__["storeProfile"](profile, {
       lat: profile.lat,
       lng: profile.lng,
-      sid: sid
+      sid: sid,
+      isLogined: 1
     });
   }
 };
@@ -21637,12 +21643,13 @@ const maxDescriptionLength = 120;
 /*!***************************************!*\
   !*** ./src/js/modules/domElements.js ***!
   \***************************************/
-/*! exports provided: renderProfile */
+/*! exports provided: renderProfile, handlePostBtn */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderProfile", function() { return renderProfile; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "handlePostBtn", function() { return handlePostBtn; });
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var object_hash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! object-hash */ "./node_modules/object-hash/dist/object_hash.js");
@@ -22089,7 +22096,6 @@ const renderProfile = ({
       lat: parseFloat(requestProps.lat),
       lng: parseFloat(requestProps.lng)
     })) {
-      console.log(localProfile.personalData.lat, parseFloat(requestProps.lat));
       Object(_appState__WEBPACK_IMPORTED_MODULE_4__["postAPIRequest"])(requestProps).then(data => {
         if (data.errors) {} else if (data.code && data.code === 1) {
           if (data.message === "avatar set") {
@@ -22574,17 +22580,7 @@ const renderProfile = ({
   });
   fileAvatar.addEventListener('change', e => {
     formSetAvatar.requestSubmit();
-  }); // iconSettings.addEventListener('click', (e) => {
-  // 	e.preventDefault();
-  // 	if (!document.body.contains(profileContainer)) {
-  // 		hidePageElems('profile', showControl);
-  // 		showPageElems('profile', showControl, profileContainer);
-  // 		URImod({
-  // 			'page': 'profile',
-  // 		});
-  // 	}
-  // });
-
+  });
   profileContainer.querySelectorAll('form').forEach(form => {
     if (form.getAttribute('data-batch') !== null) {
       form.addEventListener('submit', e => {
@@ -22631,6 +22627,60 @@ const renderProfile = ({
   });
   return profileContainer;
 };
+/**
+ * handle events for likes and favourites buttons
+ * @module domElements
+ * @param {DOM} elem
+ * @param {string} postDocumentId
+ * @return {void}
+ */
+
+const handlePostBtn = (elem, postDocumentId = null) => {
+  const btn = elem.closest('.post-action');
+
+  if (btn && btn.getAttribute('data-call')) {
+    const requestProps = {};
+    requestProps.call = btn.getAttribute('data-call');
+    requestProps.postid = btn.getAttribute('data-postid');
+    requestProps[btn.getAttribute('data-param')] = btn.getAttribute('data-value');
+    Object(_appState__WEBPACK_IMPORTED_MODULE_4__["postAPIRequest"])(requestProps).then(data => {
+      if (data.message === 'like changed') {
+        btn.querySelector('.likes_out').innerText = data.likes;
+
+        if (btn.getAttribute('data-value') === '0') {
+          btn.classList.remove('like-selected');
+          btn.setAttribute('data-value', '1');
+          btn.querySelector('.icon').classList.remove('icon-selected');
+        } else {
+          btn.classList.add('like-selected');
+          btn.setAttribute('data-value', '0');
+          btn.querySelector('.icon').classList.add('icon-selected');
+        }
+
+        Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["updatePostActionData"])(postDocumentId, {
+          '.post-like': data.likes,
+          '.post-is_likes': btn.getAttribute('data-value') === '1' ? '0' : '1'
+        });
+      } else if (data.message === 'bookmarks changed') {
+        if (btn.getAttribute('data-value') === '0') {
+          btn.querySelector('.save_out').innerText = 'SAVE';
+          btn.classList.remove('save-selected');
+          btn.setAttribute('data-value', '1');
+          btn.querySelector('.icon').classList.remove('icon-selected');
+        } else {
+          btn.querySelector('.save_out').innerText = '';
+          btn.classList.add('save-selected');
+          btn.setAttribute('data-value', '0');
+          btn.querySelector('.icon').classList.add('icon-selected');
+        }
+
+        Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["updatePostActionData"])(postDocumentId, {
+          '.post-is_bookmarks': btn.getAttribute('data-value') === '1' ? '0' : '1'
+        });
+      }
+    });
+  }
+};
 
 /***/ }),
 
@@ -22638,7 +22688,7 @@ const renderProfile = ({
 /*!**************************************!*\
   !*** ./src/js/modules/domHelpers.js ***!
   \**************************************/
-/*! exports provided: getCurrentPage, cropDescription, visible */
+/*! exports provided: getCurrentPage, cropDescription, visible, getActionProps */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22646,6 +22696,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getCurrentPage", function() { return getCurrentPage; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cropDescription", function() { return cropDescription; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "visible", function() { return visible; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getActionProps", function() { return getActionProps; });
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__);
 
@@ -22672,6 +22723,58 @@ const visible = elem => {
 
   return false;
 };
+/**
+ * 
+ * @module domHelpers
+ * @param {number} likes
+ * @return {string} likes 100, 10K, 1M...
+ */
+
+const normalizeLikes = likes => likes < 1000 ? `${likes}` : likes < 1000000 ? `${Math.floor(likes / 1000)}K` : `${Math.floor(likes / 1000000)}M`;
+/**
+ * fill likes and favourite props for post buttons
+ * @module domHelpers
+ * @param {string} likes
+ * @param {string} is_likes
+ * @param {string} is_bookmarks
+ * @return {object} likes&fav props
+ */
+
+
+const getActionProps = (likes, is_likes, is_bookmarks) => {
+  const likes_count = normalizeLikes(+likes);
+  let like_selected = '',
+      save_selected = '',
+      icon_like = '',
+      icon_save = '',
+      text_save = 'SAVE',
+      like_value = 1,
+      fav_value = 1;
+
+  if (+is_likes) {
+    like_selected = 'like-selected';
+    icon_like = 'icon-selected';
+    like_value = 0;
+  }
+
+  if (+is_bookmarks) {
+    save_selected = 'save-selected';
+    icon_save = 'icon-selected';
+    fav_value = 0;
+    text_save = '';
+  }
+
+  return {
+    likes_count,
+    like_selected,
+    save_selected,
+    icon_like,
+    icon_save,
+    text_save,
+    like_value,
+    fav_value
+  };
+};
 
 /***/ }),
 
@@ -22679,7 +22782,7 @@ const visible = elem => {
 /*!*******************************************!*\
   !*** ./src/js/modules/domManipulation.js ***!
   \*******************************************/
-/*! exports provided: toggleService, hidePageElems, showPageElems, controlElems, renderButtonsFooter */
+/*! exports provided: toggleService, hidePageElems, showPageElems, controlElems, renderButtonsFooter, renderFavButton, renderLikeButton, updatePostActionData */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22689,6 +22792,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "showPageElems", function() { return showPageElems; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "controlElems", function() { return controlElems; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderButtonsFooter", function() { return renderButtonsFooter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderFavButton", function() { return renderFavButton; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderLikeButton", function() { return renderLikeButton; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updatePostActionData", function() { return updatePostActionData; });
 /* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./storage */ "./src/js/modules/storage.js");
 
 const toggleService = (servicesSelector, targetService, className) => {
@@ -22743,6 +22849,43 @@ const renderButtonsFooter = (renderReset = false) => {
 			${renderReset ? '<button type="reset" class="btn__form btn__confirmation">Cancel</button>' : ''}
 		</div>
 	`;
+};
+const renderFavButton = (disabledState, postid, actionProps) => {
+  return `
+		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-postid="${postid}">
+			<svg width="24" height="24" class="icon ${actionProps.icon_save}">
+				<use xlink:href="assets/workber_img/icons.svg#btn-save"></use>
+			</svg>
+			<span class="save_out">${actionProps.text_save}</span>
+		</button>
+	`;
+};
+const renderLikeButton = (disabledState, postid, actionProps) => {
+  return `
+		<button ${disabledState} class="post-action post-like ${actionProps.like_selected}" data-call="doLike" data-param="like" data-value="${actionProps.like_value}" data-postid="${postid}">
+			<svg width="24" height="24" class="icon ${actionProps.icon_like}">
+				<use xlink:href="assets/workber_img/icons.svg#btn-like"></use>
+			</svg>
+			<span class="likes_out">${actionProps.likes_count}</span>
+		</button>
+		`;
+};
+/**
+ * update state for likes and favourites buttons
+ * @module domManipulation
+ * @param {string} postDocumentId
+ * @param {object} postUpdatedObject
+ * @return {void}
+ */
+
+const updatePostActionData = (postDocumentId, postUpdatedObject) => {
+  try {
+    const post = document.querySelector(postDocumentId);
+
+    for (let key in postUpdatedObject) {
+      post.querySelector(key).innerText = postUpdatedObject[key];
+    }
+  } catch (e) {}
 };
 
 /***/ }),
@@ -23062,6 +23205,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createPostFeed", function() { return createPostFeed; });
 /* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.string.replace */ "./node_modules/core-js/modules/es.string.replace.js");
 /* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _domHelpers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./domHelpers */ "./src/js/modules/domHelpers.js");
+/* harmony import */ var _domManipulation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./domManipulation */ "./src/js/modules/domManipulation.js");
+
+
 
 
 const getDefaultContactsData = contactsList => {
@@ -23099,6 +23246,7 @@ const getUserAvatar = (userPicture, userName) => {
 };
 
 const createPost = ({
+  postid,
   user_picture,
   user_name,
   collage,
@@ -23108,26 +23256,21 @@ const createPost = ({
   hashtags,
   city,
   role_ad,
-  contactsList
-}, isLogined) => {
+  contactsList,
+  is_likes,
+  is_bookmarks
+}, isLogined = false) => {
   let post_img = '';
-  let like_selected = '';
-  let save_selected = '';
-  let icon_selected = '';
   let hide_post_img = 'd-none';
   let hide_more = 'd-none';
   let hashtags_str = '';
   const user_img = getUserAvatar(user_picture, user_name);
+  const disabledState = isLogined ? '' : 'disabled';
+  const actionProps = Object(_domHelpers__WEBPACK_IMPORTED_MODULE_1__["getActionProps"])(likes, is_likes, is_bookmarks);
 
   if (collage && collage != 'null') {
     post_img = collage.name;
     hide_post_img = '';
-  }
-
-  if (isLogined) {
-    like_selected = 'like-selected';
-    save_selected = 'save-selected';
-    icon_selected = 'icon-selected';
   }
 
   if (hashtags && hashtags.length > 0) {
@@ -23149,19 +23292,9 @@ const createPost = ({
 				<div class="post-content">
 					<div class="post-activities">
 						<div class="post-action-group">
-							<button disabled class="post-action post-like ${like_selected}">
-								<svg width="24" height="24" class="icon ${icon_selected}">
-									<use xlink:href="assets/workber_img/icons.svg#btn-like"></use>
-								</svg>
-								${likes}
-							</button>
-							<button disabled class="post-action post-save ${save_selected}">
-								<svg width="24" height="24" class="icon ${icon_selected}">
-									<use xlink:href="assets/workber_img/icons.svg#btn-save"></use>
-								</svg>
-								SAVE
-							</button>
-							<button disabled class="post-action post-share">
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderLikeButton"])(disabledState, postid, actionProps)}
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderFavButton"])(disabledState, postid, actionProps)}
+							<button class="post-action post-share">
 								<svg width="24" height="24" class="icon">
 									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
 								</svg>
@@ -23224,6 +23357,8 @@ const createStartPostFeed = ({
   dist,
   lat,
   lng,
+  is_likes,
+  is_bookmarks,
   city,
   contactsList
 }, currentPageName = '') => {
@@ -23274,11 +23409,13 @@ const createStartPostFeed = ({
 			<span class="post-username">${user_name}</span>
 			<p class="location-city">${city}</p>
 		</div>
-		<div class="d-none post-like">
-			${likes}
-		</div>
-		<div class="post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
-		</div>
+		<div class="d-none post-like">${likes}</div>
+		<div class="d-none post-is_likes">${is_likes}</div>
+		<div class="d-none post-is_bookmarks">${is_bookmarks}</div>
+		<div class="d-none post-role_ad">${role_ad}</div>
+		<div class="d-none post-hashtags">${JSON.stringify(hashtags)}</div>
+		<!--<div class="post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
+		</div>-->
 		<div class="${hide_post_img}">
 			<a class="post-link " href="${shortlink}" data-postid="${id}">
 				<img src="${post_img}" alt="Post image">
@@ -23315,33 +23452,28 @@ const createPostFeed = ({
   shortlink,
   lat,
   lng,
+  is_likes,
+  is_bookmarks,
   city,
   role_ad,
   dist,
   contactsList,
   zonesName
-}, isLogined, currentPageName = '') => {
+}, isLogined = false, currentPageName = '') => {
   if (!id) {
     return false;
   }
 
   let post_img = '';
-  let like_selected = '';
-  let save_selected = '';
-  let icon_selected = '';
   let hide_post_img = 'd-none';
   let hashtags_str = '';
   const user_img = getUserAvatar(user_picture, user_name);
+  const disabledState = isLogined ? '' : 'disabled';
+  const actionProps = Object(_domHelpers__WEBPACK_IMPORTED_MODULE_1__["getActionProps"])(likes, is_likes, is_bookmarks);
 
   if (collage && collage != 'null') {
     post_img = collage.name;
     hide_post_img = '';
-  }
-
-  if (isLogined) {
-    like_selected = 'like-selected';
-    save_selected = 'save-selected';
-    icon_selected = 'icon-selected';
   }
 
   if (hashtags && hashtags.length > 0) {
@@ -23375,6 +23507,9 @@ const createPostFeed = ({
 				</div>
 			</div>
 			<div class="post-body">
+				<div class="d-none post-is_likes">${is_likes}</div>
+				<div class="d-none post-is_bookmarks">${is_bookmarks}</div>
+				<div class="d-none post-role_ad">${role_ad}</div>
 				<div class="post-image ${hide_post_img}">
 					<a class="post-link" href="${shortlink}" data-postid="${id}">
 						<img src="${post_img}" alt="Post image">
@@ -23383,18 +23518,8 @@ const createPostFeed = ({
 				<div class="post-content" data-dist="${dist}" data-lat="${lat}" data-lng="${lng}" data-zones="${zonesName}">
 					<div class="post-activities">
 						<div class="post-action-group">
-							<button disabled class="post-action post-like ${like_selected}">
-								<svg width="24" height="24" class="icon ${icon_selected}">
-									<use xlink:href="assets/workber_img/icons.svg#btn-like"></use>
-								</svg>
-								${likes}
-							</button>
-							<button disabled class="post-action post-save ${save_selected}">
-								<svg width="24" height="24" class="icon ${icon_selected}">
-									<use xlink:href="assets/workber_img/icons.svg#btn-save"></use>
-								</svg>
-								SAVE
-							</button>
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderLikeButton"])(disabledState, id, actionProps)}
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderFavButton"])(disabledState, id, actionProps)}
 							<button class="post-action post-share new-post-share" data-link="${shortlink}" title="Copy link to post">
 								<svg width="24" height="24" class="icon">
 									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
@@ -23603,14 +23728,13 @@ function setMarkerToMap(postLat, postLng, mapID) {
 /*!*********************************!*\
   !*** ./src/js/modules/modal.js ***!
   \*********************************/
-/*! exports provided: commonModalOpenClass, showModalMap, modalMap, renderModalSign, closeSignModal */
+/*! exports provided: commonModalOpenClass, showModalMap, renderModalSign, closeSignModal */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "commonModalOpenClass", function() { return commonModalOpenClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "showModalMap", function() { return showModalMap; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "modalMap", function() { return modalMap; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderModalSign", function() { return renderModalSign; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "closeSignModal", function() { return closeSignModal; });
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
@@ -23655,42 +23779,37 @@ const showModalMap = sourceForm => {
   };
 
   locationOverlay.addEventListener('click', closeModalMap);
-};
-const modalMap = (settingsSelector, btnCloseSelector, overlaySelector, overlayOpenClass) => {
-  const iconSettings = document.querySelector(settingsSelector);
-  const locationBtnClose = document.querySelector(btnCloseSelector);
-  const locationOverlay = document.querySelector(overlaySelector);
+}; // export const modalMap = (settingsSelector, btnCloseSelector, overlaySelector, overlayOpenClass) => {
+// 	// const iconSettings = document.querySelector(settingsSelector);
+// 	const locationBtnClose = document.querySelector(btnCloseSelector);
+// 	const locationOverlay = document.querySelector(overlaySelector);
+// 	const settingsModalOpen = (e) => {
+// 		e.preventDefault();
+// 		const [lat, lng] = getLocation();
+// 		locationBtnClose.dataset['lat'] = lat;
+// 		locationBtnClose.dataset['lng'] = lng;
+// 		setPositionOnMap(lat, lng);
+// 		locationOverlay.classList.add(overlayOpenClass, commonModalOpenClass);
+// 		disableScroll();
+// 	};
+// 	const settingsModalClose = () => {
+// 		locationOverlay.classList.remove(overlayOpenClass);
+// 		enableScroll();
+// 		console.log(getAppItem('lat'), parseFloat(locationBtnClose.dataset['lat']));
+// 		console.log(getAppItem('lng'), parseFloat(locationBtnClose.dataset['lng']));
+// 		if(getAppItem('lat') !== parseFloat(locationBtnClose.dataset['lat']) || getAppItem('lng') !== parseFloat(locationBtnClose.dataset['lng'])) {
+// 			// reloadCurrentPage();
+// 			console.log('position changed');
+// 		}
+// 	};
+// 	locationOverlay.addEventListener('click', event => {
+// 		const target = event.target;
+// 		if(target.matches(btnCloseSelector) || target.matches(overlaySelector)) {
+// 			settingsModalClose();
+// 		}
+// 	});
+// };
 
-  const settingsModalOpen = e => {
-    e.preventDefault();
-    const [lat, lng] = Object(_storage__WEBPACK_IMPORTED_MODULE_2__["getLocation"])();
-    locationBtnClose.dataset['lat'] = lat;
-    locationBtnClose.dataset['lng'] = lng;
-    Object(_map__WEBPACK_IMPORTED_MODULE_3__["setPositionOnMap"])(lat, lng);
-    locationOverlay.classList.add(overlayOpenClass, commonModalOpenClass);
-    disableScroll();
-  };
-
-  const settingsModalClose = () => {
-    locationOverlay.classList.remove(overlayOpenClass);
-    enableScroll();
-    console.log(Object(_storage__WEBPACK_IMPORTED_MODULE_2__["getAppItem"])('lat'), parseFloat(locationBtnClose.dataset['lat']));
-    console.log(Object(_storage__WEBPACK_IMPORTED_MODULE_2__["getAppItem"])('lng'), parseFloat(locationBtnClose.dataset['lng']));
-
-    if (Object(_storage__WEBPACK_IMPORTED_MODULE_2__["getAppItem"])('lat') !== parseFloat(locationBtnClose.dataset['lat']) || Object(_storage__WEBPACK_IMPORTED_MODULE_2__["getAppItem"])('lng') !== parseFloat(locationBtnClose.dataset['lng'])) {
-      // reloadCurrentPage();
-      console.log('position changed');
-    }
-  };
-
-  locationOverlay.addEventListener('click', event => {
-    const target = event.target;
-
-    if (target.matches(btnCloseSelector) || target.matches(overlaySelector)) {
-      settingsModalClose();
-    }
-  }); // iconSettings.addEventListener('click', settingsModalOpen); 
-};
 const renderModalSign = (modalOverlayClass, settingsSelector) => {
   const iconProfile = document.querySelector(settingsSelector);
   const modalSign = document.createElement('div');
@@ -24323,10 +24442,26 @@ const getLocation = () => {
   const lng = parseFloat(localStorage.getItem('lng'));
   return [lat, lng];
 };
+/**
+ * set variable to memory
+ * @module storage
+ * @param {string} key
+ * @param {any} value
+ *
+ */
+
 const setAppItem = (key, value) => {
-  _appState__WEBPACK_IMPORTED_MODULE_1__["appState"][key] = value;
+  _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].items = {};
+  _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].items[key] = value;
 };
-const getAppItem = key => _appState__WEBPACK_IMPORTED_MODULE_1__["appState"][key];
+/**
+ * get variable from memory
+ * @module storage
+ * @param {string} key
+ * @return {string} value of key.
+ */
+
+const getAppItem = key => _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].items[key];
 const setCurrentContainer = container => {
   _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].container = container;
 };
@@ -24334,9 +24469,20 @@ const getCurrentContainer = () => _appState__WEBPACK_IMPORTED_MODULE_1__["appSta
 const removeCurrentContainer = () => {
   _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].container = null;
 };
+/**
+ * store user profile, also set up localStorage
+ * @module storage
+ * @param {object} profile to store in appState
+ * @param {object} localData to store in localStorage
+ */
+
 const storeProfile = (profile, localData) => {
   setGlobalItem(localData);
   _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].profile = lodash_clonedeep__WEBPACK_IMPORTED_MODULE_0___default()(profile);
+
+  if (localData.isLogined) {
+    setAppItem('isLogined', localData.isLogined);
+  }
 };
 const setGlobalItem = (item, packJSON = null) => {
   if (packJSON) {

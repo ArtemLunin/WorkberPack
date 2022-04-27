@@ -1,5 +1,5 @@
 import hash from 'object-hash';
-import {hidePageElems, showPageElems, renderButtonsFooter} from './domManipulation';
+import {hidePageElems, showPageElems, renderButtonsFooter, updatePostActionData} from './domManipulation';
 import {closeSignModal, showModalMap} from './modal';
 import {URImod, checkUserName, postAPIRequest, logout, deleteTemplate, getTemplate, deleteAccount} from './appState';
 import {hideSignInfo, showSignInfo} from './forms';
@@ -415,7 +415,6 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				lat: parseFloat(requestProps.lat),
 				lng: parseFloat(requestProps.lng),
 			})) {
-				console.log(localProfile.personalData.lat, parseFloat(requestProps.lat));
 				postAPIRequest(requestProps).then((data) => {
 				if (data.errors) {
 				}
@@ -870,18 +869,6 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		formSetAvatar.requestSubmit();
 	});
 
-	// iconSettings.addEventListener('click', (e) => {
-	// 	e.preventDefault();
-	// 	if (!document.body.contains(profileContainer)) {
-			
-	// 		hidePageElems('profile', showControl);
-	// 		showPageElems('profile', showControl, profileContainer);
-	// 		URImod({
-	// 			'page': 'profile',
-	// 		});
-	// 	}
-	// });
-
 	profileContainer.querySelectorAll('form').forEach((form) => {
 		if (form.getAttribute('data-batch') !== null) {
 			form.addEventListener('submit', (e) => {
@@ -930,3 +917,52 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 	return profileContainer;
 };
 
+/**
+ * handle events for likes and favourites buttons
+ * @module domElements
+ * @param {DOM} elem
+ * @param {string} postDocumentId
+ * @return {void}
+ */
+export const handlePostBtn = (elem, postDocumentId = null) => {
+	const btn = elem.closest('.post-action');
+	if (btn && btn.getAttribute('data-call')) {
+		const requestProps = {};
+		requestProps.call = btn.getAttribute('data-call');
+		requestProps.postid = btn.getAttribute('data-postid');
+		requestProps[btn.getAttribute('data-param')] = btn.getAttribute('data-value');
+		postAPIRequest(requestProps).then((data) => {
+			if (data.message === 'like changed') {
+				btn.querySelector('.likes_out').innerText = data.likes;
+				if (btn.getAttribute('data-value') === '0') {
+					btn.classList.remove('like-selected');
+					btn.setAttribute('data-value', '1');
+					btn.querySelector('.icon').classList.remove('icon-selected');
+				} else {
+					btn.classList.add('like-selected');
+					btn.setAttribute('data-value', '0');
+					btn.querySelector('.icon').classList.add('icon-selected');
+				}
+				updatePostActionData(postDocumentId, {
+					'.post-like': data.likes,
+					'.post-is_likes': (btn.getAttribute('data-value') === '1') ? '0' : '1'
+				});
+			} else if (data.message === 'bookmarks changed') {
+				if (btn.getAttribute('data-value') === '0') {
+					btn.querySelector('.save_out').innerText = 'SAVE';
+					btn.classList.remove('save-selected');
+					btn.setAttribute('data-value', '1');
+					btn.querySelector('.icon').classList.remove('icon-selected');
+				} else {
+					btn.querySelector('.save_out').innerText = '';
+					btn.classList.add('save-selected');
+					btn.setAttribute('data-value', '0');
+					btn.querySelector('.icon').classList.add('icon-selected');
+				}
+				updatePostActionData(postDocumentId, {
+					'.post-is_bookmarks': (btn.getAttribute('data-value') === '1') ? '0' : '1'
+				});
+			}
+		});
+	}
+};
