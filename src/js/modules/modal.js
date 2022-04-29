@@ -1,15 +1,16 @@
-import { firebaseGoogleAuth } from "./firebase";
+import {firebaseAuth} from "./firebase";
 import {getLocation, getAppItem} from './storage';
 import {setPositionOnMap} from './map';
 import {hideSignInfo, submitSignForm, submitVerifyForm, submitResendForm, submitRestoreForm, submitPasswordForm} from './forms';
 import {registrationID, storeLinks, termsHTML, privacyHTML} from './config';
+import {renderSocialButton, renderIcon, renderCloseMenu} from './domManipulation';
 
 export const commonModalOpenClass = 'modal-open-class';
 
 
 export const showModalMap = (sourceForm) => {
 	const locationOverlay = document.querySelector('.location-overlay');
-	const locationBtnClose = document.querySelector('.location__btn-close');
+	// const locationBtnClose = document.querySelector('.location__btn-close');
 	setPositionOnMap(sourceForm.form.querySelector(sourceForm.lat).value, sourceForm.form.querySelector(sourceForm.lng).value);
 	locationOverlay.classList.add('location-overlay-open', commonModalOpenClass);
 	disableScroll();
@@ -36,44 +37,6 @@ export const showModalMap = (sourceForm) => {
 	locationOverlay.addEventListener('click', closeModalMap);
 };
 
-// export const modalMap = (settingsSelector, btnCloseSelector, overlaySelector, overlayOpenClass) => {
-
-// 	// const iconSettings = document.querySelector(settingsSelector);
-// 	const locationBtnClose = document.querySelector(btnCloseSelector);
-// 	const locationOverlay = document.querySelector(overlaySelector);
-
-// 	const settingsModalOpen = (e) => {
-// 		e.preventDefault();
-// 		const [lat, lng] = getLocation();
-
-// 		locationBtnClose.dataset['lat'] = lat;
-// 		locationBtnClose.dataset['lng'] = lng;
-
-// 		setPositionOnMap(lat, lng);
-// 		locationOverlay.classList.add(overlayOpenClass, commonModalOpenClass);
-// 		disableScroll();
-// 	};
-
-// 	const settingsModalClose = () => {
-// 		locationOverlay.classList.remove(overlayOpenClass);
-// 		enableScroll();
-// 		console.log(getAppItem('lat'), parseFloat(locationBtnClose.dataset['lat']));
-// 		console.log(getAppItem('lng'), parseFloat(locationBtnClose.dataset['lng']));
-// 		if(getAppItem('lat') !== parseFloat(locationBtnClose.dataset['lat']) || getAppItem('lng') !== parseFloat(locationBtnClose.dataset['lng'])) {
-// 			// reloadCurrentPage();
-// 			console.log('position changed');
-// 		}
-// 	};
-
-// 	locationOverlay.addEventListener('click', event => {
-// 		const target = event.target;
-// 		if(target.matches(btnCloseSelector) || target.matches(overlaySelector)) {
-// 			settingsModalClose();
-// 		}
-// 	});
-
-// };
-
 export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 	const iconProfile = document.querySelector(settingsSelector);
 	const modalSign = document.createElement('div');
@@ -86,11 +49,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 					<span class="menu__sign-in menu__sign" data-items_show="modal-signin" data-items_hide="modal-signup">Login</span>
 					<span class="menu__sign-up menu__sign" data-items_show="modal-signup" data-items_hide="modal-signin">Registration</span>
 				</span>
-				<span class="menu__close">
-					<svg width="24" height="24" class="icon">
-						<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-					</svg>
-				</span>
+				${renderCloseMenu()}
 			</div>
 			<div class="modal-body">
 				<h2 class="modal-signin modal-title">Welcome back!</h2>
@@ -127,15 +86,9 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 				<div class="social-buttons">
 					<!--<svg width="36" height="36" class="icon">
 						<use xlink:href="assets/workber_img/icons.svg#btn-facebook"></use>
-					</svg>
-					<svg width="36" height="36" class="icon">
-						<use xlink:href="assets/workber_img/icons.svg#btn-twitter"></use>
 					</svg>-->
-					<a href="#" class="btn-auth" data-auth_provider="google">
-						<svg width="36" height="36" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-google"></use>
-						</svg>
-					</a>
+					${renderSocialButton('twitter')}
+					${renderSocialButton('google')}
 				</div>
 			</div>
 		</div>
@@ -150,19 +103,16 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 				<div class="modal-header">
 					<div class="back-menu">
 						<a href="#" class="navigation-link back-feed">
-							<svg width="25" height="24" class="icon">
+							<!--<svg width="25" height="24" class="icon">
 								<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
-							</svg>
+							</svg>-->
+							${renderIcon('btn-back', 24)}
 							<span class="text-back">
 								BACK
 							</span>
 						</a>
 					</div>
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
+					${renderCloseMenu()}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Thank you!</h2>
@@ -224,11 +174,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		modalCongratulation.innerHTML = `
 			<div class="signModal">
 				<div class="modal-header justify-end">
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
+					${renderCloseMenu()}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Congratulations! You have
@@ -246,6 +192,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 			const target = e.target;
 			if (!target.closest('.signModal') || target.closest('.menu__close')) {
 				closeSignModal(modalCongratulation);
+				location.reload();
 			}
 		});
 
@@ -261,19 +208,16 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 				<div class="modal-header">
 					<div class="back-menu">
 							<a href="#" class="navigation-link back-feed">
-								<svg width="25" height="24" class="icon">
+								<!--<svg width="25" height="24" class="icon">
 									<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
-								</svg>
+								</svg>-->
+								${renderIcon('btn-back', 24)}
 								<span class="text-back">
 									BACK
 								</span>
 							</a>
 					</div>
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
+					${renderCloseMenu()}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Forgot password?</h2>
@@ -320,11 +264,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		modalChangePassword.innerHTML = `
 			<div class="signModal">
 				<div class="modal-header justify-end">
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
+					${renderCloseMenu()}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-title">Set password</h2>
@@ -364,18 +304,30 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		const parent = target.closest('.btn-auth');
 		if (parent) {
 			const authProvider = parent.dataset.auth_provider;
-			if (authProvider === "google") {
-				firebaseGoogleAuth().then((uid) => {
-					if (uid) {
-						loginForm.uid.value = uid;
-						loginForm.querySelector('#btn__sign-in').focus();
-						submitSignForm(loginForm, '.errorSignMessage', modalSign, null);
-						// loginForm.requestSubmit(loginForm.querySelector('#btn__sign-in'));
-						// loginForm.submit();
-					}
-					// console.log(data);
-				});
-			}
+			firebaseAuth(authProvider).then((uid) => {
+				if (uid) {
+					loginForm.uid.value = uid;
+					loginForm.querySelector('#btn__sign-in').focus();
+					submitSignForm(loginForm, '.errorSignMessage', modalSign, null);
+				}
+			});
+			// if (authProvider === "google") {
+			// 	firebaseGoogleAuth().then((uid) => {
+			// 		if (uid) {
+			// 			loginForm.uid.value = uid;
+			// 			loginForm.querySelector('#btn__sign-in').focus();
+			// 			submitSignForm(loginForm, '.errorSignMessage', modalSign, null);
+			// 		}
+			// 	});
+			// } else if (authProvider === "twitter") {
+			// 	firebaseTwitterAuth().then((uid) => {
+			// 		if (uid) {
+			// 			loginForm.uid.value = uid;
+			// 			loginForm.querySelector('#btn__sign-in').focus();
+			// 			submitSignForm(loginForm, '.errorSignMessage', modalSign, null);
+			// 		}
+			// 	});
+			// }
 			// console.log(authProvider);
 		}
 	};

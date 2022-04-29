@@ -15,7 +15,6 @@ export const getLocation = () => {
  *
  */
 export const setAppItem = (key, value) => {
-	appState.items = {};
 	appState.items[key] = value;
 };
 
@@ -25,7 +24,7 @@ export const setAppItem = (key, value) => {
  * @param {string} key
  * @return {string} value of key.
  */
-export const getAppItem = (key) => appState.items[key];
+export const getAppItem = (key) => appState.items ? appState.items[key] : false;
 
 export const setCurrentContainer = (container) => {
 	appState.container = container;

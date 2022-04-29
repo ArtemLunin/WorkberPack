@@ -4,7 +4,9 @@ import * as storage from './storage';
 /**
  * object for store app state
  */
-export const appState = {};
+export const appState = {
+	items: {}
+};
 
 /**
  * get user profile (async function)

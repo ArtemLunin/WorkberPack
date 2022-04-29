@@ -1,5 +1,5 @@
 import {mapLoader, setPostCoordsMap} from './modules/map';
-import {workberBackEnd, workberImages, endSearchCode, maxDescriptionLength} from './modules/config';
+import {workberBackEnd, workberImages, endSearchCode} from './modules/config';
 import * as storage from './modules/storage';
 import {renderModalSign, commonModalOpenClass} from './modules/modal';
 import {createPost, createStartPostFeed, createPostFeed} from './modules/handlerPostData';
@@ -7,7 +7,7 @@ import {createRequestParams} from './modules/requests';
 import {sendRequest} from './modules/network';
 import {getUserProfile, URImod} from './modules/appState';
 import {toggleService, hidePageElems, showPageElems} from './modules/domManipulation';
-import {getCurrentPage, cropDescription, visible} from './modules/domHelpers'
+import {getCurrentPage, visible, copyShareLink} from './modules/domHelpers'
 import {renderProfile, handlePostBtn} from './modules/domElements';
 
 
@@ -333,11 +333,7 @@ const addEvents = () => {
 	const postShare = document.querySelectorAll('.new-post-share');
 	postShare.forEach(item => {
 		item.classList.remove('new-post-share');
-		item.addEventListener('click', e => {
-			const target = e.target;
-			navigator.clipboard.writeText(target.dataset.link);
-			e.stopPropagation();
-		});
+		item.addEventListener('click', copyShareLink);
 	});
 	const newPost = document.querySelectorAll('.new-post');
 	newPost.forEach(item => {
@@ -350,11 +346,14 @@ const addEvents = () => {
 				postMoreInfo.addEventListener('click', showMoreInfo);
 			}
 		}
-		item.querySelector('.post-action-group').addEventListener('click', (e) => {
-			e.stopPropagation();
-			e.preventDefault();
-			handlePostBtn(e.target);
-		});
+		try {
+			item.querySelector('.post-action-group').addEventListener('click', (e) => {
+				e.stopPropagation();
+				e.preventDefault();
+				handlePostBtn(e.target);
+			});
+		}
+		catch (e) {}
 		item.addEventListener('click', (e) => {
 			e.preventDefault();
 			showOnePost(item.dataset.postid);
@@ -410,25 +409,27 @@ const showOnePost = postid => {
 				showPageName = onePostFeed.dataset.showPageName;
 			}
 			currentPage = showPageName;
-			const collage = [];
-			collage.name = onePostFeed.querySelector('.post-link img').attributes.src.value;
+			const collage = {};
+			// collage.name = onePostFeed.querySelector('.post-link img').attributes.src.value;
+			collage.name = onePostFeed.querySelector('.post-image').textContent;
 			const user_picture = onePostFeed.querySelector('.user-data').dataset.avatar,
 				user_name = onePostFeed.querySelector('.post-username').textContent,
 				post_name = onePostFeed.querySelector('.post-title').textContent,
 				text_adv = onePostFeed.querySelector('.post-text').firstChild.textContent,
-				likes = onePostFeed.querySelector('.post-like').innerText,
-				is_likes = onePostFeed.querySelector('.post-is_likes').innerText,
-				is_bookmarks = onePostFeed.querySelector('.post-is_bookmarks').innerText,
-				role_ad = onePostFeed.querySelector('.post-role_ad').innerText,
+				likes = onePostFeed.querySelector('.post-like').textContent,
+				is_likes = onePostFeed.querySelector('.post-is_likes').textContent,
+				is_bookmarks = onePostFeed.querySelector('.post-is_bookmarks').textContent,
+				role_ad = onePostFeed.querySelector('.post-role_ad').textContent,
 				hashtags = JSON.parse(onePostFeed.querySelector('.post-hashtags').innerText),
 				city = onePostFeed.querySelector('.location-city').textContent,
+				shortlink = onePostFeed.querySelector('.post-link').textContent,
 				contactsList = {
 					phone: onePostFeed.querySelector('.post-contact-phone').textContent,
 					contact_email: onePostFeed.querySelector('.post-contact-email').textContent,
 					address: onePostFeed.querySelector('.post-contact-address').textContent,
 				};
 
-			const post = createPost({postid, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, city, role_ad, contactsList, is_likes, is_bookmarks}, storage.getAppItem('isLogined'));
+			const post = createPost({postid, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, shortlink, city, role_ad, contactsList, is_likes, is_bookmarks}, storage.getAppItem('isLogined'));
 			const postContent = onePostFeed.querySelector('.post-content'),
 				lat = parseFloat(postContent.dataset.lat),
 				lng = parseFloat(postContent.dataset.lng);
@@ -439,6 +440,8 @@ const showOnePost = postid => {
 				e.preventDefault();
 				handlePostBtn(e.target, postDocumentId);
 			});
+			post.querySelector('.post-share').addEventListener('click', copyShareLink);
+			
 			postsOne.append(post);
 			
 			hidePageElems(showPageName, showControl);
@@ -715,7 +718,6 @@ if (workberLogo) {
 	mapLoader();
 
 	getUserProfile().then(profile => {
-		
 		let profileContainer;
 
 		if (profile) {
@@ -731,14 +733,14 @@ if (workberLogo) {
 				// userMenu.classList.remove('d-none');
 			}
 			profileContainer = renderProfile(profile.profile, '#small_avatar', showControl);
-			// console.log(profileContainer);
 			const profileDescription = profileContainer.querySelector('#user_descr');
-			const descriptionCounter = profileContainer.querySelector('#descriptionCounter');
+			// const descriptionCounter = profileContainer.querySelector('#descriptionCounter');
 			// profileDescription.innerText = profileDescription.innerText.trim().substring(0, maxDescriptionLength);
 			// descriptionCounter.innerText = `${profileDescription.innerText.length}/${maxDescriptionLength}`;
-			profileDescription.addEventListener('keyup', (e) => {
-				cropDescription(e.target, descriptionCounter, maxDescriptionLength);
-			});
+			// profileDescription.addEventListener('keyup', (e) => {
+			// 	cropDescription(e, descriptionCounter, maxDescriptionLength);
+			// 	// (cursor_position(e.target));
+			// });
 			profileDescription.dispatchEvent(new Event('keyup'));
 
 			document.querySelector('#small_avatar').addEventListener('click', (e) => {

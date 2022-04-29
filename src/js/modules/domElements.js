@@ -1,16 +1,41 @@
 import hash from 'object-hash';
-import {hidePageElems, showPageElems, renderButtonsFooter, updatePostActionData} from './domManipulation';
+import {hidePageElems, showPageElems, renderButtonsFooter, updatePostActionData, renderProfileButton, renderIcon, renderProfileHeader} from './domManipulation';
 import {closeSignModal, showModalMap} from './modal';
 import {URImod, checkUserName, postAPIRequest, logout, deleteTemplate, getTemplate, deleteAccount} from './appState';
 import {hideSignInfo, showSignInfo} from './forms';
 import {getPlaceByCoord} from './map';
+import {maxDescriptionLength, maxHashtagsLength} from './config';
 // import {setCurrentContainer} from './storage';
 
-export const renderProfile = ({contact_email, contact_phone, user_name, user_picture, user_descr, email, lat, lng, hashtagsList, contactsList}, settingsSelector, showControl) => {
+// const pica = require('pica')();
+// import * from 'image-blob-reduce';
+// const reduce = require('image-blob-reduce')();
+
+
+export const cropEditableContent = (el, contentCounterEl, maxLength) => {
+	if (maxLength < el.innerText.trim().length) {
+		el.innerText = el.innerText.trim().substring(0, maxLength);
+		setCursorEnd(el);
+	}
+	contentCounterEl.innerText = `${el.innerText.length}/${maxLength}`;
+};
+
+const setCursorEnd = (el) => {
+    const selection = window.getSelection();  
+	const range = document.createRange();  
+	selection.removeAllRanges();  
+	range.selectNodeContents(el);  
+	range.collapse(false);  
+	selection.addRange(range);  
+	el.focus();
+}
+
+
+export const renderProfile = ({contact_email, contact_phone, user_name, user_picture, user_descr, email, lat, lng, hashtagsList, contactsList, toggles}, settingsSelector, showControl) => {
 	
 	const dataOuterFlag = 'data-outer';
 	
-	const userAvatar = user_picture => user_picture ? user_picture : 'assets/workber_img/big_avatar.jpeg';
+	const userAvatar = user_picture => user_picture ? user_picture : 'assets/workber_img/no-avatar.jpg';
 
 	const localProfile = {
 		hashagsList: JSON.parse(JSON.stringify(hashtagsList)),
@@ -57,9 +82,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						<input type="file" name="file" id="fileAvatar" accept="image/*" hidden>
 							<a href="#" class="profile-avatar-change">
 								<div class="profile-avatar-hint">
-									<svg width="24" height="24" class="icon icon-photo">
-											<use xlink:href="assets/workber_img/icons.svg#btn-photo"></use>
-									</svg>
+									${renderIcon('btn-photo', 24, 'icon-photo')}
 								<span>Change photo</span>
 								</div>
 							</a>
@@ -73,23 +96,20 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					<li data-container="profile-settings-main" class="menu-item active">Personal data</li>
 					<li data-container="profile-contacts" class="menu-item">Contact information</li>
 					<li data-container="profile-hashtags" class="menu-item">Hashtags</li>
+					<li style="display:none;" data-container="profile-faq" class="menu-item">F.A.Q</li>
 					<!--<li data-container="profile-privacy" class="menu-item">Privacy</li>-->
 					<li>
 						<hr class="divider">
 					</li>
 					<li data-container="signout" class="menu-item">
 						<div class="profile-signout">
-							<svg width="24" height="24" class="icon">
-								<use xlink:href="assets/workber_img/icons.svg#btn-signout"></use>
-							</svg>
+							${renderIcon('btn-signout', 24)}
 							Sign Out
 						</div>
 					</li>
 					<li data-container="deleteAccount" class="menu-item">
 						<div class="profile-signout">
-							<svg width="24" height="24" class="icon">
-								<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-							</svg>
+							${renderIcon('btn-close', 24)}
 							Delete account
 						</div>
 					</li>
@@ -119,7 +139,9 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				</section>
 				<section class="profile-item"></section>
 			</div>
-			<div class="profile-unit profile-settings-common profile-privacy d-none">
+			<div class="profile-unit profile-settings-common profile-faq d-none">
+			</div>
+			<div style="display:none;" class="profile-unit profile-settings-common profile-privacy d-none">
 				<section class="profile-personal">
 					<form action="#" class="privacyDataForm" id="privacyDataForm">
 						<h3 class="profile-h3">Email Notifications</h3>
@@ -149,16 +171,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		modal.classList.add(...modalOverlayClass);
 		modal.innerHTML = `
 			<div class="templateModal modalContent">
-				<div class="template__header">
-					<span class="text-header">
-						Add new hashtags template
-					</span>
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
-				</div>
+				${renderProfileHeader('Add new hashtags template')}
 				<div class="template__body">
 					<form class="modal-form" action="#" method="POST" id="formNewHashtag">
 						<input type="hidden" name="call" value="doSetHashtagTemplates">
@@ -172,7 +185,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						</div>
 						<div class="nameData-w-100">
 							<div class="profileData__field2">
-								<label for="hashtagTemplateList">Hashtags list</label>
+								<label for="hashtagTemplateList">Hashtags list <span class="editable-elem-chars color-pale" id="hashtagsCounter"></span></label>
 								<div class="hashtags-list-full input-form" contenteditable="true" id="hashtagTemplateList">
 								</div>
 							</div>
@@ -183,6 +196,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 			</div>
 		`;
 
+		const modalForm = modal.querySelector('form');
 		modal.addEventListener('click', function (e) {
 			const target = e.target;
 			if (!target.closest('.modalContent') || target.closest('.menu__close')) {
@@ -191,13 +205,24 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 			}
 		});
 
-		modal.querySelector('form').addEventListener('reset', (e) => {
+		modalForm.querySelector('#hashtagTemplateList').addEventListener('paste', function (e) {
+			e.preventDefault();
+			e.target.innerText = window.event.clipboardData.getData('text/plain');
+			this.dispatchEvent(new Event('keyup'));
+		});
+
+		modalForm.querySelector('#hashtagTemplateList').addEventListener('keyup', function (e) {
+			cropEditableContent(e.target, modalForm.querySelector('#hashtagsCounter'), maxHashtagsLength);
+		});
+
+		modalForm.addEventListener('reset', (e) => {
 			const target = e.target;
 			hideSignInfo(target.querySelector('.errorSignMessage'));
 			target.querySelector('#hashtagTemplateList').textContent = '';
+			target.querySelector('#hashtagsCounter').textContent = '';
 		});
 
-		modal.querySelector('form').addEventListener('submit', (e) => {
+		modalForm.addEventListener('submit', (e) => {
 			const target = e.target;
 			e.preventDefault();
 			submitHashtagForm(target, dataOuterFlag, document.querySelector(`.${modalOverlayClass}`));
@@ -212,20 +237,11 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		modal.classList.add(...modalOverlayClass);
 		modal.innerHTML = `
 			<div class="templateModal modalContent">
-				<div class="template__header">
-					<span class="text-header">
-						Add new contacts template
-					</span>
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
-				</div>
+				${renderProfileHeader('Add new contacts template')}
 				<div class="template__body">
 					<form action="#" class="profileDataForm" id="formNewContact">
 						<input type="hidden" name="call" value="doSetContactsTemplates">
-						<div class="nameData" style="margin-top: 0;">
+						<div class="nameData">
 							<div class="profileData__field1">
 								<label for="newContactName">Contacts template name</label>
 								<input type="text" class="input-form" name="templateName" id="newContactName" required>
@@ -465,7 +481,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				</div>
 				<div class="nameData">
 					<div class="profileData__field2">
-						<label for="hashtagTemplateList">Hashtags list <span class="editable-elem-chars color-pale">265/300</span></label>
+						<label for="hashtagTemplateList">Hashtags list <span class="editable-elem-chars color-pale" id="hashtagsCounter"></span></label>
 						<div class="hashtags-list-full input-form" contenteditable="true"
 							id="hashtagTemplateList">
 						</div>
@@ -474,6 +490,17 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				${renderButtonsFooter()}
 			</form>
 		`);
+		
+		formContainer.querySelector('#hashtagTemplateList').addEventListener('paste', function (e) {
+			e.preventDefault();
+			e.target.innerText = window.event.clipboardData.getData('text/plain');
+			this.dispatchEvent(new Event('keyup'));
+		});
+
+		formContainer.querySelector('#hashtagTemplateList').addEventListener('keyup', function (e) {
+			cropEditableContent(e.target, formContainer.querySelector('#hashtagsCounter'), maxHashtagsLength);
+		});
+
 		return formContainer;
 	};
 
@@ -513,6 +540,32 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		return formContainer;
 	};
 
+	const renderFAQForm = (toggles) => {
+		const formContainer = document.createElement('section');
+
+		formContainer.classList.add('profile-personal');
+		let faq_list = '';
+		for (let toggle of toggles) {
+			if (toggle.key_id === 'faq') {
+				try {
+					const pages = JSON.parse(toggle.value).pages;
+					for (let faq of pages) {
+						faq_list += `<a href="${faq.pageUrl}" target="_blank">${faq.title}</a>`;
+					}
+				}
+				catch (e) { console.log(e);	}
+				break;
+			}
+		}
+
+		formContainer.insertAdjacentHTML('beforeend', `
+			<h3 class="profile-h3">Personal Data</h3>
+			${faq_list}
+		`);
+
+		return formContainer.outerHTML;
+	};
+	
 	const renderPersonalForm = ((dataOuterFlag) => {
 		const formContainer = document.createElement('section');
 
@@ -585,6 +638,16 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 
 		userName.addEventListener('blur', hasNameChanged);
 
+		formContainer.querySelector('#user_descr').addEventListener('paste', function (e) {
+			e.preventDefault();
+			e.target.innerText = window.event.clipboardData.getData('text/plain');
+			this.dispatchEvent(new Event('keyup'));
+		});
+
+		formContainer.querySelector('#user_descr').addEventListener('keyup', function (e) {
+			cropEditableContent(e.target, formContainer.querySelector('#descriptionCounter'), maxDescriptionLength);
+		});
+
 		formContainer.querySelector('#homeLocation').addEventListener('click', (e) => {
 			e.preventDefault();
 			showModalMap({
@@ -611,21 +674,9 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 							<div class="profile-email" style="display:none;">${item.contact_email}</div>
 						</div>
 						<div class="profile-buttons">
-							<a href="#" class="profile-button d-none" data-id="${item.id}" data-default="none" data-delete="contact">
-								<svg width="24" height="24" class="icon icon__profile-open">
-									<use xlink:href="assets/workber_img/icons.svg#btn-trash"></use>
-								</svg>
-							</a>
-							<a href="#" class="profile-button d-none" data-default="none">
-								<svg width="24" height="24" class="icon icon__profile-open">
-									<use xlink:href="assets/workber_img/icons.svg#btn-toggleup"></use>
-								</svg>
-							</a>
-							<a href="#" class="profile-button" data-showned="down">
-								<svg width="24" height="24" class="icon icon__profile-close">
-									<use xlink:href="assets/workber_img/icons.svg#btn-toggledown"></use>
-								</svg>
-							</a>
+							${renderProfileButton('profile-button d-none', 'data-id="' + item.id + '" data-default="none" data-showned=""  data-delete="contact"', 'icon__profile-open', 'btn-trash')}
+							${renderProfileButton('profile-button d-none', 'data-default="none"', 'icon__profile-open', 'btn-toggleup')}
+							${renderProfileButton('profile-button', 'data-showned="down"', 'icon__profile-close', 'btn-toggledown')}
 						</div>
 					</div>
 				</dir>
@@ -699,21 +750,9 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						<div class="hashtags-list-cutted d-none">${item.hashtagList}</div>
 					</div>
 					<div class="profile-buttons">
-						<a href="#" data-id="${item.id}" class="profile-button d-none" data-default="none" data-showned="" data-delete="hashtag">
-							<svg width="24" height="24" class="icon icon__profile-open">
-								<use xlink:href="assets/workber_img/icons.svg#btn-trash"></use>
-							</svg>
-						</a>
-						<a href="#" class="profile-button d-none" data-default="none" data-showned="up">
-							<svg width="24" height="24" class="icon icon__profile-open">
-								<use xlink:href="assets/workber_img/icons.svg#btn-toggleup"></use>
-							</svg>
-						</a>
-						<a href="#" class="profile-button" data-showned="down">
-							<svg width="24" height="24" class="icon icon__profile-close">
-								<use xlink:href="assets/workber_img/icons.svg#btn-toggledown"></use>
-							</svg>
-						</a>
+						${renderProfileButton('profile-button d-none', 'data-id="' + item.id + '" data-default="none" data-showned="" data-delete="hashtag"', 'icon__profile-open', 'btn-trash')}
+						${renderProfileButton('profile-button d-none', 'data-default="none" data-showned="up"', 'icon__profile-open', 'btn-toggleup')}
+						${renderProfileButton('profile-button', 'data-showned="down"', 'icon__profile-close', 'btn-toggledown')}
 					</div>
 				</div>
 			</div>
@@ -782,7 +821,6 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 	modalForms.contactModalForm = renderModalContact(dataOuterFlag, 'modal-overlay', 'contactModalForm');
 
 	const fillForm = (formContainer, formData) => {
-		// console.log(formContainer);
 		try {
 			formContainer.querySelector('form').reset();
 			hideSignInfo(formContainer.querySelector('form').querySelector('.errorSignMessage'));
@@ -839,6 +877,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		fileAvatar = formSetAvatar.querySelector('#fileAvatar');
 
 	refreshPersonalForm();
+	profileContainer.querySelector('.profile-faq').innerHTML = renderFAQForm(toggles);
 
 	profileContainer.querySelectorAll('.btn__add-profile').forEach(item => {
 		item.addEventListener('click', (e) => {
@@ -866,7 +905,13 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 	});
 
 	fileAvatar.addEventListener('change', (e) => {
-		formSetAvatar.requestSubmit();
+		// imageResize(e.target.files[0]);
+			// .then((imageSmall) => {
+				// console.log('ready...');
+				// console.log(imageSmall);
+				formSetAvatar.requestSubmit();
+			// })
+		// console.log(e.target.files[0]);
 	});
 
 	profileContainer.querySelectorAll('form').forEach((form) => {
@@ -949,12 +994,14 @@ export const handlePostBtn = (elem, postDocumentId = null) => {
 				});
 			} else if (data.message === 'bookmarks changed') {
 				if (btn.getAttribute('data-value') === '0') {
-					btn.querySelector('.save_out').innerText = 'SAVE';
+					// btn.querySelector('.save_out').innerText = 'SAVE';
+					btn.querySelector('.save_out').style.display = '';
 					btn.classList.remove('save-selected');
 					btn.setAttribute('data-value', '1');
 					btn.querySelector('.icon').classList.remove('icon-selected');
 				} else {
-					btn.querySelector('.save_out').innerText = '';
+					// btn.querySelector('.save_out').innerText = '';
+					btn.querySelector('.save_out').style.display = 'none';
 					btn.classList.add('save-selected');
 					btn.setAttribute('data-value', '0');
 					btn.querySelector('.icon').classList.add('icon-selected');

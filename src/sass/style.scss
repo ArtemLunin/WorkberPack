@@ -38,7 +38,7 @@ a {
 	height: 60px;
 	position: fixed;
 	bottom: 0;
-	background-color: ghostwhite;
+	background-color: #f2f2f2;
 	display: flex;
 	width: 100%;
 }
@@ -440,7 +440,7 @@ a {
 	align-items: center;
 	width: 73px;
 	justify-content: space-between;
-	// background-color: ghostwhite;
+	// background-color: #f2f2f2;
 
 	.dist-text {
 		font-weight: 600;
@@ -478,7 +478,7 @@ a {
 .posts-start {
 	margin-top: 80px;
 	margin-bottom: 48px;
-	// background-color: ghostwhite;
+	// background-color: #f2f2f2;
 }
 
 .post-one {
@@ -778,9 +778,12 @@ a {
 	padding-top: 0;
 	padding-bottom: 0;
 	padding-left: 6px;
-	padding-right: 10px;
+	padding-right: 6px;
 	display: flex;
 	align-items: center;
+	& span {
+		margin-right: 4px;
+	}
 }
 
 .post-action-group {
@@ -898,7 +901,7 @@ a {
 	padding: 30px 0 30px;
 	text-align: center;
 	color: #47434F;
-	background-color: ghostwhite;
+	background-color: #f2f2f2;
 }
 
 .search-spinner {
@@ -908,7 +911,7 @@ a {
 	bottom: 0;
 	text-align: center;
 	padding: 40px 0 60px 0;
-	background: ghostwhite;
+	background: #f2f2f2;
 }
 
 #map {

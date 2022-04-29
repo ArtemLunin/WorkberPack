@@ -1,5 +1,5 @@
 import {getActionProps} from './domHelpers';
-import {renderFavButton, renderLikeButton} from './domManipulation';
+import {renderFavButton, renderLikeButton, renderShareButton} from './domManipulation';
 
 const getDefaultContactsData = contactsList => {
 	const contactsData = {
@@ -29,7 +29,7 @@ const getUserAvatar = (userPicture, userName) => {
 	return user_img;
 };
 
-export const createPost = ({postid, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, city, role_ad, contactsList, is_likes, is_bookmarks}, isLogined = false) => {
+export const createPost = ({postid, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, shortlink, city, role_ad, contactsList, is_likes, is_bookmarks}, isLogined = false) => {
 	let post_img = '';
 	let hide_post_img = 'd-none';
 	let hide_more = 'd-none';
@@ -58,12 +58,13 @@ export const createPost = ({postid, user_picture, user_name, collage, post_name,
 						<div class="post-action-group">
 							${renderLikeButton(disabledState, postid, actionProps)}
 							${renderFavButton(disabledState, postid, actionProps)}
-							<button class="post-action post-share">
+							${renderShareButton(shortlink)}
+							<!--<button class="post-action post-share" data-link="${shortlink}" title="Copy link to post">
 								<svg width="24" height="24" class="icon">
 									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
 								</svg>
 								SHARE
-							</button>
+							</button>-->
 						</div>
 						<div class="post-more">
 							<span class="post-view ${hide_more}">
@@ -146,18 +147,20 @@ export const createStartPostFeed = ({id, user_picture, user_name, collage, post_
 			<span class="post-username">${user_name}</span>
 			<p class="location-city">${city}</p>
 		</div>
-		<div class="d-none post-like">${likes}</div>
-		<div class="d-none post-is_likes">${is_likes}</div>
-		<div class="d-none post-is_bookmarks">${is_bookmarks}</div>
-		<div class="d-none post-role_ad">${role_ad}</div>
-		<div class="d-none post-hashtags">${JSON.stringify(hashtags)}</div>
+		<div style="display:none;" class="post-like">${likes}</div>
+		<div style="display:none;" class="post-is_likes">${is_likes}</div>
+		<div style="display:none;" class="post-is_bookmarks">${is_bookmarks}</div>
+		<div style="display:none;" class="post-role_ad">${role_ad}</div>
+		<div style="display:none;" class="post-hashtags">${JSON.stringify(hashtags)}</div>
+		<div style="display:none;" class="post-link">${shortlink}</div>
+		<div style="display:none;" class="post-image">${post_img}</div>
 		<!--<div class="post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
 		</div>-->
-		<div class="${hide_post_img}">
+		<!--<div class="${hide_post_img}">
 			<a class="post-link " href="${shortlink}" data-postid="${id}">
 				<img src="${post_img}" alt="Post image">
 			</a>
-		</div>
+		</div>-->
 		<div class="post-content" data-dist="${dist}" data-lat="${lat}" data-lng="${lng}">
 			<div class="start-post-text ${hide_post_text}">
 				<div class="post-title">
@@ -234,12 +237,13 @@ export const createPostFeed = ({id, user_picture, user_name, collage, post_name,
 						<div class="post-action-group">
 							${renderLikeButton(disabledState, id, actionProps)}
 							${renderFavButton(disabledState, id, actionProps)}
-							<button class="post-action post-share new-post-share" data-link="${shortlink}" title="Copy link to post">
+							${renderShareButton(shortlink, "new-post-share")}
+							<!--<button class="post-action post-share new-post-share" data-link="${shortlink}" title="Copy link to post">
 								<svg width="24" height="24" class="icon">
 									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
 								</svg>
 								SHARE
-							</button>
+							</button>-->
 						</div>
 						<!--<div class="post-more">
 							<span class="post-view">
@@ -259,7 +263,7 @@ export const createPostFeed = ({id, user_picture, user_name, collage, post_name,
 						<span class="post-text-more d-none">… more</span>
 					</div>
 					<div class="post-text post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
-						${hashtags_str}
+						${JSON.stringify(hashtags)}
 					</div>
 				</div>
 			</div>`;

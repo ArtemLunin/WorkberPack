@@ -20834,11 +20834,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const postShare = document.querySelectorAll('.new-post-share');
       postShare.forEach(item => {
         item.classList.remove('new-post-share');
-        item.addEventListener('click', e => {
-          const target = e.target;
-          navigator.clipboard.writeText(target.dataset.link);
-          e.stopPropagation();
-        });
+        item.addEventListener('click', _modules_domHelpers__WEBPACK_IMPORTED_MODULE_12__["copyShareLink"]);
       });
       const newPost = document.querySelectorAll('.new-post');
       newPost.forEach(item => {
@@ -20854,11 +20850,14 @@ window.addEventListener('DOMContentLoaded', () => {
           }
         }
 
-        item.querySelector('.post-action-group').addEventListener('click', e => {
-          e.stopPropagation();
-          e.preventDefault();
-          Object(_modules_domElements__WEBPACK_IMPORTED_MODULE_13__["handlePostBtn"])(e.target);
-        });
+        try {
+          item.querySelector('.post-action-group').addEventListener('click', e => {
+            e.stopPropagation();
+            e.preventDefault();
+            Object(_modules_domElements__WEBPACK_IMPORTED_MODULE_13__["handlePostBtn"])(e.target);
+          });
+        } catch (e) {}
+
         item.addEventListener('click', e => {
           e.preventDefault();
           showOnePost(item.dataset.postid);
@@ -20919,18 +20918,20 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         currentPage = showPageName;
-        const collage = [];
-        collage.name = onePostFeed.querySelector('.post-link img').attributes.src.value;
+        const collage = {}; // collage.name = onePostFeed.querySelector('.post-link img').attributes.src.value;
+
+        collage.name = onePostFeed.querySelector('.post-image').textContent;
         const user_picture = onePostFeed.querySelector('.user-data').dataset.avatar,
               user_name = onePostFeed.querySelector('.post-username').textContent,
               post_name = onePostFeed.querySelector('.post-title').textContent,
               text_adv = onePostFeed.querySelector('.post-text').firstChild.textContent,
-              likes = onePostFeed.querySelector('.post-like').innerText,
-              is_likes = onePostFeed.querySelector('.post-is_likes').innerText,
-              is_bookmarks = onePostFeed.querySelector('.post-is_bookmarks').innerText,
-              role_ad = onePostFeed.querySelector('.post-role_ad').innerText,
+              likes = onePostFeed.querySelector('.post-like').textContent,
+              is_likes = onePostFeed.querySelector('.post-is_likes').textContent,
+              is_bookmarks = onePostFeed.querySelector('.post-is_bookmarks').textContent,
+              role_ad = onePostFeed.querySelector('.post-role_ad').textContent,
               hashtags = JSON.parse(onePostFeed.querySelector('.post-hashtags').innerText),
               city = onePostFeed.querySelector('.location-city').textContent,
+              shortlink = onePostFeed.querySelector('.post-link').textContent,
               contactsList = {
           phone: onePostFeed.querySelector('.post-contact-phone').textContent,
           contact_email: onePostFeed.querySelector('.post-contact-email').textContent,
@@ -20945,6 +20946,7 @@ window.addEventListener('DOMContentLoaded', () => {
           text_adv,
           likes,
           hashtags,
+          shortlink,
           city,
           role_ad,
           contactsList,
@@ -20960,6 +20962,7 @@ window.addEventListener('DOMContentLoaded', () => {
           e.preventDefault();
           Object(_modules_domElements__WEBPACK_IMPORTED_MODULE_13__["handlePostBtn"])(e.target, postDocumentId);
         });
+        post.querySelector('.post-share').addEventListener('click', _modules_domHelpers__WEBPACK_IMPORTED_MODULE_12__["copyShareLink"]);
         postsOne.append(post);
         Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["hidePageElems"])(showPageName, showControl);
         Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["showPageElems"])(showPageName, showControl);
@@ -21268,15 +21271,15 @@ window.addEventListener('DOMContentLoaded', () => {
           // userMenu.classList.remove('d-none');
         }
 
-        profileContainer = Object(_modules_domElements__WEBPACK_IMPORTED_MODULE_13__["renderProfile"])(profile.profile, '#small_avatar', showControl); // console.log(profileContainer);
-
-        const profileDescription = profileContainer.querySelector('#user_descr');
-        const descriptionCounter = profileContainer.querySelector('#descriptionCounter'); // profileDescription.innerText = profileDescription.innerText.trim().substring(0, maxDescriptionLength);
+        profileContainer = Object(_modules_domElements__WEBPACK_IMPORTED_MODULE_13__["renderProfile"])(profile.profile, '#small_avatar', showControl);
+        const profileDescription = profileContainer.querySelector('#user_descr'); // const descriptionCounter = profileContainer.querySelector('#descriptionCounter');
+        // profileDescription.innerText = profileDescription.innerText.trim().substring(0, maxDescriptionLength);
         // descriptionCounter.innerText = `${profileDescription.innerText.length}/${maxDescriptionLength}`;
+        // profileDescription.addEventListener('keyup', (e) => {
+        // 	cropDescription(e, descriptionCounter, maxDescriptionLength);
+        // 	// (cursor_position(e.target));
+        // });
 
-        profileDescription.addEventListener('keyup', e => {
-          Object(_modules_domHelpers__WEBPACK_IMPORTED_MODULE_12__["cropDescription"])(e.target, descriptionCounter, _modules_config__WEBPACK_IMPORTED_MODULE_4__["maxDescriptionLength"]);
-        });
         profileDescription.dispatchEvent(new Event('keyup'));
         document.querySelector('#small_avatar').addEventListener('click', e => {
           e.preventDefault();
@@ -21371,7 +21374,9 @@ __webpack_require__.r(__webpack_exports__);
  * object for store app state
  */
 
-const appState = {};
+const appState = {
+  items: {}
+};
 /**
  * get user profile (async function)
  * @module appState
@@ -21608,7 +21613,7 @@ const URImod = newURIParams => {
 /*!**********************************!*\
   !*** ./src/js/modules/config.js ***!
   \**********************************/
-/*! exports provided: termsHTML, privacyHTML, workberBackEnd, workberImages, endSearchCode, registrationID, googleMapKey, storeLinks, maxDescriptionLength */
+/*! exports provided: termsHTML, privacyHTML, workberBackEnd, workberImages, innerImagesPath, endSearchCode, registrationID, googleMapKey, storeLinks, maxDescriptionLength, maxHashtagsLength */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21617,17 +21622,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "privacyHTML", function() { return privacyHTML; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "workberBackEnd", function() { return workberBackEnd; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "workberImages", function() { return workberImages; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "innerImagesPath", function() { return innerImagesPath; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "endSearchCode", function() { return endSearchCode; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "registrationID", function() { return registrationID; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "googleMapKey", function() { return googleMapKey; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "storeLinks", function() { return storeLinks; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "maxDescriptionLength", function() { return maxDescriptionLength; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "maxHashtagsLength", function() { return maxHashtagsLength; });
 const workberDomain = 'workber.me';
 const workberSite = 'https://' + workberDomain;
 const termsHTML = workberSite + '/terms_conditions.html';
 const privacyHTML = workberSite + '/privacy_policy.html';
 const workberBackEnd = 'https://' + '2b2.' + workberDomain + '/gw.php';
 const workberImages = workberSite + '/img';
+const innerImagesPath = 'assets/workber_img';
 const endSearchCode = 2;
 const registrationID = Date.now();
 const googleMapKey = 'AIzaSyAGnP5m0Jp0I9otFx-pJXAktVQ7DGyrRhY';
@@ -21636,6 +21644,7 @@ const storeLinks = {
   appStore: "https://apps.apple.com/ru/app/workber/id1485121269"
 };
 const maxDescriptionLength = 120;
+const maxHashtagsLength = 200;
 
 /***/ }),
 
@@ -21643,11 +21652,12 @@ const maxDescriptionLength = 120;
 /*!***************************************!*\
   !*** ./src/js/modules/domElements.js ***!
   \***************************************/
-/*! exports provided: renderProfile, handlePostBtn */
+/*! exports provided: cropEditableContent, renderProfile, handlePostBtn */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cropEditableContent", function() { return cropEditableContent; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderProfile", function() { return renderProfile; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "handlePostBtn", function() { return handlePostBtn; });
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
@@ -21659,6 +21669,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _appState__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./appState */ "./src/js/modules/appState.js");
 /* harmony import */ var _forms__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./forms */ "./src/js/modules/forms.js");
 /* harmony import */ var _map__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./map */ "./src/js/modules/map.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
+
 
 
 
@@ -21666,6 +21678,28 @@ __webpack_require__.r(__webpack_exports__);
 
 
  // import {setCurrentContainer} from './storage';
+// const pica = require('pica')();
+// import * from 'image-blob-reduce';
+// const reduce = require('image-blob-reduce')();
+
+const cropEditableContent = (el, contentCounterEl, maxLength) => {
+  if (maxLength < el.innerText.trim().length) {
+    el.innerText = el.innerText.trim().substring(0, maxLength);
+    setCursorEnd(el);
+  }
+
+  contentCounterEl.innerText = `${el.innerText.length}/${maxLength}`;
+};
+
+const setCursorEnd = el => {
+  const selection = window.getSelection();
+  const range = document.createRange();
+  selection.removeAllRanges();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  selection.addRange(range);
+  el.focus();
+};
 
 const renderProfile = ({
   contact_email,
@@ -21677,11 +21711,12 @@ const renderProfile = ({
   lat,
   lng,
   hashtagsList,
-  contactsList
+  contactsList,
+  toggles
 }, settingsSelector, showControl) => {
   const dataOuterFlag = 'data-outer';
 
-  const userAvatar = user_picture => user_picture ? user_picture : 'assets/workber_img/big_avatar.jpeg';
+  const userAvatar = user_picture => user_picture ? user_picture : 'assets/workber_img/no-avatar.jpg';
 
   const localProfile = {
     hashagsList: JSON.parse(JSON.stringify(hashtagsList)),
@@ -21739,9 +21774,7 @@ const renderProfile = ({
 						<input type="file" name="file" id="fileAvatar" accept="image/*" hidden>
 							<a href="#" class="profile-avatar-change">
 								<div class="profile-avatar-hint">
-									<svg width="24" height="24" class="icon icon-photo">
-											<use xlink:href="assets/workber_img/icons.svg#btn-photo"></use>
-									</svg>
+									${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderIcon"])('btn-photo', 24, 'icon-photo')}
 								<span>Change photo</span>
 								</div>
 							</a>
@@ -21755,23 +21788,20 @@ const renderProfile = ({
 					<li data-container="profile-settings-main" class="menu-item active">Personal data</li>
 					<li data-container="profile-contacts" class="menu-item">Contact information</li>
 					<li data-container="profile-hashtags" class="menu-item">Hashtags</li>
+					<li style="display:none;" data-container="profile-faq" class="menu-item">F.A.Q</li>
 					<!--<li data-container="profile-privacy" class="menu-item">Privacy</li>-->
 					<li>
 						<hr class="divider">
 					</li>
 					<li data-container="signout" class="menu-item">
 						<div class="profile-signout">
-							<svg width="24" height="24" class="icon">
-								<use xlink:href="assets/workber_img/icons.svg#btn-signout"></use>
-							</svg>
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderIcon"])('btn-signout', 24)}
 							Sign Out
 						</div>
 					</li>
 					<li data-container="deleteAccount" class="menu-item">
 						<div class="profile-signout">
-							<svg width="24" height="24" class="icon">
-								<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-							</svg>
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderIcon"])('btn-close', 24)}
 							Delete account
 						</div>
 					</li>
@@ -21801,7 +21831,9 @@ const renderProfile = ({
 				</section>
 				<section class="profile-item"></section>
 			</div>
-			<div class="profile-unit profile-settings-common profile-privacy d-none">
+			<div class="profile-unit profile-settings-common profile-faq d-none">
+			</div>
+			<div style="display:none;" class="profile-unit profile-settings-common profile-privacy d-none">
 				<section class="profile-personal">
 					<form action="#" class="privacyDataForm" id="privacyDataForm">
 						<h3 class="profile-h3">Email Notifications</h3>
@@ -21830,16 +21862,7 @@ const renderProfile = ({
     modal.classList.add(...modalOverlayClass);
     modal.innerHTML = `
 			<div class="templateModal modalContent">
-				<div class="template__header">
-					<span class="text-header">
-						Add new hashtags template
-					</span>
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
-				</div>
+				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileHeader"])('Add new hashtags template')}
 				<div class="template__body">
 					<form class="modal-form" action="#" method="POST" id="formNewHashtag">
 						<input type="hidden" name="call" value="doSetHashtagTemplates">
@@ -21853,7 +21876,7 @@ const renderProfile = ({
 						</div>
 						<div class="nameData-w-100">
 							<div class="profileData__field2">
-								<label for="hashtagTemplateList">Hashtags list</label>
+								<label for="hashtagTemplateList">Hashtags list <span class="editable-elem-chars color-pale" id="hashtagsCounter"></span></label>
 								<div class="hashtags-list-full input-form" contenteditable="true" id="hashtagTemplateList">
 								</div>
 							</div>
@@ -21863,6 +21886,7 @@ const renderProfile = ({
 				</div>
 			</div>
 		`;
+    const modalForm = modal.querySelector('form');
     modal.addEventListener('click', function (e) {
       const target = e.target;
 
@@ -21871,12 +21895,21 @@ const renderProfile = ({
         Object(_modal__WEBPACK_IMPORTED_MODULE_3__["closeSignModal"])(this);
       }
     });
-    modal.querySelector('form').addEventListener('reset', e => {
+    modalForm.querySelector('#hashtagTemplateList').addEventListener('paste', function (e) {
+      e.preventDefault();
+      e.target.innerText = window.event.clipboardData.getData('text/plain');
+      this.dispatchEvent(new Event('keyup'));
+    });
+    modalForm.querySelector('#hashtagTemplateList').addEventListener('keyup', function (e) {
+      cropEditableContent(e.target, modalForm.querySelector('#hashtagsCounter'), _config__WEBPACK_IMPORTED_MODULE_7__["maxHashtagsLength"]);
+    });
+    modalForm.addEventListener('reset', e => {
       const target = e.target;
       Object(_forms__WEBPACK_IMPORTED_MODULE_5__["hideSignInfo"])(target.querySelector('.errorSignMessage'));
       target.querySelector('#hashtagTemplateList').textContent = '';
+      target.querySelector('#hashtagsCounter').textContent = '';
     });
-    modal.querySelector('form').addEventListener('submit', e => {
+    modalForm.addEventListener('submit', e => {
       const target = e.target;
       e.preventDefault();
       submitHashtagForm(target, dataOuterFlag, document.querySelector(`.${modalOverlayClass}`));
@@ -21889,20 +21922,11 @@ const renderProfile = ({
     modal.classList.add(...modalOverlayClass);
     modal.innerHTML = `
 			<div class="templateModal modalContent">
-				<div class="template__header">
-					<span class="text-header">
-						Add new contacts template
-					</span>
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
-				</div>
+				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileHeader"])('Add new contacts template')}
 				<div class="template__body">
 					<form action="#" class="profileDataForm" id="formNewContact">
 						<input type="hidden" name="call" value="doSetContactsTemplates">
-						<div class="nameData" style="margin-top: 0;">
+						<div class="nameData">
 							<div class="profileData__field1">
 								<label for="newContactName">Contacts template name</label>
 								<input type="text" class="input-form" name="templateName" id="newContactName" required>
@@ -22144,7 +22168,7 @@ const renderProfile = ({
 				</div>
 				<div class="nameData">
 					<div class="profileData__field2">
-						<label for="hashtagTemplateList">Hashtags list <span class="editable-elem-chars color-pale">265/300</span></label>
+						<label for="hashtagTemplateList">Hashtags list <span class="editable-elem-chars color-pale" id="hashtagsCounter"></span></label>
 						<div class="hashtags-list-full input-form" contenteditable="true"
 							id="hashtagTemplateList">
 						</div>
@@ -22153,6 +22177,14 @@ const renderProfile = ({
 				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtonsFooter"])()}
 			</form>
 		`);
+    formContainer.querySelector('#hashtagTemplateList').addEventListener('paste', function (e) {
+      e.preventDefault();
+      e.target.innerText = window.event.clipboardData.getData('text/plain');
+      this.dispatchEvent(new Event('keyup'));
+    });
+    formContainer.querySelector('#hashtagTemplateList').addEventListener('keyup', function (e) {
+      cropEditableContent(e.target, formContainer.querySelector('#hashtagsCounter'), _config__WEBPACK_IMPORTED_MODULE_7__["maxHashtagsLength"]);
+    });
     return formContainer;
   };
 
@@ -22190,6 +22222,34 @@ const renderProfile = ({
 			</form>
 		`);
     return formContainer;
+  };
+
+  const renderFAQForm = toggles => {
+    const formContainer = document.createElement('section');
+    formContainer.classList.add('profile-personal');
+    let faq_list = '';
+
+    for (let toggle of toggles) {
+      if (toggle.key_id === 'faq') {
+        try {
+          const pages = JSON.parse(toggle.value).pages;
+
+          for (let faq of pages) {
+            faq_list += `<a href="${faq.pageUrl}" target="_blank">${faq.title}</a>`;
+          }
+        } catch (e) {
+          console.log(e);
+        }
+
+        break;
+      }
+    }
+
+    formContainer.insertAdjacentHTML('beforeend', `
+			<h3 class="profile-h3">Personal Data</h3>
+			${faq_list}
+		`);
+    return formContainer.outerHTML;
   };
 
   const renderPersonalForm = dataOuterFlag => {
@@ -22261,6 +22321,14 @@ const renderProfile = ({
     };
 
     userName.addEventListener('blur', hasNameChanged);
+    formContainer.querySelector('#user_descr').addEventListener('paste', function (e) {
+      e.preventDefault();
+      e.target.innerText = window.event.clipboardData.getData('text/plain');
+      this.dispatchEvent(new Event('keyup'));
+    });
+    formContainer.querySelector('#user_descr').addEventListener('keyup', function (e) {
+      cropEditableContent(e.target, formContainer.querySelector('#descriptionCounter'), _config__WEBPACK_IMPORTED_MODULE_7__["maxDescriptionLength"]);
+    });
     formContainer.querySelector('#homeLocation').addEventListener('click', e => {
       e.preventDefault();
       Object(_modal__WEBPACK_IMPORTED_MODULE_3__["showModalMap"])({
@@ -22286,21 +22354,9 @@ const renderProfile = ({
 							<div class="profile-email" style="display:none;">${item.contact_email}</div>
 						</div>
 						<div class="profile-buttons">
-							<a href="#" class="profile-button d-none" data-id="${item.id}" data-default="none" data-delete="contact">
-								<svg width="24" height="24" class="icon icon__profile-open">
-									<use xlink:href="assets/workber_img/icons.svg#btn-trash"></use>
-								</svg>
-							</a>
-							<a href="#" class="profile-button d-none" data-default="none">
-								<svg width="24" height="24" class="icon icon__profile-open">
-									<use xlink:href="assets/workber_img/icons.svg#btn-toggleup"></use>
-								</svg>
-							</a>
-							<a href="#" class="profile-button" data-showned="down">
-								<svg width="24" height="24" class="icon icon__profile-close">
-									<use xlink:href="assets/workber_img/icons.svg#btn-toggledown"></use>
-								</svg>
-							</a>
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileButton"])('profile-button d-none', 'data-id="' + item.id + '" data-default="none" data-showned=""  data-delete="contact"', 'icon__profile-open', 'btn-trash')}
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileButton"])('profile-button d-none', 'data-default="none"', 'icon__profile-open', 'btn-toggleup')}
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileButton"])('profile-button', 'data-showned="down"', 'icon__profile-close', 'btn-toggledown')}
 						</div>
 					</div>
 				</dir>
@@ -22389,21 +22445,9 @@ const renderProfile = ({
 						<div class="hashtags-list-cutted d-none">${item.hashtagList}</div>
 					</div>
 					<div class="profile-buttons">
-						<a href="#" data-id="${item.id}" class="profile-button d-none" data-default="none" data-showned="" data-delete="hashtag">
-							<svg width="24" height="24" class="icon icon__profile-open">
-								<use xlink:href="assets/workber_img/icons.svg#btn-trash"></use>
-							</svg>
-						</a>
-						<a href="#" class="profile-button d-none" data-default="none" data-showned="up">
-							<svg width="24" height="24" class="icon icon__profile-open">
-								<use xlink:href="assets/workber_img/icons.svg#btn-toggleup"></use>
-							</svg>
-						</a>
-						<a href="#" class="profile-button" data-showned="down">
-							<svg width="24" height="24" class="icon icon__profile-close">
-								<use xlink:href="assets/workber_img/icons.svg#btn-toggledown"></use>
-							</svg>
-						</a>
+						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileButton"])('profile-button d-none', 'data-id="' + item.id + '" data-default="none" data-showned="" data-delete="hashtag"', 'icon__profile-open', 'btn-trash')}
+						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileButton"])('profile-button d-none', 'data-default="none" data-showned="up"', 'icon__profile-open', 'btn-toggleup')}
+						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileButton"])('profile-button', 'data-showned="down"', 'icon__profile-close', 'btn-toggledown')}
 					</div>
 				</div>
 			</div>
@@ -22479,7 +22523,6 @@ const renderProfile = ({
   modalForms.contactModalForm = renderModalContact(dataOuterFlag, 'modal-overlay', 'contactModalForm');
 
   const fillForm = (formContainer, formData) => {
-    // console.log(formContainer);
     try {
       formContainer.querySelector('form').reset();
       Object(_forms__WEBPACK_IMPORTED_MODULE_5__["hideSignInfo"])(formContainer.querySelector('form').querySelector('.errorSignMessage'));
@@ -22556,6 +22599,7 @@ const renderProfile = ({
         contactsTemplatesCount = profileContainer.querySelector('#contactsTemplatesCount'),
         fileAvatar = formSetAvatar.querySelector('#fileAvatar');
   refreshPersonalForm();
+  profileContainer.querySelector('.profile-faq').innerHTML = renderFAQForm(toggles);
   profileContainer.querySelectorAll('.btn__add-profile').forEach(item => {
     item.addEventListener('click', e => {
       e.preventDefault();
@@ -22579,7 +22623,12 @@ const renderProfile = ({
     submitSettingsForm(e.target);
   });
   fileAvatar.addEventListener('change', e => {
-    formSetAvatar.requestSubmit();
+    // imageResize(e.target.files[0]);
+    // .then((imageSmall) => {
+    // console.log('ready...');
+    // console.log(imageSmall);
+    formSetAvatar.requestSubmit(); // })
+    // console.log(e.target.files[0]);
   });
   profileContainer.querySelectorAll('form').forEach(form => {
     if (form.getAttribute('data-batch') !== null) {
@@ -22663,12 +22712,14 @@ const handlePostBtn = (elem, postDocumentId = null) => {
         });
       } else if (data.message === 'bookmarks changed') {
         if (btn.getAttribute('data-value') === '0') {
-          btn.querySelector('.save_out').innerText = 'SAVE';
+          // btn.querySelector('.save_out').innerText = 'SAVE';
+          btn.querySelector('.save_out').style.display = '';
           btn.classList.remove('save-selected');
           btn.setAttribute('data-value', '1');
           btn.querySelector('.icon').classList.remove('icon-selected');
         } else {
-          btn.querySelector('.save_out').innerText = '';
+          // btn.querySelector('.save_out').innerText = '';
+          btn.querySelector('.save_out').style.display = 'none';
           btn.classList.add('save-selected');
           btn.setAttribute('data-value', '0');
           btn.querySelector('.icon').classList.add('icon-selected');
@@ -22688,15 +22739,15 @@ const handlePostBtn = (elem, postDocumentId = null) => {
 /*!**************************************!*\
   !*** ./src/js/modules/domHelpers.js ***!
   \**************************************/
-/*! exports provided: getCurrentPage, cropDescription, visible, getActionProps */
+/*! exports provided: getCurrentPage, visible, getActionProps, copyShareLink */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getCurrentPage", function() { return getCurrentPage; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cropDescription", function() { return cropDescription; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "visible", function() { return visible; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getActionProps", function() { return getActionProps; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyShareLink", function() { return copyShareLink; });
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__);
 
@@ -22708,10 +22759,6 @@ const getCurrentPage = servicesSelector => {
       return item.dataset.service;
     }
   }
-};
-const cropDescription = (descriptionEl, descriptionCounterEl, maxDescriptionLength) => {
-  // descriptionEl.innerText = descriptionEl.innerText.trim().substring(0, maxDescriptionLength);
-  descriptionCounterEl.innerText = `${descriptionEl.innerText.length}/${maxDescriptionLength}`;
 };
 const visible = elem => {
   const rect = elem.getBoundingClientRect();
@@ -22747,7 +22794,7 @@ const getActionProps = (likes, is_likes, is_bookmarks) => {
       save_selected = '',
       icon_like = '',
       icon_save = '',
-      text_save = 'SAVE',
+      text_save = true,
       like_value = 1,
       fav_value = 1;
 
@@ -22761,7 +22808,7 @@ const getActionProps = (likes, is_likes, is_bookmarks) => {
     save_selected = 'save-selected';
     icon_save = 'icon-selected';
     fav_value = 0;
-    text_save = '';
+    text_save = false;
   }
 
   return {
@@ -22775,6 +22822,22 @@ const getActionProps = (likes, is_likes, is_bookmarks) => {
     fav_value
   };
 };
+/**
+ * copy post link to clipboard
+ * @module domHelpers
+ * @param {event} e
+ * @return {void}
+ */
+
+const copyShareLink = e => {
+  const target = e.target;
+
+  try {
+    navigator.clipboard.writeText(target.dataset.link);
+  } catch (e) {} finally {
+    e.stopPropagation();
+  }
+};
 
 /***/ }),
 
@@ -22782,7 +22845,7 @@ const getActionProps = (likes, is_likes, is_bookmarks) => {
 /*!*******************************************!*\
   !*** ./src/js/modules/domManipulation.js ***!
   \*******************************************/
-/*! exports provided: toggleService, hidePageElems, showPageElems, controlElems, renderButtonsFooter, renderFavButton, renderLikeButton, updatePostActionData */
+/*! exports provided: toggleService, hidePageElems, showPageElems, controlElems, renderButtonsFooter, renderFavButton, renderLikeButton, renderShareButton, renderSocialButton, renderProfileButton, renderIcon, renderProfileHeader, renderCloseMenu, updatePostActionData */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22794,18 +22857,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderButtonsFooter", function() { return renderButtonsFooter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderFavButton", function() { return renderFavButton; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderLikeButton", function() { return renderLikeButton; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderShareButton", function() { return renderShareButton; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderSocialButton", function() { return renderSocialButton; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderProfileButton", function() { return renderProfileButton; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderIcon", function() { return renderIcon; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderProfileHeader", function() { return renderProfileHeader; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderCloseMenu", function() { return renderCloseMenu; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updatePostActionData", function() { return updatePostActionData; });
 /* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./storage */ "./src/js/modules/storage.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
+
 
 const toggleService = (servicesSelector, targetService, className) => {
   const services = document.querySelectorAll(servicesSelector);
   services.forEach(item => {
-    // item.classList.remove('service-selected');
     item.classList.remove(className);
   });
 
   if (!!targetService) {
-    // targetService.classList.add('service-selected');
     targetService.classList.add(className);
   }
 };
@@ -22850,25 +22919,130 @@ const renderButtonsFooter = (renderReset = false) => {
 		</div>
 	`;
 };
+/**
+ * render HTML layout for Fav button
+ * @module domManipulation
+ * @param {boolean} disabledState
+ * @param {string} postid
+ * @param {object} actionProps
+ * @return {string} HTML layout
+ */
+
 const renderFavButton = (disabledState, postid, actionProps) => {
+  return '';
   return `
 		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-postid="${postid}">
-			<svg width="24" height="24" class="icon ${actionProps.icon_save}">
+			<!--<svg width="24" height="24" class="icon ${actionProps.icon_save}">
 				<use xlink:href="assets/workber_img/icons.svg#btn-save"></use>
-			</svg>
-			<span class="save_out">${actionProps.text_save}</span>
+			</svg>-->
+			${renderIcon('btn-save', 24, actionProps.icon_save)}
+			<span class="save_out" ${actionProps.text_save ? '' : `style="display:none;"`}>SAVE</span>
 		</button>
 	`;
 };
+/**
+ * render HTML layout for Like button
+ * @module domManipulation
+ * @param {boolean} disabledState
+ * @param {string} postid
+ * @param {object} actionProps
+ * @return {string} HTML layout
+ */
+
 const renderLikeButton = (disabledState, postid, actionProps) => {
   return `
 		<button ${disabledState} class="post-action post-like ${actionProps.like_selected}" data-call="doLike" data-param="like" data-value="${actionProps.like_value}" data-postid="${postid}">
-			<svg width="24" height="24" class="icon ${actionProps.icon_like}">
-				<use xlink:href="assets/workber_img/icons.svg#btn-like"></use>
-			</svg>
+			${renderIcon('btn-like', 24, actionProps.icon_like)}
 			<span class="likes_out">${actionProps.likes_count}</span>
 		</button>
-		`;
+	`;
+};
+/**
+ * render HTML layout SHARE button
+ * @module domManipulation
+ * @param {string} shortlink
+ * @param {string} newShareClass
+ * @return {string} HTML layout
+ */
+
+const renderShareButton = (shortlink, newShareClass = '') => {
+  return `
+		<button class="post-action post-share ${newShareClass}" data-link="${shortlink}" title="Copy link to post">
+			${renderIcon('btn-share', 24)}
+			SHARE
+		</button>
+	`;
+};
+/**
+ * render HTML layout social button for login to app
+ * @module domManipulation
+ * @param {string} provider
+ * @return {string} HTML layout
+ */
+
+const renderSocialButton = provider => {
+  return `
+		<a href="#" class="btn-auth" data-auth_provider="${provider}">
+			${renderIcon('btn-' + provider, 36)}
+		</a>
+	`;
+};
+/**
+ * render HTML layout profile button
+ * @module domManipulation
+ * @param {string} btnClass
+ * @param {string} attributes
+ * @param {string} iconClass
+ * @param {string} iconBtn
+ * @return {string} HTML layout
+ */
+
+const renderProfileButton = (btnClass, attributes, iconClass, iconBtn) => {
+  return `
+		<a href="#" class="${btnClass}" ${attributes}>
+		${renderIcon(iconBtn, 24, iconClass)}
+		</a>
+	`;
+};
+/**
+ * render HTML layout svg icon
+ * @module domManipulation
+ * @param {string} iconID
+ * @param {number} size
+ * @param {string} addedClasses
+ * @return {string} HTML layout
+ */
+
+const renderIcon = (iconID, size, addedClasses = '') => {
+  return `
+		<svg width="${size}" height="${size}" class="icon ${addedClasses}">
+			<use xlink:href="${_config__WEBPACK_IMPORTED_MODULE_1__["innerImagesPath"]}/icons.svg#${iconID}"></use>
+		</svg>
+	`;
+};
+/**
+ * render HTML layout profile header
+ * @module domManipulation
+ * @param {string} title
+ * @return {string} HTML layout
+ */
+
+const renderProfileHeader = title => {
+  return `
+	<div class="template__header">
+		<span class="text-header">
+			${title}
+		</span>
+		${renderCloseMenu()}
+	</div>
+ `;
+};
+const renderCloseMenu = () => {
+  return `
+		<span class="menu__close">
+			${renderIcon('btn-close', 24)}
+		</span>
+	`;
 };
 /**
  * update state for likes and favourites buttons
@@ -22894,33 +23068,48 @@ const updatePostActionData = (postDocumentId, postUpdatedObject) => {
 /*!************************************!*\
   !*** ./src/js/modules/firebase.js ***!
   \************************************/
-/*! exports provided: firebaseGoogleAuth */
+/*! exports provided: firebaseAuth, firebaseGoogleAuth, firebaseTwitterAuth */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firebaseAuth", function() { return firebaseAuth; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firebaseGoogleAuth", function() { return firebaseGoogleAuth; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firebaseTwitterAuth", function() { return firebaseTwitterAuth; });
 /* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/app */ "./node_modules/firebase/app/dist/index.esm.js");
 /* harmony import */ var firebase_auth__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! firebase/auth */ "./node_modules/firebase/auth/dist/index.esm.js");
 
 
-const firebaseGoogleAuth = () => {
-  const firebaseConfig = {
-    apiKey: "AIzaSyDnsuNDBZFY2hL4i-kR9wDCuQN5SUenOWE",
-    authDomain: "workber-9f268.firebaseapp.com",
-    databaseURL: "https://workber-9f268.firebaseio.com",
-    projectId: "workber-9f268",
-    storageBucket: "workber-9f268.appspot.com",
-    messagingSenderId: "248510692962",
-    appId: "1:248510692962:web:7c8ce1ebaa8ee2ca1fdb3b"
-  };
-  const app = Object(firebase_app__WEBPACK_IMPORTED_MODULE_0__["initializeApp"])(firebaseConfig);
-  const provider = new firebase_auth__WEBPACK_IMPORTED_MODULE_1__["GoogleAuthProvider"]();
-  provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+const firebaseConfig = {
+  apiKey: "AIzaSyDnsuNDBZFY2hL4i-kR9wDCuQN5SUenOWE",
+  authDomain: "workber-9f268.firebaseapp.com",
+  databaseURL: "https://workber-9f268.firebaseio.com",
+  projectId: "workber-9f268",
+  storageBucket: "workber-9f268.appspot.com",
+  messagingSenderId: "248510692962",
+  appId: "1:248510692962:web:7c8ce1ebaa8ee2ca1fdb3b"
+};
+const app = Object(firebase_app__WEBPACK_IMPORTED_MODULE_0__["initializeApp"])(firebaseConfig);
+const firebaseAuth = providerName => {
+  let provider = null;
+
+  switch (providerName) {
+    case 'google':
+      provider = new firebase_auth__WEBPACK_IMPORTED_MODULE_1__["GoogleAuthProvider"]();
+      provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+      break;
+
+    case 'twitter':
+      provider = new firebase_auth__WEBPACK_IMPORTED_MODULE_1__["TwitterAuthProvider"]();
+      break;
+
+    default:
+      return false;
+      break;
+  }
+
   const auth = Object(firebase_auth__WEBPACK_IMPORTED_MODULE_1__["getAuth"])(app);
   const userUID = Object(firebase_auth__WEBPACK_IMPORTED_MODULE_1__["signInWithPopup"])(auth, provider).then(result => {
-    const credential = firebase_auth__WEBPACK_IMPORTED_MODULE_1__["GoogleAuthProvider"].credentialFromResult(result);
-    const token = credential.accessToken;
     const user = result.user;
     return user.uid;
   }).catch(error => {
@@ -22928,6 +23117,42 @@ const firebaseGoogleAuth = () => {
     const errorMessage = error.message;
     const email = error.email;
     const credential = firebase_auth__WEBPACK_IMPORTED_MODULE_1__["GoogleAuthProvider"].credentialFromError(error);
+    return false;
+  });
+  return userUID;
+};
+const firebaseGoogleAuth = () => {
+  const provider = new firebase_auth__WEBPACK_IMPORTED_MODULE_1__["GoogleAuthProvider"]();
+  provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+  const auth = Object(firebase_auth__WEBPACK_IMPORTED_MODULE_1__["getAuth"])(app);
+  const userUID = Object(firebase_auth__WEBPACK_IMPORTED_MODULE_1__["signInWithPopup"])(auth, provider).then(result => {
+    // const credential = GoogleAuthProvider.credentialFromResult(result);
+    // const token = credential.accessToken;
+    const user = result.user;
+    return user.uid;
+  }).catch(error => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    const email = error.email;
+    const credential = firebase_auth__WEBPACK_IMPORTED_MODULE_1__["GoogleAuthProvider"].credentialFromError(error);
+    return false;
+  });
+  return userUID;
+};
+const firebaseTwitterAuth = () => {
+  const provider = new firebase_auth__WEBPACK_IMPORTED_MODULE_1__["TwitterAuthProvider"]();
+  const auth = Object(firebase_auth__WEBPACK_IMPORTED_MODULE_1__["getAuth"])(app);
+  const userUID = Object(firebase_auth__WEBPACK_IMPORTED_MODULE_1__["signInWithPopup"])(auth, provider).then(result => {
+    // const credential = TwitterAuthProvider.credentialFromResult(result);
+    // const token = credential.accessToken;
+    // const secret = credential.secret;
+    const user = result.user;
+    return user.uid;
+  }).catch(error => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    const email = error.email;
+    const credential = firebase_auth__WEBPACK_IMPORTED_MODULE_1__["TwitterAuthProvider"].credentialFromError(error);
     return false;
   });
   return userUID;
@@ -23254,6 +23479,7 @@ const createPost = ({
   text_adv,
   likes,
   hashtags,
+  shortlink,
   city,
   role_ad,
   contactsList,
@@ -23294,12 +23520,13 @@ const createPost = ({
 						<div class="post-action-group">
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderLikeButton"])(disabledState, postid, actionProps)}
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderFavButton"])(disabledState, postid, actionProps)}
-							<button class="post-action post-share">
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderShareButton"])(shortlink)}
+							<!--<button class="post-action post-share" data-link="${shortlink}" title="Copy link to post">
 								<svg width="24" height="24" class="icon">
 									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
 								</svg>
 								SHARE
-							</button>
+							</button>-->
 						</div>
 						<div class="post-more">
 							<span class="post-view ${hide_more}">
@@ -23409,18 +23636,20 @@ const createStartPostFeed = ({
 			<span class="post-username">${user_name}</span>
 			<p class="location-city">${city}</p>
 		</div>
-		<div class="d-none post-like">${likes}</div>
-		<div class="d-none post-is_likes">${is_likes}</div>
-		<div class="d-none post-is_bookmarks">${is_bookmarks}</div>
-		<div class="d-none post-role_ad">${role_ad}</div>
-		<div class="d-none post-hashtags">${JSON.stringify(hashtags)}</div>
+		<div style="display:none;" class="post-like">${likes}</div>
+		<div style="display:none;" class="post-is_likes">${is_likes}</div>
+		<div style="display:none;" class="post-is_bookmarks">${is_bookmarks}</div>
+		<div style="display:none;" class="post-role_ad">${role_ad}</div>
+		<div style="display:none;" class="post-hashtags">${JSON.stringify(hashtags)}</div>
+		<div style="display:none;" class="post-link">${shortlink}</div>
+		<div style="display:none;" class="post-image">${post_img}</div>
 		<!--<div class="post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
 		</div>-->
-		<div class="${hide_post_img}">
+		<!--<div class="${hide_post_img}">
 			<a class="post-link " href="${shortlink}" data-postid="${id}">
 				<img src="${post_img}" alt="Post image">
 			</a>
-		</div>
+		</div>-->
 		<div class="post-content" data-dist="${dist}" data-lat="${lat}" data-lng="${lng}">
 			<div class="start-post-text ${hide_post_text}">
 				<div class="post-title">
@@ -23520,12 +23749,13 @@ const createPostFeed = ({
 						<div class="post-action-group">
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderLikeButton"])(disabledState, id, actionProps)}
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderFavButton"])(disabledState, id, actionProps)}
-							<button class="post-action post-share new-post-share" data-link="${shortlink}" title="Copy link to post">
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderShareButton"])(shortlink, "new-post-share")}
+							<!--<button class="post-action post-share new-post-share" data-link="${shortlink}" title="Copy link to post">
 								<svg width="24" height="24" class="icon">
 									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
 								</svg>
 								SHARE
-							</button>
+							</button>-->
 						</div>
 						<!--<div class="post-more">
 							<span class="post-view">
@@ -23545,7 +23775,7 @@ const createPostFeed = ({
 						<span class="post-text-more d-none">… more</span>
 					</div>
 					<div class="post-text post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
-						${hashtags_str}
+						${JSON.stringify(hashtags)}
 					</div>
 				</div>
 			</div>`;
@@ -23697,6 +23927,7 @@ const getPlaceByCoord = async (lat, lng) => {
     } = result;
     return results[0].formatted_address;
   }).catch(e => {
+    console.log(e);
     return '';
   });
   return place;
@@ -23744,6 +23975,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _map__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./map */ "./src/js/modules/map.js");
 /* harmony import */ var _forms__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./forms */ "./src/js/modules/forms.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
+/* harmony import */ var _domManipulation__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./domManipulation */ "./src/js/modules/domManipulation.js");
+
 
 
 
@@ -23752,8 +23985,8 @@ __webpack_require__.r(__webpack_exports__);
 
 const commonModalOpenClass = 'modal-open-class';
 const showModalMap = sourceForm => {
-  const locationOverlay = document.querySelector('.location-overlay');
-  const locationBtnClose = document.querySelector('.location__btn-close');
+  const locationOverlay = document.querySelector('.location-overlay'); // const locationBtnClose = document.querySelector('.location__btn-close');
+
   Object(_map__WEBPACK_IMPORTED_MODULE_3__["setPositionOnMap"])(sourceForm.form.querySelector(sourceForm.lat).value, sourceForm.form.querySelector(sourceForm.lng).value);
   locationOverlay.classList.add('location-overlay-open', commonModalOpenClass);
   disableScroll();
@@ -23779,37 +24012,7 @@ const showModalMap = sourceForm => {
   };
 
   locationOverlay.addEventListener('click', closeModalMap);
-}; // export const modalMap = (settingsSelector, btnCloseSelector, overlaySelector, overlayOpenClass) => {
-// 	// const iconSettings = document.querySelector(settingsSelector);
-// 	const locationBtnClose = document.querySelector(btnCloseSelector);
-// 	const locationOverlay = document.querySelector(overlaySelector);
-// 	const settingsModalOpen = (e) => {
-// 		e.preventDefault();
-// 		const [lat, lng] = getLocation();
-// 		locationBtnClose.dataset['lat'] = lat;
-// 		locationBtnClose.dataset['lng'] = lng;
-// 		setPositionOnMap(lat, lng);
-// 		locationOverlay.classList.add(overlayOpenClass, commonModalOpenClass);
-// 		disableScroll();
-// 	};
-// 	const settingsModalClose = () => {
-// 		locationOverlay.classList.remove(overlayOpenClass);
-// 		enableScroll();
-// 		console.log(getAppItem('lat'), parseFloat(locationBtnClose.dataset['lat']));
-// 		console.log(getAppItem('lng'), parseFloat(locationBtnClose.dataset['lng']));
-// 		if(getAppItem('lat') !== parseFloat(locationBtnClose.dataset['lat']) || getAppItem('lng') !== parseFloat(locationBtnClose.dataset['lng'])) {
-// 			// reloadCurrentPage();
-// 			console.log('position changed');
-// 		}
-// 	};
-// 	locationOverlay.addEventListener('click', event => {
-// 		const target = event.target;
-// 		if(target.matches(btnCloseSelector) || target.matches(overlaySelector)) {
-// 			settingsModalClose();
-// 		}
-// 	});
-// };
-
+};
 const renderModalSign = (modalOverlayClass, settingsSelector) => {
   const iconProfile = document.querySelector(settingsSelector);
   const modalSign = document.createElement('div');
@@ -23821,11 +24024,7 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 					<span class="menu__sign-in menu__sign" data-items_show="modal-signin" data-items_hide="modal-signup">Login</span>
 					<span class="menu__sign-up menu__sign" data-items_show="modal-signup" data-items_hide="modal-signin">Registration</span>
 				</span>
-				<span class="menu__close">
-					<svg width="24" height="24" class="icon">
-						<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-					</svg>
-				</span>
+				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])()}
 			</div>
 			<div class="modal-body">
 				<h2 class="modal-signin modal-title">Welcome back!</h2>
@@ -23862,15 +24061,9 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 				<div class="social-buttons">
 					<!--<svg width="36" height="36" class="icon">
 						<use xlink:href="assets/workber_img/icons.svg#btn-facebook"></use>
-					</svg>
-					<svg width="36" height="36" class="icon">
-						<use xlink:href="assets/workber_img/icons.svg#btn-twitter"></use>
 					</svg>-->
-					<a href="#" class="btn-auth" data-auth_provider="google">
-						<svg width="36" height="36" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-google"></use>
-						</svg>
-					</a>
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])('twitter')}
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])('google')}
 				</div>
 			</div>
 		</div>
@@ -23884,19 +24077,16 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 				<div class="modal-header">
 					<div class="back-menu">
 						<a href="#" class="navigation-link back-feed">
-							<svg width="25" height="24" class="icon">
+							<!--<svg width="25" height="24" class="icon">
 								<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
-							</svg>
+							</svg>-->
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderIcon"])('btn-back', 24)}
 							<span class="text-back">
 								BACK
 							</span>
 						</a>
 					</div>
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])()}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Thank you!</h2>
@@ -23952,11 +24142,7 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     modalCongratulation.innerHTML = `
 			<div class="signModal">
 				<div class="modal-header justify-end">
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])()}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Congratulations! You have
@@ -23974,6 +24160,7 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
       if (!target.closest('.signModal') || target.closest('.menu__close')) {
         closeSignModal(modalCongratulation);
+        location.reload();
       }
     });
     return modalCongratulation;
@@ -23987,19 +24174,16 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 				<div class="modal-header">
 					<div class="back-menu">
 							<a href="#" class="navigation-link back-feed">
-								<svg width="25" height="24" class="icon">
+								<!--<svg width="25" height="24" class="icon">
 									<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
-								</svg>
+								</svg>-->
+								${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderIcon"])('btn-back', 24)}
 								<span class="text-back">
 									BACK
 								</span>
 							</a>
 					</div>
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])()}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Forgot password?</h2>
@@ -24041,11 +24225,7 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     modalChangePassword.innerHTML = `
 			<div class="signModal">
 				<div class="modal-header justify-end">
-					<span class="menu__close">
-						<svg width="24" height="24" class="icon">
-							<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-						</svg>
-					</span>
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])()}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-title">Set password</h2>
@@ -24083,19 +24263,30 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
     if (parent) {
       const authProvider = parent.dataset.auth_provider;
-
-      if (authProvider === "google") {
-        Object(_firebase__WEBPACK_IMPORTED_MODULE_1__["firebaseGoogleAuth"])().then(uid => {
-          if (uid) {
-            loginForm.uid.value = uid;
-            loginForm.querySelector('#btn__sign-in').focus();
-            Object(_forms__WEBPACK_IMPORTED_MODULE_4__["submitSignForm"])(loginForm, '.errorSignMessage', modalSign, null); // loginForm.requestSubmit(loginForm.querySelector('#btn__sign-in'));
-            // loginForm.submit();
-          } // console.log(data);
-
-        });
-      } // console.log(authProvider);
-
+      Object(_firebase__WEBPACK_IMPORTED_MODULE_1__["firebaseAuth"])(authProvider).then(uid => {
+        if (uid) {
+          loginForm.uid.value = uid;
+          loginForm.querySelector('#btn__sign-in').focus();
+          Object(_forms__WEBPACK_IMPORTED_MODULE_4__["submitSignForm"])(loginForm, '.errorSignMessage', modalSign, null);
+        }
+      }); // if (authProvider === "google") {
+      // 	firebaseGoogleAuth().then((uid) => {
+      // 		if (uid) {
+      // 			loginForm.uid.value = uid;
+      // 			loginForm.querySelector('#btn__sign-in').focus();
+      // 			submitSignForm(loginForm, '.errorSignMessage', modalSign, null);
+      // 		}
+      // 	});
+      // } else if (authProvider === "twitter") {
+      // 	firebaseTwitterAuth().then((uid) => {
+      // 		if (uid) {
+      // 			loginForm.uid.value = uid;
+      // 			loginForm.querySelector('#btn__sign-in').focus();
+      // 			submitSignForm(loginForm, '.errorSignMessage', modalSign, null);
+      // 		}
+      // 	});
+      // }
+      // console.log(authProvider);
     }
   };
 
@@ -24451,7 +24642,6 @@ const getLocation = () => {
  */
 
 const setAppItem = (key, value) => {
-  _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].items = {};
   _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].items[key] = value;
 };
 /**
@@ -24461,7 +24651,7 @@ const setAppItem = (key, value) => {
  * @return {string} value of key.
  */
 
-const getAppItem = key => _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].items[key];
+const getAppItem = key => _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].items ? _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].items[key] : false;
 const setCurrentContainer = container => {
   _appState__WEBPACK_IMPORTED_MODULE_1__["appState"].container = container;
 };

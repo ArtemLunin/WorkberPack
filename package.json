@@ -33,9 +33,11 @@
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.13.10",
     "firebase": "^9.6.11",
+    "image-blob-reduce": "^4.1.0",
     "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
     "lodash.clonedeepwith": "^4.5.0",
-    "object-hash": "^3.0.0"
+    "object-hash": "^3.0.0",
+    "pica": "^9.0.1"
   }
 }

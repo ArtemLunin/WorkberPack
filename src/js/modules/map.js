@@ -134,6 +134,7 @@ export const getPlaceByCoord = async (lat, lng) => {
 		return results[0].formatted_address;
 	})
 	.catch((e) => {
+		console.log(e);
 		return '';
     });
 	return place;

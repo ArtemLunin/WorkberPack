@@ -1,13 +1,12 @@
 import * as storage from './storage';
+import {innerImagesPath} from './config';
 
 export const toggleService = (servicesSelector, targetService, className) => {
 	const services = document.querySelectorAll(servicesSelector);
 	services.forEach(item => {
-		// item.classList.remove('service-selected');
 		item.classList.remove(className);
 	});
-	if(!!targetService) {
-		// targetService.classList.add('service-selected');
+	if (!!targetService) {
 		targetService.classList.add(className);
 	}
 };
@@ -53,28 +52,131 @@ export const renderButtonsFooter = (renderReset = false) => {
 	`;
 }
 
+/**
+ * render HTML layout for Fav button
+ * @module domManipulation
+ * @param {boolean} disabledState
+ * @param {string} postid
+ * @param {object} actionProps
+ * @return {string} HTML layout
+ */
 export const renderFavButton = (disabledState, postid, actionProps) => {
+	return '';
 	return `
 		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-postid="${postid}">
-			<svg width="24" height="24" class="icon ${actionProps.icon_save}">
+			<!--<svg width="24" height="24" class="icon ${actionProps.icon_save}">
 				<use xlink:href="assets/workber_img/icons.svg#btn-save"></use>
-			</svg>
-			<span class="save_out">${actionProps.text_save}</span>
+			</svg>-->
+			${renderIcon('btn-save', 24, actionProps.icon_save)}
+			<span class="save_out" ${actionProps.text_save ? '' : `style="display:none;"`}>SAVE</span>
 		</button>
 	`;
 };
 
+/**
+ * render HTML layout for Like button
+ * @module domManipulation
+ * @param {boolean} disabledState
+ * @param {string} postid
+ * @param {object} actionProps
+ * @return {string} HTML layout
+ */
 export const renderLikeButton = (disabledState, postid, actionProps) => {
 	return `
 		<button ${disabledState} class="post-action post-like ${actionProps.like_selected}" data-call="doLike" data-param="like" data-value="${actionProps.like_value}" data-postid="${postid}">
-			<svg width="24" height="24" class="icon ${actionProps.icon_like}">
-				<use xlink:href="assets/workber_img/icons.svg#btn-like"></use>
-			</svg>
+			${renderIcon('btn-like', 24, actionProps.icon_like)}
 			<span class="likes_out">${actionProps.likes_count}</span>
 		</button>
-		`
+	`;
 };
 
+/**
+ * render HTML layout SHARE button
+ * @module domManipulation
+ * @param {string} shortlink
+ * @param {string} newShareClass
+ * @return {string} HTML layout
+ */
+export const renderShareButton = (shortlink, newShareClass = '') => {
+	return `
+		<button class="post-action post-share ${newShareClass}" data-link="${shortlink}" title="Copy link to post">
+			${renderIcon('btn-share', 24)}
+			SHARE
+		</button>
+	`;
+};
+
+/**
+ * render HTML layout social button for login to app
+ * @module domManipulation
+ * @param {string} provider
+ * @return {string} HTML layout
+ */
+export const renderSocialButton = (provider) => {
+	return `
+		<a href="#" class="btn-auth" data-auth_provider="${provider}">
+			${renderIcon('btn-' + provider, 36)}
+		</a>
+	`;
+};
+
+/**
+ * render HTML layout profile button
+ * @module domManipulation
+ * @param {string} btnClass
+ * @param {string} attributes
+ * @param {string} iconClass
+ * @param {string} iconBtn
+ * @return {string} HTML layout
+ */
+export const renderProfileButton = (btnClass, attributes, iconClass, iconBtn) => {
+	return `
+		<a href="#" class="${btnClass}" ${attributes}>
+		${renderIcon(iconBtn, 24, iconClass)}
+		</a>
+	`;
+}
+
+/**
+ * render HTML layout svg icon
+ * @module domManipulation
+ * @param {string} iconID
+ * @param {number} size
+ * @param {string} addedClasses
+ * @return {string} HTML layout
+ */
+export const renderIcon = (iconID, size, addedClasses = '') => {
+	return `
+		<svg width="${size}" height="${size}" class="icon ${addedClasses}">
+			<use xlink:href="${innerImagesPath}/icons.svg#${iconID}"></use>
+		</svg>
+	`;
+};
+
+/**
+ * render HTML layout profile header
+ * @module domManipulation
+ * @param {string} title
+ * @return {string} HTML layout
+ */
+export const renderProfileHeader = (title) => {
+ return `
+	<div class="template__header">
+		<span class="text-header">
+			${title}
+		</span>
+		${renderCloseMenu()}
+	</div>
+ `;
+};
+
+export const renderCloseMenu = () => {
+	return `
+		<span class="menu__close">
+			${renderIcon('btn-close', 24)}
+		</span>
+	`;
+}
 /**
  * update state for likes and favourites buttons
  * @module domManipulation
