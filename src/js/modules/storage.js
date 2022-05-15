@@ -84,9 +84,11 @@ export const getLocalityStatus = () => {
 };
 
 export const iniBrowserLocation = () => {
-	if (navigator.geolocation && !(getGlobalItem('lat') && getGlobalItem('lng'))) {
-		navigator.geolocation.getCurrentPosition(success);
-	}
+	try {
+		if (navigator.geolocation && !(getGlobalItem('lat') && getGlobalItem('lng'))) {
+			navigator.geolocation.getCurrentPosition(success);
+		}
+	} catch (e) {}
 
 	function success(position) {
 		setGlobalItem({

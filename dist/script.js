@@ -20506,12 +20506,20 @@ window.addEventListener('DOMContentLoaded', () => {
   let search = location.search;
   const paramsURI = new URLSearchParams(location.search.substring(1));
   postid = paramsURI.get('postid');
-  let pathname = location.pathname;
+  let pathname = location.pathname.slice(1);
   let path = pathname.match(/post-view\.html/);
 
   if (path && postid != 0) {
     let redirect = pathname.replace(/post-view\.html/, `index.html?page=post&postid=${postid}`);
     location.href = redirect;
+  } else if (_modules_config__WEBPACK_IMPORTED_MODULE_4__["routes"][pathname]) {
+    const iframe = document.createElement('iframe');
+    iframe.src = location.origin + _modules_config__WEBPACK_IMPORTED_MODULE_4__["routes"][pathname];
+    iframe.style = "position:absolute;left:0;right:0;bottom:0;top:0;width:100%;height:100%;border:none;";
+    document.body.style = 'padding:0;overflow:hidden;';
+    document.body.textContent = "";
+    document.body.append(iframe);
+    return;
   } else {
     let isLogined = 0;
     let waitForLoad = 0;
@@ -21613,7 +21621,7 @@ const URImod = newURIParams => {
 /*!**********************************!*\
   !*** ./src/js/modules/config.js ***!
   \**********************************/
-/*! exports provided: termsHTML, privacyHTML, workberBackEnd, workberImages, innerImagesPath, endSearchCode, registrationID, googleMapKey, storeLinks, maxDescriptionLength, maxHashtagsLength */
+/*! exports provided: termsHTML, privacyHTML, workberBackEnd, workberImages, innerImagesPath, endSearchCode, registrationID, googleMapKey, storeLinks, maxDescriptionLength, maxHashtagsLength, MAX_WIDTH_AVATAR, routes */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21629,10 +21637,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "storeLinks", function() { return storeLinks; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "maxDescriptionLength", function() { return maxDescriptionLength; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "maxHashtagsLength", function() { return maxHashtagsLength; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MAX_WIDTH_AVATAR", function() { return MAX_WIDTH_AVATAR; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "routes", function() { return routes; });
 const workberDomain = 'workber.me';
-const workberSite = 'https://' + workberDomain;
-const termsHTML = workberSite + '/terms_conditions.html';
-const privacyHTML = workberSite + '/privacy_policy.html';
+const workberSite = 'https://' + workberDomain; // export const termsHTML = workberSite + '/terms_conditions.html';
+
+const termsHTML = 'terms-conditions'; // export const privacyHTML = workberSite + '/privacy_policy.html';
+
+const privacyHTML = 'privacy-policy';
 const workberBackEnd = 'https://' + '2b2.' + workberDomain + '/gw.php';
 const workberImages = workberSite + '/img';
 const innerImagesPath = 'assets/workber_img';
@@ -21645,6 +21657,11 @@ const storeLinks = {
 };
 const maxDescriptionLength = 120;
 const maxHashtagsLength = 200;
+const MAX_WIDTH_AVATAR = 1024;
+const routes = {
+  'privacy-policy': "/assets/pages/privacy.html",
+  'terms-conditions': "/assets/pages/terms.html"
+};
 
 /***/ }),
 
@@ -21670,6 +21687,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _forms__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./forms */ "./src/js/modules/forms.js");
 /* harmony import */ var _map__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./map */ "./src/js/modules/map.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
+/* harmony import */ var _domHelpers__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./domHelpers */ "./src/js/modules/domHelpers.js");
 
 
 
@@ -21677,10 +21695,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- // import {setCurrentContainer} from './storage';
-// const pica = require('pica')();
-// import * from 'image-blob-reduce';
-// const reduce = require('image-blob-reduce')();
+
 
 const cropEditableContent = (el, contentCounterEl, maxLength) => {
   if (maxLength < el.innerText.trim().length) {
@@ -22085,7 +22100,7 @@ const renderProfile = ({
     }
   };
 
-  const submitSettingsForm = form => {
+  const submitSettingsForm = (form, blob = null) => {
     const requestProps = {};
     const formData = new FormData(form);
     let fieldValue = '';
@@ -22106,7 +22121,9 @@ const renderProfile = ({
       }
 
       try {
-        if (typeof fieldValue === 'object' && form.elements[key].type === 'file' || fieldValue.trim() !== '') {
+        if (typeof fieldValue === 'object' && form.elements[key].type === 'file' && blob) {
+          requestProps[key] = blob;
+        } else if (fieldValue.trim() !== '') {
           requestProps[key] = fieldValue;
         }
       } catch (e) {}
@@ -22623,12 +22640,7 @@ const renderProfile = ({
     submitSettingsForm(e.target);
   });
   fileAvatar.addEventListener('change', e => {
-    // imageResize(e.target.files[0]);
-    // .then((imageSmall) => {
-    // console.log('ready...');
-    // console.log(imageSmall);
-    formSetAvatar.requestSubmit(); // })
-    // console.log(e.target.files[0]);
+    resizeAndPostImage(e.target, submitSettingsForm);
   });
   profileContainer.querySelectorAll('form').forEach(form => {
     if (form.getAttribute('data-batch') !== null) {
@@ -22733,13 +22745,37 @@ const handlePostBtn = (elem, postDocumentId = null) => {
   }
 };
 
+const resizeAndPostImage = (imageInput, callback) => {
+  const form = imageInput.closest('form');
+  const reader = new FileReader();
+  reader.readAsDataURL(imageInput.files[0]);
+
+  reader.onloadend = function (e) {
+    const myImage = new Image();
+    myImage.src = e.target.result;
+
+    myImage.onload = function (ev) {
+      const [width, height] = Object(_domHelpers__WEBPACK_IMPORTED_MODULE_8__["getNewSizeUploadedImages"])(myImage.width, myImage.height, _config__WEBPACK_IMPORTED_MODULE_7__["MAX_WIDTH_AVATAR"]);
+      const myCanvas = document.createElement('canvas');
+      const myContext = myCanvas.getContext("2d");
+      myCanvas.width = width;
+      myCanvas.height = height;
+      myContext.drawImage(myImage, 0, 0, width, height);
+      myCanvas.toBlob(function (blob) {
+        blob.name = imageInput.files[0].name;
+        callback(form, blob);
+      }, 'image/jpeg', 0.95);
+    };
+  };
+};
+
 /***/ }),
 
 /***/ "./src/js/modules/domHelpers.js":
 /*!**************************************!*\
   !*** ./src/js/modules/domHelpers.js ***!
   \**************************************/
-/*! exports provided: getCurrentPage, visible, getActionProps, copyShareLink */
+/*! exports provided: getCurrentPage, visible, getActionProps, copyShareLink, getNewSizeUploadedImages */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22748,6 +22784,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "visible", function() { return visible; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getActionProps", function() { return getActionProps; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyShareLink", function() { return copyShareLink; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getNewSizeUploadedImages", function() { return getNewSizeUploadedImages; });
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__);
 
@@ -22837,6 +22874,20 @@ const copyShareLink = e => {
   } catch (e) {} finally {
     e.stopPropagation();
   }
+};
+const getNewSizeUploadedImages = (width, height, max_size) => {
+  let newWidth = width,
+      newHeight = height;
+
+  if (width > max_size) {
+    newHeight = height / width * max_size;
+    newWidth = max_size;
+  } else if (height > max_size) {
+    newWidth = width / height * max_size;
+    newHeight = max_size;
+  }
+
+  return [newWidth, newHeight];
 };
 
 /***/ }),
@@ -23094,13 +23145,17 @@ const firebaseAuth = providerName => {
   let provider = null;
 
   switch (providerName) {
-    case 'google':
+    case "google":
       provider = new firebase_auth__WEBPACK_IMPORTED_MODULE_1__["GoogleAuthProvider"]();
-      provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+      provider.addScope("https://www.googleapis.com/auth/userinfo.email");
       break;
 
-    case 'twitter':
+    case "twitter":
       provider = new firebase_auth__WEBPACK_IMPORTED_MODULE_1__["TwitterAuthProvider"]();
+      break;
+
+    case "facebook":
+      provider = new firebase_auth__WEBPACK_IMPORTED_MODULE_1__["FacebookAuthProvider"]();
       break;
 
     default:
@@ -23916,20 +23971,25 @@ function geocode(request) {
 }
 
 const getPlaceByCoord = async (lat, lng) => {
-  let place = await geocoder.geocode({
-    location: {
-      lat: parseFloat(lat),
-      lng: parseFloat(lng)
-    }
-  }).then(result => {
-    const {
-      results
-    } = result;
-    return results[0].formatted_address;
-  }).catch(e => {
-    console.log(e);
-    return '';
-  });
+  let place = '';
+
+  try {
+    place = await geocoder.geocode({
+      location: {
+        lat: parseFloat(lat),
+        lng: parseFloat(lng)
+      }
+    }).then(result => {
+      const {
+        results
+      } = result;
+      return results[0].formatted_address;
+    }).catch(e => {
+      console.log(e);
+      return '';
+    });
+  } catch (e) {}
+
   return place;
 }; // const setLocation = (lat, lng) => {
 // 	let locationTrue = 0;
@@ -24062,8 +24122,9 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 					<!--<svg width="36" height="36" class="icon">
 						<use xlink:href="assets/workber_img/icons.svg#btn-facebook"></use>
 					</svg>-->
-					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])('twitter')}
-					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])('google')}
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])("facebook")}
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])("twitter")}
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])("google")}
 				</div>
 			</div>
 		</div>
@@ -24702,9 +24763,11 @@ const getLocalityStatus = () => {
   }
 };
 const iniBrowserLocation = () => {
-  if (navigator.geolocation && !(getGlobalItem('lat') && getGlobalItem('lng'))) {
-    navigator.geolocation.getCurrentPosition(success);
-  }
+  try {
+    if (navigator.geolocation && !(getGlobalItem('lat') && getGlobalItem('lng'))) {
+      navigator.geolocation.getCurrentPosition(success);
+    }
+  } catch (e) {}
 
   function success(position) {
     setGlobalItem({

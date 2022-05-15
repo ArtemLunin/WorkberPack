@@ -122,21 +122,25 @@ function geocode(request) {
 }
 
 export const getPlaceByCoord = async (lat, lng) => {
-	let place = await geocoder
-    .geocode({
-		location: {
-			lat: parseFloat(lat),
-			lng: parseFloat(lng),
-		}
-	})
-	.then((result) => {
-		const { results } = result;
-		return results[0].formatted_address;
-	})
-	.catch((e) => {
-		console.log(e);
-		return '';
-    });
+	let place = '';
+	try {
+		place = await geocoder
+		.geocode({
+			location: {
+				lat: parseFloat(lat),
+				lng: parseFloat(lng),
+			}
+		})
+		.then((result) => {
+			const { results } = result;
+			return results[0].formatted_address;
+		})
+		.catch((e) => {
+			console.log(e);
+			return '';
+		});
+	} catch (e) {}
+
 	return place;
 };
 

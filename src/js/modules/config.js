@@ -1,7 +1,9 @@
 const workberDomain = 'workber.me';
 const workberSite = 'https://' + workberDomain;
-export const termsHTML = workberSite + '/terms_conditions.html';
-export const privacyHTML = workberSite + '/privacy_policy.html';
+// export const termsHTML = workberSite + '/terms_conditions.html';
+export const termsHTML = 'terms-conditions';
+// export const privacyHTML = workberSite + '/privacy_policy.html';
+export const privacyHTML = 'privacy-policy';
 export const workberBackEnd = 'https://' + '2b2.' + workberDomain + '/gw.php';
 export const workberImages = workberSite + '/img';
 export const innerImagesPath = 'assets/workber_img';
@@ -14,3 +16,9 @@ export const storeLinks = {
 };
 export const maxDescriptionLength = 120;
 export const maxHashtagsLength = 200;
+export const MAX_WIDTH_AVATAR = 1024;
+
+export const routes = {
+  'privacy-policy': "/assets/pages/privacy.html",
+  'terms-conditions': "/assets/pages/terms.html",
+};

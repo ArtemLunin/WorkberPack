@@ -4,13 +4,8 @@ import {closeSignModal, showModalMap} from './modal';
 import {URImod, checkUserName, postAPIRequest, logout, deleteTemplate, getTemplate, deleteAccount} from './appState';
 import {hideSignInfo, showSignInfo} from './forms';
 import {getPlaceByCoord} from './map';
-import {maxDescriptionLength, maxHashtagsLength} from './config';
-// import {setCurrentContainer} from './storage';
-
-// const pica = require('pica')();
-// import * from 'image-blob-reduce';
-// const reduce = require('image-blob-reduce')();
-
+import {maxDescriptionLength, maxHashtagsLength, MAX_WIDTH_AVATAR} from './config';
+import {getNewSizeUploadedImages} from './domHelpers';
 
 export const cropEditableContent = (el, contentCounterEl, maxLength) => {
 	if (maxLength < el.innerText.trim().length) {
@@ -398,7 +393,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		}
 	};
 
-	const submitSettingsForm = (form) => {
+	const submitSettingsForm = (form, blob = null) => {
 		const requestProps = {};
 		const formData = new FormData(form);
 		let fieldValue = '';
@@ -417,8 +412,9 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				}
 			}
 			try {
-				if ((typeof fieldValue === 'object' && form.elements[key].type === 'file') 
-					|| fieldValue.trim() !== '') {
+				if (typeof fieldValue === 'object' && form.elements[key].type === 'file' && blob) {
+					requestProps[key] = blob;
+				} else if (fieldValue.trim() !== '') {
 					requestProps[key] = fieldValue;
 				}
 			} catch (e) {}
@@ -905,13 +901,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 	});
 
 	fileAvatar.addEventListener('change', (e) => {
-		// imageResize(e.target.files[0]);
-			// .then((imageSmall) => {
-				// console.log('ready...');
-				// console.log(imageSmall);
-				formSetAvatar.requestSubmit();
-			// })
-		// console.log(e.target.files[0]);
+		resizeAndPostImage(e.target, submitSettingsForm);
 	});
 
 	profileContainer.querySelectorAll('form').forEach((form) => {
@@ -1012,4 +1002,26 @@ export const handlePostBtn = (elem, postDocumentId = null) => {
 			}
 		});
 	}
+};
+
+const resizeAndPostImage = (imageInput, callback) => {
+	const form = imageInput.closest('form');
+	const reader = new FileReader();
+	reader.readAsDataURL(imageInput.files[0]);
+	reader.onloadend = function (e) {
+		const myImage = new Image();
+		myImage.src = e.target.result;
+		myImage.onload = function (ev) {
+			const [width, height] = getNewSizeUploadedImages(myImage.width, myImage.height, MAX_WIDTH_AVATAR);
+			const myCanvas = document.createElement('canvas');
+			const myContext = myCanvas.getContext("2d");
+			myCanvas.width = width; 
+			myCanvas.height = height;
+			myContext.drawImage(myImage, 0, 0, width, height);
+			myCanvas.toBlob(function (blob) {
+				blob.name = imageInput.files[0].name;
+				callback(form, blob);
+			}, 'image/jpeg', 0.95);
+		};
+	};
 };

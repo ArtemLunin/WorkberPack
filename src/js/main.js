@@ -1,5 +1,5 @@
 import {mapLoader, setPostCoordsMap} from './modules/map';
-import {workberBackEnd, workberImages, endSearchCode} from './modules/config';
+import {workberBackEnd, workberImages, endSearchCode, routes} from './modules/config';
 import * as storage from './modules/storage';
 import {renderModalSign, commonModalOpenClass} from './modules/modal';
 import {createPost, createStartPostFeed, createPostFeed} from './modules/handlerPostData';
@@ -20,11 +20,19 @@ let search = location.search;
 const paramsURI = new URLSearchParams(location.search.substring(1));
 postid = paramsURI.get('postid');
 
-let pathname = location.pathname;
+let pathname = location.pathname.slice(1);
 let path = pathname.match(/post-view\.html/);
 if (path && postid != 0) {
 	let redirect = pathname.replace(/post-view\.html/, `index.html?page=post&postid=${postid}`);
 	location.href = redirect;
+} else if (routes[pathname]) {
+	const iframe = document.createElement('iframe');
+	iframe.src = location.origin + routes[pathname];
+	iframe.style = "position:absolute;left:0;right:0;bottom:0;top:0;width:100%;height:100%;border:none;";
+	document.body.style = 'padding:0;overflow:hidden;';
+	document.body.textContent = "";
+	document.body.append(iframe);
+	return;
 } else {
 
 let isLogined = 0;

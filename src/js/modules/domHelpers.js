@@ -75,3 +75,15 @@ export const copyShareLink = (e) => {
 		e.stopPropagation();
 	}
 };
+
+export const getNewSizeUploadedImages = (width, height, max_size) => {
+	let newWidth = width, newHeight = height;
+	if (width > max_size) {
+		newHeight = (height / width) * max_size;
+		newWidth = max_size;
+	} else if (height > max_size) {
+		newWidth = (width / height) * max_size;
+		newHeight = max_size;
+	}
+	return [newWidth, newHeight];
+};

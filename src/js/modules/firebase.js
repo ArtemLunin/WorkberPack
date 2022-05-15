@@ -1,5 +1,11 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider, TwitterAuthProvider } from "firebase/auth";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  TwitterAuthProvider,
+  FacebookAuthProvider,
+} from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDnsuNDBZFY2hL4i-kR9wDCuQN5SUenOWE",
@@ -16,16 +22,19 @@ const app = initializeApp(firebaseConfig);
 export const firebaseAuth = (providerName) => {
   let provider = null;
   switch (providerName) {
-    case 'google':
-        provider = new GoogleAuthProvider();
-        provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+    case "google":
+      provider = new GoogleAuthProvider();
+      provider.addScope("https://www.googleapis.com/auth/userinfo.email");
       break;
-    case 'twitter':
-        provider = new TwitterAuthProvider();
-        break;
+    case "twitter":
+      provider = new TwitterAuthProvider();
+      break;
+    case "facebook":
+      provider = new FacebookAuthProvider();
+      break;
     default:
-        return false;
-        break;
+      return false;
+      break;
   }
   const auth = getAuth(app);
   const userUID = signInWithPopup(auth, provider)
