@@ -48,6 +48,7 @@ export const getUserProfile = async () => {
 				});
 				return data; 
 			}
+			return false;
 		} else {
 			storeProfileInfo(profile);
 		}

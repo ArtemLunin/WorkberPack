@@ -727,7 +727,6 @@ if (workberLogo) {
 
 	getUserProfile().then(profile => {
 		let profileContainer;
-
 		if (profile) {
 			iconsPanel.style.display = '';
 			if (userMenu) {

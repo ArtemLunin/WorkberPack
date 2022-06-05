@@ -13730,7 +13730,7 @@ async function deleteDB(dbName) {
 
 //# sourceMappingURL=index.esm2017.js.map
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../webpack-stream/node_modules/webpack/buildin/global.js */ "./node_modules/webpack-stream/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -15036,7 +15036,7 @@ module.exports =
   // eslint-disable-next-line no-new-func
   Function('return this')();
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack-stream/node_modules/webpack/buildin/global.js */ "./node_modules/webpack-stream/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -20381,7 +20381,7 @@ function stubFalse() {
 
 module.exports = cloneDeep;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../webpack/buildin/module.js */ "./node_modules/webpack/buildin/module.js")(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack-stream/node_modules/webpack/buildin/global.js */ "./node_modules/webpack-stream/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../webpack-stream/node_modules/webpack/buildin/module.js */ "./node_modules/webpack-stream/node_modules/webpack/buildin/module.js")(module)))
 
 /***/ }),
 
@@ -20396,7 +20396,7 @@ var require;var require;!function(e){var t; true?module.exports=e():undefined}(f
 
 /***/ }),
 
-/***/ "./node_modules/webpack/buildin/global.js":
+/***/ "./node_modules/webpack-stream/node_modules/webpack/buildin/global.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/global.js ***!
   \***********************************/
@@ -20427,7 +20427,7 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./node_modules/webpack/buildin/module.js":
+/***/ "./node_modules/webpack-stream/node_modules/webpack/buildin/module.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/module.js ***!
   \***********************************/
@@ -21426,6 +21426,8 @@ const getUserProfile = async () => {
         });
         return data;
       }
+
+      return false;
     } else {
       storeProfileInfo(profile);
     }
@@ -21697,6 +21699,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+const faqContainer = 'profile-faq';
 const cropEditableContent = (el, contentCounterEl, maxLength) => {
   if (maxLength < el.innerText.trim().length) {
     el.innerText = el.innerText.trim().substring(0, maxLength);
@@ -21789,7 +21792,7 @@ const renderProfile = ({
 						<input type="file" name="file" id="fileAvatar" accept="image/*" hidden>
 							<a href="#" class="profile-avatar-change">
 								<div class="profile-avatar-hint">
-									${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderIcon"])('btn-photo', 24, 'icon-photo')}
+									${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderIcon"])("btn-photo", 24, "icon-photo")}
 								<span>Change photo</span>
 								</div>
 							</a>
@@ -21803,20 +21806,20 @@ const renderProfile = ({
 					<li data-container="profile-settings-main" class="menu-item active">Personal data</li>
 					<li data-container="profile-contacts" class="menu-item">Contact information</li>
 					<li data-container="profile-hashtags" class="menu-item">Hashtags</li>
-					<li style="display:none;" data-container="profile-faq" class="menu-item">F.A.Q</li>
+					<li data-container="${faqContainer}" class="menu-item">F.A.Q</li>
 					<!--<li data-container="profile-privacy" class="menu-item">Privacy</li>-->
 					<li>
 						<hr class="divider">
 					</li>
 					<li data-container="signout" class="menu-item">
 						<div class="profile-signout">
-							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderIcon"])('btn-signout', 24)}
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderIcon"])("btn-signout", 24)}
 							Sign Out
 						</div>
 					</li>
 					<li data-container="deleteAccount" class="menu-item">
 						<div class="profile-signout">
-							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderIcon"])('btn-close', 24)}
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderIcon"])("btn-close", 24)}
 							Delete account
 						</div>
 					</li>
@@ -21846,7 +21849,7 @@ const renderProfile = ({
 				</section>
 				<section class="profile-item"></section>
 			</div>
-			<div class="profile-unit profile-settings-common profile-faq d-none">
+			<div class="profile-unit profile-settings-common ${faqContainer} d-none">
 			</div>
 			<div style="display:none;" class="profile-unit profile-settings-common profile-privacy d-none">
 				<section class="profile-personal">
@@ -22241,18 +22244,22 @@ const renderProfile = ({
     return formContainer;
   };
 
-  const renderFAQForm = toggles => {
-    const formContainer = document.createElement('section');
-    formContainer.classList.add('profile-personal');
+  const renderFAQForm = (toggles, faqContainer) => {
+    const mainContainer = document.createElement("div"),
+          formContainer = document.createElement("div"),
+          descrContainer = document.createElement("div");
+    mainContainer.style = 'display:flex';
+    formContainer.classList.add(`${faqContainer}__content`, `${faqContainer}__content_active`);
+    descrContainer.classList.add(`${faqContainer}__description`);
     let faq_list = '';
 
     for (let toggle of toggles) {
-      if (toggle.key_id === 'faq') {
+      if (toggle.key_id === "faq") {
         try {
           const pages = JSON.parse(toggle.value).pages;
 
           for (let faq of pages) {
-            faq_list += `<a href="${faq.pageUrl}" target="_blank">${faq.title}</a>`;
+            faq_list += `<li class="${faqContainer}__menu"><a href="${faq.pageUrl}">${faq.title}</a></li>`;
           }
         } catch (e) {
           console.log(e);
@@ -22263,10 +22270,11 @@ const renderProfile = ({
     }
 
     formContainer.insertAdjacentHTML('beforeend', `
-			<h3 class="profile-h3">Personal Data</h3>
-			${faq_list}
+			<h3 class="profile-h3">F.A.Q</h3>
+			<ul>${faq_list}</ul>
 		`);
-    return formContainer.outerHTML;
+    mainContainer.append(formContainer, descrContainer);
+    return mainContainer.outerHTML;
   };
 
   const renderPersonalForm = dataOuterFlag => {
@@ -22616,7 +22624,21 @@ const renderProfile = ({
         contactsTemplatesCount = profileContainer.querySelector('#contactsTemplatesCount'),
         fileAvatar = formSetAvatar.querySelector('#fileAvatar');
   refreshPersonalForm();
-  profileContainer.querySelector('.profile-faq').innerHTML = renderFAQForm(toggles);
+  profileContainer.querySelector(`.${faqContainer}`).innerHTML = renderFAQForm(toggles, faqContainer);
+  profileContainer.querySelector(`.${faqContainer} ul`).addEventListener("click", function (e) {
+    e.preventDefault();
+    const target = e.target;
+    const href = target.closest('a');
+
+    if (href) {
+      const iframe = document.createElement('iframe');
+      iframe.style = "width:100%;min-height:600px;border:none;";
+      iframe.src = href.href;
+      profileContainer.querySelector(`.${faqContainer}__description`).textContent = "";
+      profileContainer.querySelector(`.${faqContainer}__description`).append(iframe);
+      setActiveMenuItem(this.querySelectorAll('li'), href.closest('li'), `${faqContainer}__menu_active`);
+    }
+  });
   profileContainer.querySelectorAll('.btn__add-profile').forEach(item => {
     item.addEventListener('click', e => {
       e.preventDefault();
@@ -22678,11 +22700,12 @@ const renderProfile = ({
         });
         profileContainer.querySelector(`.${menuItem.dataset['container']}`).classList.remove('d-none');
         profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
-        profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
-        profileContainer.querySelectorAll('.profile-menu>LI').forEach(item => {
-          item.classList.remove('active');
-        });
-        menuItem.classList.add('active');
+        profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList); // profileContainer.querySelectorAll('.profile-menu>LI').forEach((item) => {
+        // 	item.classList.remove('active');
+        // });
+        // menuItem.classList.add('active');
+
+        setActiveMenuItem(profileContainer.querySelectorAll('.profile-menu>LI'), menuItem, 'active');
       } catch (e) {}
     }
   });
@@ -22767,6 +22790,22 @@ const resizeAndPostImage = (imageInput, callback) => {
       }, 'image/jpeg', 0.95);
     };
   };
+};
+/**
+ * set active class for menu item
+ * @module domElements
+ * @param {DOMCollection} menuList
+ * @param {DOM} activeMenuItem
+ * @param {string} classActiveName
+ * @return {void}
+ */
+
+
+const setActiveMenuItem = (menuList, activeMenuItem, classActiveName) => {
+  menuList.forEach(item => {
+    item.classList.remove(classActiveName);
+  });
+  activeMenuItem.classList.add(classActiveName);
 };
 
 /***/ }),
@@ -24119,10 +24158,7 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 			<div class="modal-footer">
 				<p class="login-social">Or sign in via</p>
 				<div class="social-buttons">
-					<!--<svg width="36" height="36" class="icon">
-						<use xlink:href="assets/workber_img/icons.svg#btn-facebook"></use>
-					</svg>-->
-					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])("facebook")}
+					<!-- ${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])("facebook")} -->
 					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])("twitter")}
 					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderSocialButton"])("google")}
 				</div>

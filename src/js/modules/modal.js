@@ -84,10 +84,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 			<div class="modal-footer">
 				<p class="login-social">Or sign in via</p>
 				<div class="social-buttons">
-					<!--<svg width="36" height="36" class="icon">
-						<use xlink:href="assets/workber_img/icons.svg#btn-facebook"></use>
-					</svg>-->
-					${renderSocialButton("facebook")}
+					<!-- ${renderSocialButton("facebook")} -->
 					${renderSocialButton("twitter")}
 					${renderSocialButton("google")}
 				</div>

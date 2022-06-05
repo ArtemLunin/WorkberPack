@@ -1,0 +1,40 @@
+.profile {
+	&-h3 {
+		margin: 0;
+		font-weight: bold;
+		font-size: 16px;
+	}
+	&-faq {
+		&__content {
+			padding: 32px;
+			background: #fff;
+			width: 30%;
+			ul {
+				padding: 0;
+    			list-style: none;
+				font-weight: 600;
+				line-height: 24px;
+				li {
+					padding: 8px;
+					a {
+						color: $main-color;
+					}
+				}
+			}
+		}
+		&__description {
+			padding: 32px;
+			background: #fff;
+			width: 70%;
+		}
+		&__menu {
+			border-radius: 4px;
+			&_active {
+				background: #eaedf3;
+			}
+			&:hover {
+				background: #eaedf366;
+			}
+		}
+	}
+}

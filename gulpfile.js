@@ -2,13 +2,14 @@
 
 const gulp = require("gulp");
 const webpack = require("webpack-stream");
-const browsersync = require("browser-sync");
+const browsersync = require("browser-sync").create();
 const sass        = require('gulp-sass')(require('sass'));
 const cleanCSS = require('gulp-clean-css');
 const autoprefixer = require('gulp-autoprefixer');
 const rename = require("gulp-rename");
 
 const dist = "./dist";
+// const dist = "/var/www/html/presentation";
 
 gulp.task("copy-html", () => {
     return gulp.src("./src/index.html")
@@ -83,31 +84,39 @@ gulp.task("build", gulp.parallel("copy-html", "copy-assets", "styles", "build-js
 
 
 gulp.task("build-prod-js", () => {
-    return gulp.src("./src/js/main.js")
-                .pipe(webpack({
-                    mode: 'production',
-                    output: {
-                        filename: 'script.js'
-                    },
-                    module: {
-                        rules: [
-                          {
-                            test: /\.m?js$/,
-                            exclude: /(node_modules|bower_components)/,
-                            use: {
-                              loader: 'babel-loader',
-                              options: {
-                                presets: [['@babel/preset-env', {
-                                    corejs: 3,
-                                    useBuiltIns: "usage"
-                                }]]
-                              }
-                            }
-                          }
-                        ]
-                      }
-                }))
-                .pipe(gulp.dest(dist));
+    return gulp
+      .src("./src/js/main.js")
+      .pipe(
+        webpack({
+          mode: "production",
+          output: {
+            filename: "script.js",
+          },
+          module: {
+            rules: [
+              {
+                test: /\.m?js$/,
+                exclude: /(node_modules|bower_components)/,
+                use: {
+                  loader: "babel-loader",
+                  options: {
+                    presets: [
+                      [
+                        "@babel/preset-env",
+                        {
+                          corejs: 3,
+                          useBuiltIns: "usage",
+                        },
+                      ],
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        })
+      )
+      .pipe(gulp.dest(dist));
 });
 
 gulp.task("default", gulp.parallel("watch", "build"));
