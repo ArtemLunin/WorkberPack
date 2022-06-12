@@ -20524,11 +20524,12 @@ window.addEventListener('DOMContentLoaded', () => {
     let isLogined = 0;
     let waitForLoad = 0;
     const mainPage = document.querySelector('.main-page');
-    const postsOffer = document.querySelector('.posts-offer');
-    const postsStart = document.querySelector('.posts-start');
-    const postsNeed = document.querySelector('.posts-need');
-    const postsAll = document.querySelector('.posts-all');
-    const postsOne = document.querySelector('.post-one'); // const serviceOffer = document.querySelector('.offer');
+    const postsOffer = document.querySelector('.posts-offer'),
+          postsStart = document.querySelector('.posts-start'),
+          postsNeed = document.querySelector('.posts-need'),
+          postsAll = document.querySelector('.posts-all'),
+          postsFavorite = document.querySelector('.posts-favorite'),
+          postsOne = document.querySelector('.post-one'); // const serviceOffer = document.querySelector('.offer');
     // const serviceNeed = document.querySelector('.need');
     // const startPostText = document.querySelector('.start-post-text');
 
@@ -20540,6 +20541,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const distTextHeader = document.querySelector('.dist-text-header');
     const postMenu = document.querySelector('.post-menu');
     const userMenu = document.querySelector('.user-menu'),
+          favorite = document.querySelector('#favorite'),
           iconsPanel = document.querySelector('.icons-panel');
     const backMenu = document.querySelector('.back-menu');
     const searchButton = document.querySelector('.search-button');
@@ -20560,7 +20562,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const localityLocal = document.querySelector('.locality-local');
     const showControl = {
       'service': {
-        'hide': ['posts-need', 'start-page', 'posts-all', 'post-one', 'back-menu'],
+        'hide': ['posts-favorite', 'posts-need', 'start-page', 'posts-all', 'post-one', 'back-menu', 'icons-panel__favorites_text-active'],
         'show': ['posts-offer', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service'],
         'callParams': {
           call: 'doSearch',
@@ -20571,7 +20573,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'zoneName': ''
       },
       'project': {
-        'hide': ['posts-offer', 'posts-all', 'start-page', 'post-one', 'back-menu'],
+        'hide': ['posts-favorite', 'posts-offer', 'posts-all', 'start-page', 'post-one', 'back-menu', 'icons-panel__favorites_text-active'],
         'show': ['posts-need', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service'],
         'callParams': {
           call: 'doSearch',
@@ -20581,8 +20583,18 @@ window.addEventListener('DOMContentLoaded', () => {
         'container': postsNeed,
         'zoneName': ''
       },
+      'favorite': {
+        'hide': ['posts-need', 'posts-offer', 'posts-all', 'start-page', 'post-one', 'back-menu', 'distances', 'dist-text-header', 'post-menu'],
+        'show': ['posts-favorite', 'search-block', 'icon-settings', 'tabs-service', 'icons-panel__favorites_text-active'],
+        'callParams': {
+          call: 'doShowMeFav',
+          postid: null
+        },
+        'scrollYPos': 0,
+        'container': postsFavorite
+      },
       'all': {
-        'hide': ['posts-offer', 'posts-need', 'start-page', 'post-one', 'back-menu'],
+        'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'start-page', 'post-one', 'back-menu', 'icons-panel__favorites_text-active'],
         'show': ['posts-all', 'search-block', 'post-menu', 'icon-settings'],
         'callParams': {
           call: 'doSearchAll'
@@ -20592,7 +20604,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'zoneName': ''
       },
       'doStart': {
-        'hide': ['posts-offer', 'posts-need', 'posts-all', 'home-page', 'post-one', 'back-menu', 'distance-info', 'dist-text-header', 'distances'],
+        'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'post-one', 'back-menu', 'distance-info', 'dist-text-header', 'distances', 'icons-panel__favorites_text-active'],
         'show': ['start-page', 'post-menu', 'icon-settings', 'tabs-service'],
         'callParams': {
           call: 'doStart',
@@ -20603,7 +20615,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'container': postsStart
       },
       'showOnePost': {
-        'hide': ['posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'distance-info', 'dist-text-header', 'distances', 'icon-settings', 'tabs-service'],
+        'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'distance-info', 'dist-text-header', 'distances', 'icon-settings', 'tabs-service', 'icons-panel__favorites_text-active'],
         'show': ['post-one', 'back-menu'],
         'callParams': {
           call: 'getPostByID',
@@ -20612,7 +20624,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'container': postsOne
       },
       'profile': {
-        'hide': ['posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service'],
+        'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service', 'icons-panel__favorites_text-active'],
         'show': ['back-menu']
       }
     };
@@ -20625,7 +20637,7 @@ window.addEventListener('DOMContentLoaded', () => {
     };
     let currentPage = 'doStart';
     workberHome.dataset['currentPage'] = 'doStart';
-    const pages = ['service', 'project', 'all', 'post', 'profile'];
+    const pages = ['service', 'project', 'all', 'post', 'profile', 'favorite'];
     const eventClick = new Event("click");
     const eventScroll = new Event("scroll");
     let currentlyLoad = 0; // в данный момент загружено 0 элементов
@@ -20717,6 +20729,32 @@ window.addEventListener('DOMContentLoaded', () => {
       scrollSearchActivated = 0;
     };
 
+    const renderSearchFavorite = ({
+      posts,
+      last_postid,
+      last_dist,
+      code
+    }, postsContainer, currentPageName = '') => {
+      // const div = document.createElement('div');
+      // div.classList.add('posts-row');
+      if (posts.length == 0) {
+        postsContainer.append(notFoundPosts());
+      } else {
+        posts.forEach(postData => {
+          const postFeed = Object(_modules_handlerPostData__WEBPACK_IMPORTED_MODULE_7__["createPostFeed"])(postData, _modules_storage__WEBPACK_IMPORTED_MODULE_5__["getAppItem"]('isLogined'), currentPageName);
+
+          if (!!postFeed) {
+            postsContainer.dataset.last_postid = last_postid;
+            postsContainer.dataset.code = code;
+            postsContainer.append(postFeed); // div.append(postFeed);
+          }
+        }); // postsContainer.append(div);
+      }
+
+      currentlyLoad++;
+      scrollSearchActivated = 0;
+    };
+
     const renderSearchAll = data => {
       console.log(data);
     };
@@ -20736,7 +20774,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
       if (target.matches('.service')) {
         if (!target.matches('.service-selected') || currentPage == 'doStart') {
-          // toggleService(target);
           Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["toggleService"])('.service', target, 'service-selected');
           showControl[currentPage].scrollYPos = window.pageYOffset;
           showControl[currentPage].container.classList.add('d-none');
@@ -20753,9 +20790,7 @@ window.addEventListener('DOMContentLoaded', () => {
       currentPage = Object(_modules_domHelpers__WEBPACK_IMPORTED_MODULE_12__["getCurrentPage"])('.service');
 
       if (searchInput.value === showControl[currentPage].callParams.keywords) {
-        enableElemsStart(currentPage); // if (searchInput.value === '' || searchInput.value.trim().length < 3) {
-        // 	return false;
-        // }
+        enableElemsStart(currentPage);
       } else {
         distances.classList.add('d-none');
         distText.textContent = distTextHeader.textContent = '';
@@ -20778,6 +20813,14 @@ window.addEventListener('DOMContentLoaded', () => {
         'lng': params.lng
       });
     };
+    /**
+    * start search process
+    * @module main 
+    * @param {string} searchPage
+    * @param {string} keywords
+    * @param {function} renderPosts
+    */
+
 
     const goSearch = (searchPage, keywords, renderPosts) => {
       currentPage = searchPage;
@@ -20810,6 +20853,47 @@ window.addEventListener('DOMContentLoaded', () => {
 
       enableElemsStart(currentPage);
       onePostShowned = 0;
+    };
+
+    const showFeedFavorite = () => {
+      if (currentPage === 'favorite' && postsFavorite.textContent !== '') {
+        return false;
+      }
+
+      showControl[currentPage].scrollYPos = window.pageYOffset;
+      currentPage = 'favorite';
+      Object(_modules_appState__WEBPACK_IMPORTED_MODULE_10__["URImod"])({
+        'page': currentPage
+      });
+      postsFavorite.textContent = '';
+      getDataAuthorized(Object(_modules_requests__WEBPACK_IMPORTED_MODULE_8__["createCallRequestParams"])(currentPage, showControl[currentPage].callParams, {}), renderSearchFavorite);
+      enableElemsStart(currentPage);
+      onePostShowned = 0;
+    };
+
+    const getDataAuthorized = async (searchQuery, callback) => {
+      if (!searchQuery) {
+        return false;
+      }
+
+      searchSpinner.classList.remove('d-none');
+      noMorePosts.classList.add('d-none');
+      const currentPageName = searchQuery.currentPageName;
+      delete searchQuery.currentPageName;
+      searchQuery.token = _modules_storage__WEBPACK_IMPORTED_MODULE_5__["getGlobalItem"]('sid');
+      waitForLoad++;
+      Object(_modules_requests__WEBPACK_IMPORTED_MODULE_8__["sendGetRequest"])(searchQuery, {
+        token: _modules_storage__WEBPACK_IMPORTED_MODULE_5__["getGlobalItem"]('sid'),
+        refreshToken: _modules_storage__WEBPACK_IMPORTED_MODULE_5__["getGlobalItem"]('refresh_token')
+      }).then(data => {
+        if (data === 401) {
+          Object(_modules_appState__WEBPACK_IMPORTED_MODULE_10__["logout"])().then(() => {
+            location.href = '/';
+          });
+        } else {
+          callback(data, showControl[currentPageName].container, currentPageName);
+        }
+      });
     };
 
     const getDataSearch = async (searchQuery, postsContainer, callback) => {
@@ -20871,15 +20955,7 @@ window.addEventListener('DOMContentLoaded', () => {
           showOnePost(item.dataset.postid);
         });
       });
-    }; // const toggleService = targetService => {
-    // 	services.forEach(item => {
-    // 		item.classList.remove('service-selected');
-    // 	});
-    // 	if(!!targetService) {
-    // 		targetService.classList.add('service-selected');
-    // 	}
-    // };
-
+    };
 
     const enableElemsStart = callName => {
       if (currentlyLoad >= waitForLoad) {
@@ -21069,6 +21145,12 @@ window.addEventListener('DOMContentLoaded', () => {
         }
       }
     };
+    /**
+     * switch between home add local locations
+     * @module main
+     * @param {event} e
+     */
+
 
     const switchLocality = e => {
       const target = e.target;
@@ -21093,6 +21175,12 @@ window.addEventListener('DOMContentLoaded', () => {
         }
       }
     };
+    /**
+     * select type of location and return coords for home location
+     * @module main
+     * @return {object} paramsLocation
+     */
+
 
     const selectLocation = () => {
       const paramsLocation = {};
@@ -21112,20 +21200,18 @@ window.addEventListener('DOMContentLoaded', () => {
       }
 
       return paramsLocation;
-    }; // const getCurrentPage = () => {
-    // 	for(let item of services) {
-    // 		if(item.matches('.service-selected')) {
-    // 			return item.dataset.service;
-    // 		}
-    // 	}
-    // };
-
+    };
 
     const notFoundPosts = () => {
       const tempDiv = notFound.cloneNode(true);
       tempDiv.classList.remove('d-none');
       return tempDiv;
     };
+    /**
+     * reload page with stored currentPage, searchInput, lat, lng
+     * @module main
+     */
+
 
     const reloadCurrentPage = () => {
       const params = selectLocation();
@@ -21145,6 +21231,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const hashTag = searchInput.value;
         showControl[currentPage].callParams.keywords = hashTag;
         goSearch(currentPage, hashTag, renderSearchAll);
+      } else if (currentPage === 'favorite') {
+        postsFavorite.textContent = '';
+        showFeedFavorite();
       } else {
         postsStart.textContent = '';
         showFeedSearch();
@@ -21235,6 +21324,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     workberHome.addEventListener('click', showHome);
     tabsServices.addEventListener('click', changeSearch);
+    favorite.addEventListener('click', e => {
+      e.preventDefault();
+      showFeedFavorite();
+    });
     backMenu.addEventListener('click', showFeed);
     tabsLocality.addEventListener('click', switchLocality); // btnSetLocaton.addEventListener('click', setLocation);
 
@@ -21327,8 +21420,9 @@ window.addEventListener('DOMContentLoaded', () => {
               Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["toggleService"])('.service', searchProject, 'service-selected');
             } else if (paramPage === 'service') {
               Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["toggleService"])('.service', searchService, 'service-selected');
-            } else {} // tabsServices.classList.remove('d-hidden');
-
+            } else if (paramPage === 'favorite') {
+              Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["toggleService"])('.service', null, 'service-selected');
+            }
 
             const hashTag = paramsURI.get('hashtag');
             currentPage = paramPage;
@@ -21457,20 +21551,7 @@ const postAPIRequest = async requestData => {
   }
 
   return false;
-}; // export const deleteHashtagTemplate = async (id) => {
-// 	let token = storage.getGlobalItem('sid');
-// 	if (token) {
-// 		const data = await sendGetRequest({
-// 			call: 'doDelHashtagTemplates',
-// 			token: token,
-// 			id: id
-// 		}, 
-// 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
-// 		return data;
-// 	}
-// 	return false;
-// };
-
+};
 const deleteTemplate = async (typeTemplate, id) => {
   let token = _storage__WEBPACK_IMPORTED_MODULE_3__["getGlobalItem"]('sid');
   let call = null;
@@ -21494,19 +21575,7 @@ const deleteTemplate = async (typeTemplate, id) => {
   }
 
   return false;
-}; // export const getHashtagTemplate = async () => {
-// 	let token = storage.getGlobalItem('sid');
-// 	if (token) {
-// 		const data = await sendGetRequest({
-// 			call: 'doGetHashtagTemplates',
-// 			token: token,
-// 		}, 
-// 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
-// 		return data;
-// 	}
-// 	return false;
-// };
-
+};
 const getTemplate = async typeTemplate => {
   let token = _storage__WEBPACK_IMPORTED_MODULE_3__["getGlobalItem"]('sid');
   let call = null;
@@ -21611,11 +21680,7 @@ const URImod = newURIParams => {
   }
 
   history.pushState(null, null, `${originPath}?${newSearchParams.toString()}`);
-}; // const removeLocalLoginInfo = () => {
-// 	storage.removeGlobalItem([
-// 		'refresh_token', 'sid', 'lifetime', 'lat', 'lng'
-// 	]);
-// };
+};
 
 /***/ }),
 
@@ -22712,7 +22777,7 @@ const renderProfile = ({
   return profileContainer;
 };
 /**
- * handle events for likes and favourites buttons
+ * handle events for likes and favorites buttons
  * @module domElements
  * @param {DOM} elem
  * @param {string} postDocumentId
@@ -22752,6 +22817,10 @@ const handlePostBtn = (elem, postDocumentId = null) => {
           btn.classList.remove('save-selected');
           btn.setAttribute('data-value', '1');
           btn.querySelector('.icon').classList.remove('icon-selected');
+
+          if (btn.dataset.page === 'favorite') {
+            location.reload();
+          }
         } else {
           // btn.querySelector('.save_out').innerText = '';
           btn.querySelector('.save_out').style.display = 'none';
@@ -22827,6 +22896,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__);
 
+
+/**
+* @module domHelpers
+* @param {string} servicesSelector
+* @return {string} service type (service, project, favorite)
+*/
 const getCurrentPage = servicesSelector => {
   const services = document.querySelectorAll(servicesSelector);
 
@@ -22958,6 +23033,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
 
 
+/**
+ * @module domManipulation
+ * @param {string} servicesSelector
+ * @param {DOM} targetService
+ * @param {string} className
+ */
+
 const toggleService = (servicesSelector, targetService, className) => {
   const services = document.querySelectorAll(servicesSelector);
   services.forEach(item => {
@@ -22968,6 +23050,12 @@ const toggleService = (servicesSelector, targetService, className) => {
     targetService.classList.add(className);
   }
 };
+/**
+ * @module domManipulation
+ * @param {string} callName
+ * @param {object} callName
+ */
+
 const hidePageElems = (callName, showControl) => {
   showControl[callName].hide.forEach(item => {
     controlElems(item, 'hide');
@@ -23015,16 +23103,13 @@ const renderButtonsFooter = (renderReset = false) => {
  * @param {boolean} disabledState
  * @param {string} postid
  * @param {object} actionProps
+ * @param {string} pageName
  * @return {string} HTML layout
  */
 
-const renderFavButton = (disabledState, postid, actionProps) => {
-  return '';
+const renderFavButton = (disabledState, postid, actionProps, pageName = '') => {
   return `
-		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-postid="${postid}">
-			<!--<svg width="24" height="24" class="icon ${actionProps.icon_save}">
-				<use xlink:href="assets/workber_img/icons.svg#btn-save"></use>
-			</svg>-->
+		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-page="${pageName}" data-postid="${postid}">
 			${renderIcon('btn-save', 24, actionProps.icon_save)}
 			<span class="save_out" ${actionProps.text_save ? '' : `style="display:none;"`}>SAVE</span>
 		</button>
@@ -23763,6 +23848,15 @@ const createStartPostFeed = ({
 	`;
   return div;
 };
+/**
+ * render HTML post
+ * @module handlerPostData
+ * @param {object} {}
+ * @param {boolean} isLogined
+ * @param {string} currentPageName
+ * @return {DOM} div
+ */
+
 const createPostFeed = ({
   id,
   user_picture,
@@ -23842,7 +23936,7 @@ const createPostFeed = ({
 					<div class="post-activities">
 						<div class="post-action-group">
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderLikeButton"])(disabledState, id, actionProps)}
-							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderFavButton"])(disabledState, id, actionProps)}
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderFavButton"])(disabledState, id, actionProps, currentPageName)}
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderShareButton"])(shortlink, "new-post-share")}
 							<!--<button class="post-action post-share new-post-share" data-link="${shortlink}" title="Copy link to post">
 								<svg width="24" height="24" class="icon">
@@ -24581,18 +24675,28 @@ async function sendRequest(url, body) {
 /*!************************************!*\
   !*** ./src/js/modules/requests.js ***!
   \************************************/
-/*! exports provided: createRequestParams, sendGetRequest */
+/*! exports provided: createRequestParams, createCallRequestParams, sendGetRequest */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createRequestParams", function() { return createRequestParams; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createCallRequestParams", function() { return createCallRequestParams; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sendGetRequest", function() { return sendGetRequest; });
 /* harmony import */ var _network__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./network */ "./src/js/modules/network.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
 /* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./storage */ "./src/js/modules/storage.js");
 
 
+
+/**
+* if given, priorParams overwrite originParams
+* @module requests 
+* @param {string} callName
+* @param {object} originParams
+* @param {object} priorParams
+* @return {object} {call, params}
+*/
 
 const createRequestParams = (callName, originParams, priorParams) => {
   let call = 0;
@@ -24625,6 +24729,46 @@ const createRequestParams = (callName, originParams, priorParams) => {
       'call': call,
       params
     };
+  }
+
+  return false;
+};
+/**
+* if given, priorParams overwrite originParams
+* @module requests 
+* @param {string} callName
+* @param {object} originParams
+* @param {object} priorParams
+* @return {object} {params}
+*/
+
+const createCallRequestParams = (callName, originParams, priorParams) => {
+  let call = 0;
+  const params = {}; // originParam
+
+  params['currentPageName'] = callName;
+
+  if (originParams) {
+    // apply priorParams first
+    for (let item in priorParams) {
+      if (!!priorParams[item]) {
+        params[item] = priorParams[item];
+      }
+    }
+
+    for (let item in originParams) {
+      if (item == 'call') {
+        call = originParams[item]; // 	continue;
+      }
+
+      if (originParams[item] !== null && !params[item]) {
+        params[item] = originParams[item];
+      }
+    }
+  }
+
+  if (call !== 0) {
+    return params;
   }
 
   return false;

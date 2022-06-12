@@ -1,0 +1,11 @@
+.icons-panel {
+	align-items: center;
+	display: flex;
+	&__favorites {
+		&_text {
+			color: $gray-color;
+			font-size: 16px;
+			margin-right: 13px;
+		}
+	}
+}

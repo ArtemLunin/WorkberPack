@@ -74,20 +74,6 @@ export const postAPIRequest = async (requestData) => {
 	return false;
 };
 
-// export const deleteHashtagTemplate = async (id) => {
-// 	let token = storage.getGlobalItem('sid');
-// 	if (token) {
-// 		const data = await sendGetRequest({
-// 			call: 'doDelHashtagTemplates',
-// 			token: token,
-// 			id: id
-// 		}, 
-// 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
-// 		return data;
-// 	}
-// 	return false;
-// };
-
 export const deleteTemplate = async (typeTemplate, id) => {
 	let token = storage.getGlobalItem('sid');
 	let call = null;
@@ -107,19 +93,6 @@ export const deleteTemplate = async (typeTemplate, id) => {
 	}
 	return false;
 };
-
-// export const getHashtagTemplate = async () => {
-// 	let token = storage.getGlobalItem('sid');
-// 	if (token) {
-// 		const data = await sendGetRequest({
-// 			call: 'doGetHashtagTemplates',
-// 			token: token,
-// 		}, 
-// 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
-// 		return data;
-// 	}
-// 	return false;
-// };
 
 export const getTemplate = async (typeTemplate) => {
 	let token = storage.getGlobalItem('sid');
@@ -211,9 +184,3 @@ export const URImod = (newURIParams) => {
 	}
 	history.pushState(null, null, `${originPath}?${newSearchParams.toString()}`);
 };
-
-// const removeLocalLoginInfo = () => {
-// 	storage.removeGlobalItem([
-// 		'refresh_token', 'sid', 'lifetime', 'lat', 'lng'
-// 	]);
-// };

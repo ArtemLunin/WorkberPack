@@ -985,7 +985,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 };
 
 /**
- * handle events for likes and favourites buttons
+ * handle events for likes and favorites buttons
  * @module domElements
  * @param {DOM} elem
  * @param {string} postDocumentId
@@ -1021,6 +1021,9 @@ export const handlePostBtn = (elem, postDocumentId = null) => {
 					btn.classList.remove('save-selected');
 					btn.setAttribute('data-value', '1');
 					btn.querySelector('.icon').classList.remove('icon-selected');
+					if (btn.dataset.page === 'favorite') {
+						location.reload();
+					}
 				} else {
 					// btn.querySelector('.save_out').innerText = '';
 					btn.querySelector('.save_out').style.display = 'none';

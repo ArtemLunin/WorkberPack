@@ -1,6 +1,7 @@
 @import 'variables';
 @import 'base';
 @import 'fonts';
+@import 'main';
 @import 'profile';
 
 a {
@@ -346,7 +347,7 @@ a {
 }
 
 .icon {
-	fill: #9AA0A8;
+	fill: $gray-color;
 	&:hover {
 		fill: #fea631;
 	}
@@ -397,21 +398,11 @@ a {
 	line-height: 20px;
 }
 
-.icons-panel {
-	align-items: center;
-	display: flex;
-	// &::after {
-	// 	content: "";
-	// 	width: 1px;
-	// 	height: 24px;
-	// 	background: rgba(216, 216, 216, 0.5);
-	// 	display: inline-block;
-	// }
-}
-
 .navigation-link {
 	text-decoration: none;
 	margin-left: 16px;
+	align-items: center;
+    display: flex;
 }
 
 .icon-create {

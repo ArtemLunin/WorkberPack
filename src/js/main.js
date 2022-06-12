@@ -3,9 +3,9 @@ import {workberBackEnd, workberImages, endSearchCode, routes} from './modules/co
 import * as storage from './modules/storage';
 import {renderModalSign, commonModalOpenClass} from './modules/modal';
 import {createPost, createStartPostFeed, createPostFeed} from './modules/handlerPostData';
-import {createRequestParams} from './modules/requests';
+import { createRequestParams, createCallRequestParams, sendGetRequest } from './modules/requests';
 import {sendRequest} from './modules/network';
-import {getUserProfile, URImod} from './modules/appState';
+import {getUserProfile, URImod, logout} from './modules/appState';
 import {toggleService, hidePageElems, showPageElems} from './modules/domManipulation';
 import {getCurrentPage, visible, copyShareLink} from './modules/domHelpers'
 import {renderProfile, handlePostBtn} from './modules/domElements';
@@ -40,11 +40,12 @@ let waitForLoad = 0;
 
 
 const mainPage = document.querySelector('.main-page');
-const postsOffer = document.querySelector('.posts-offer');
-const postsStart = document.querySelector('.posts-start');
-const postsNeed = document.querySelector('.posts-need');
-const postsAll = document.querySelector('.posts-all');
-const postsOne = document.querySelector('.post-one');
+const postsOffer = document.querySelector('.posts-offer'),
+	postsStart = document.querySelector('.posts-start'),
+	postsNeed = document.querySelector('.posts-need'), 
+	postsAll = document.querySelector('.posts-all'),
+	postsFavorite = document.querySelector('.posts-favorite'),
+	postsOne = document.querySelector('.post-one');
 
 // const serviceOffer = document.querySelector('.offer');
 // const serviceNeed = document.querySelector('.need');
@@ -59,6 +60,7 @@ const distText = document.querySelector('.dist-text');
 const distTextHeader = document.querySelector('.dist-text-header');
 const postMenu = document.querySelector('.post-menu');
 const userMenu = document.querySelector('.user-menu'),
+	favorite = document.querySelector('#favorite'),
 	iconsPanel = document.querySelector('.icons-panel');
 const backMenu = document.querySelector('.back-menu');
 const searchButton = document.querySelector('.search-button');
@@ -82,7 +84,7 @@ const localityLocal = document.querySelector('.locality-local');
 
 const showControl = {
 	'service': {
-		'hide': ['posts-need', 'start-page', 'posts-all', 'post-one', 'back-menu'],
+		'hide': ['posts-favorite', 'posts-need', 'start-page', 'posts-all', 'post-one', 'back-menu', 'icons-panel__favorites_text-active'],
 		'show': ['posts-offer', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service'],
 		'callParams': {
 			call: 'doSearch',
@@ -93,7 +95,7 @@ const showControl = {
 		'zoneName': '',
 	},
 	'project': {
-		'hide': ['posts-offer', 'posts-all', 'start-page', 'post-one', 'back-menu'],
+		'hide': ['posts-favorite', 'posts-offer', 'posts-all', 'start-page', 'post-one', 'back-menu', 'icons-panel__favorites_text-active'],
 		'show': ['posts-need', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service'],
 		'callParams': {
 			call: 'doSearch',
@@ -103,8 +105,18 @@ const showControl = {
 		'container': postsNeed,
 		'zoneName': '',
 	},
+	'favorite' : {
+		'hide': ['posts-need', 'posts-offer', 'posts-all', 'start-page', 'post-one', 'back-menu', 'distances', 'dist-text-header', 'post-menu'],
+		'show': ['posts-favorite', 'search-block', 'icon-settings', 'tabs-service', 'icons-panel__favorites_text-active'],
+		'callParams': {
+			call: 'doShowMeFav',
+			postid: null,
+		},
+		'scrollYPos': 0,
+		'container': postsFavorite,
+	},
 	'all': {
-		'hide': ['posts-offer', 'posts-need', 'start-page', 'post-one', 'back-menu'],
+		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'start-page', 'post-one', 'back-menu', 'icons-panel__favorites_text-active'],
 		'show': ['posts-all', 'search-block', 'post-menu', 'icon-settings'],
 		'callParams': {
 			call: 'doSearchAll',
@@ -114,7 +126,7 @@ const showControl = {
 		'zoneName': '',
 	},
 	'doStart': {
-		'hide': ['posts-offer', 'posts-need', 'posts-all', 'home-page', 'post-one', 'back-menu', 'distance-info', 'dist-text-header', 'distances'],
+		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'post-one', 'back-menu', 'distance-info', 'dist-text-header', 'distances', 'icons-panel__favorites_text-active'],
 		'show': ['start-page', 'post-menu', 'icon-settings', 'tabs-service'],
 		'callParams': {
 			call: 'doStart',
@@ -125,7 +137,7 @@ const showControl = {
 		'container': postsStart,
 	},
 	'showOnePost': {
-		'hide': ['posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'distance-info', 'dist-text-header', 'distances', 'icon-settings', 'tabs-service'],
+		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'distance-info', 'dist-text-header', 'distances', 'icon-settings', 'tabs-service', 'icons-panel__favorites_text-active'],
 		'show': ['post-one', 'back-menu'],
 		'callParams': {
 			call: 'getPostByID',
@@ -134,7 +146,7 @@ const showControl = {
 		'container': postsOne,
 	},
 	'profile': {
-		'hide': ['posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service'],
+		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service', 'icons-panel__favorites_text-active'],
 		'show': ['back-menu'],
 	}
 };
@@ -149,7 +161,7 @@ const callParams = {
 
 let currentPage = 'doStart';
 workberHome.dataset['currentPage'] = 'doStart';
-const pages = ['service', 'project', 'all', 'post', 'profile'];
+const pages = ['service', 'project', 'all', 'post', 'profile', 'favorite'];
 const eventClick = new Event("click");
 const eventScroll = new Event("scroll");
 
@@ -226,6 +238,30 @@ const renderSearchPosts = ({zones, last_postid, last_dist, code}, postsContainer
 	scrollSearchActivated = 0;
 };
 
+
+const renderSearchFavorite = ({posts, last_postid, last_dist, code}, postsContainer, currentPageName = '') => {
+	// const div = document.createElement('div');
+	// div.classList.add('posts-row');
+	if (posts.length == 0) {
+		postsContainer.append(notFoundPosts());
+	} else 
+	{
+		posts.forEach(postData => {
+			const postFeed = createPostFeed(postData, storage.getAppItem('isLogined'), currentPageName);
+			if (!!postFeed) {
+				postsContainer.dataset.last_postid = last_postid;
+				postsContainer.dataset.code = code;
+				postsContainer.append(postFeed);
+				// div.append(postFeed);
+			}
+		});
+		// postsContainer.append(div);
+	}
+	
+	currentlyLoad++;
+	scrollSearchActivated = 0;
+};
+
 const renderSearchAll = (data) => {
 	console.log(data);
 };
@@ -245,7 +281,6 @@ const changeSearch = (e) =>
 	const target = e.target;
 	if (target.matches('.service')) {
 		if (!target.matches('.service-selected') || currentPage == 'doStart') {
-			// toggleService(target);
 			toggleService('.service', target, 'service-selected');
 			showControl[currentPage].scrollYPos = window.pageYOffset;
 			showControl[currentPage].container.classList.add('d-none');
@@ -262,9 +297,6 @@ const searchPosts = (e) => {
 	currentPage = getCurrentPage('.service');
 	if(searchInput.value === showControl[currentPage].callParams.keywords) {
 		enableElemsStart(currentPage);
-		// if (searchInput.value === '' || searchInput.value.trim().length < 3) {
-		// 	return false;
-		// }
 	} else {
 		distances.classList.add('d-none');
 		distText.textContent = distTextHeader.textContent = '';
@@ -286,6 +318,13 @@ const searchPosts = (e) => {
 	});
 };
 
+/**
+* start search process
+* @module main 
+* @param {string} searchPage
+* @param {string} keywords
+* @param {function} renderPosts
+*/
 const goSearch = (searchPage, keywords, renderPosts) => {
 	currentPage = searchPage;
 	const params = selectLocation();
@@ -314,8 +353,49 @@ const showFeedSearch = (e = null) => {
 	onePostShowned = 0;
 };
 
+const showFeedFavorite = () => {
+	if (currentPage === 'favorite' && postsFavorite.textContent !== '') {
+		return false;
+	}
+	showControl[currentPage].scrollYPos = window.pageYOffset;
+	currentPage = 'favorite';
+	URImod({
+		'page': currentPage,
+	});
+	postsFavorite.textContent = '';
+	getDataAuthorized(createCallRequestParams(currentPage, showControl[currentPage].callParams, {}), renderSearchFavorite);
+	enableElemsStart(currentPage);
+	onePostShowned = 0;
+};
+
+const getDataAuthorized = async (searchQuery, callback) => {
+	if (!searchQuery) {
+		return false;
+	}
+	searchSpinner.classList.remove('d-none');
+	noMorePosts.classList.add('d-none');
+	const currentPageName = searchQuery.currentPageName;
+	delete searchQuery.currentPageName;
+	searchQuery.token = storage.getGlobalItem('sid');
+	waitForLoad++;
+
+	sendGetRequest(searchQuery,
+		{ 
+			token: storage.getGlobalItem('sid'), 
+			refreshToken: storage.getGlobalItem('refresh_token') 
+		}).then((data) => {
+			if (data === 401) {
+				logout().then(() => {
+					location.href = '/';
+				});
+			} else {
+				callback(data, showControl[currentPageName].container, currentPageName);
+			}
+		});
+};
+
 const getDataSearch = async (searchQuery, postsContainer, callback) => {
-	if(!searchQuery) {
+	if (!searchQuery) {
 		return false;
 	}
 	searchSpinner.classList.remove('d-none');
@@ -368,15 +448,6 @@ const addEvents = () => {
 		});
 	});
 };
-
-// const toggleService = targetService => {
-// 	services.forEach(item => {
-// 		item.classList.remove('service-selected');
-// 	});
-// 	if(!!targetService) {
-// 		targetService.classList.add('service-selected');
-// 	}
-// };
 
 const enableElemsStart = callName => {
 	if (currentlyLoad >= waitForLoad) {
@@ -541,13 +612,18 @@ const postsScroll = ( e, setZoneName = 0) => {
 	}
 };
 
+/**
+ * switch between home add local locations
+ * @module main
+ * @param {event} e
+ */
 const switchLocality = (e) => {
 	const target = e.target;
 	let needInit = false;
-	if(target.matches('.locality'))
+	if (target.matches('.locality'))
 	{
 		e.preventDefault();
-		if(target.matches('.locality-home') && localityStatus !== 'locality-home') {
+		if (target.matches('.locality-home') && localityStatus !== 'locality-home') {
 			localityStatus = 'locality-home';
 			needInit = true;
 		} else if (target.matches('.locality-local') && localityStatus !== 'locality-local') {
@@ -561,6 +637,11 @@ const switchLocality = (e) => {
 	}
 };
 
+/**
+ * select type of location and return coords for home location
+ * @module main
+ * @return {object} paramsLocation
+ */
 const selectLocation = () => {
 	const paramsLocation = {};
 	localityStatus = storage.getLocalityStatus();
@@ -579,20 +660,16 @@ const selectLocation = () => {
 	return paramsLocation;
 };
 
-// const getCurrentPage = () => {
-// 	for(let item of services) {
-// 		if(item.matches('.service-selected')) {
-// 			return item.dataset.service;
-// 		}
-// 	}
-// };
-
 const notFoundPosts = () => {
 	const tempDiv = notFound.cloneNode(true);
 	tempDiv.classList.remove('d-none');
 	return tempDiv;
 };
 
+/**
+ * reload page with stored currentPage, searchInput, lat, lng
+ * @module main
+ */
 const reloadCurrentPage = () => {
 	const params = selectLocation();
 	URImod({
@@ -610,7 +687,11 @@ const reloadCurrentPage = () => {
 		const hashTag = searchInput.value;
 		showControl[currentPage].callParams.keywords = hashTag;
 		goSearch(currentPage, hashTag, renderSearchAll);
-	} else {
+	} else if (currentPage === 'favorite') {
+		postsFavorite.textContent = '';
+		showFeedFavorite();
+	}
+	else {
 		postsStart.textContent = '';
 		showFeedSearch();
 	}
@@ -656,10 +737,10 @@ const doUploadPosts = () => {
 		return false;
 	}
 	const params = selectLocation();
-	if(!!last_postid) {
+	if (!!last_postid) {
 		params.postid = last_postid;
 	}
-	if(!!last_dist) {
+	if (!!last_dist) {
 		params.dist = last_dist;
 	}
 	params.keywords = showControl[currentPage].callParams.keywords;
@@ -688,10 +769,12 @@ const doUploadPosts = () => {
 	enableElemsStart(currentPage);
 };
 
-
-
 workberHome.addEventListener('click', showHome);
 tabsServices.addEventListener('click', changeSearch);
+favorite.addEventListener('click', (e) => {
+	e.preventDefault();
+	showFeedFavorite();
+});
 backMenu.addEventListener('click', showFeed);
 
 tabsLocality.addEventListener('click', switchLocality);
@@ -766,7 +849,7 @@ if (workberLogo) {
 			storage.iniBrowserLocation();
 			searchInput.value = '';
 			const paramPage = paramsURI.get('page');
-			if(!paramPage || pages.indexOf(paramPage) == -1) {
+			if (!paramPage || pages.indexOf(paramPage) == -1) {
 				clickHomeButton();
 			} else {
 				window.scroll(0, 0);
@@ -786,13 +869,12 @@ if (workberLogo) {
 						toggleService('.service', searchProject, 'service-selected');
 					} else if (paramPage === 'service') {
 						toggleService('.service', searchService, 'service-selected');
-					} else {
-
+					} else if (paramPage === 'favorite') {
+						toggleService('.service', null, 'service-selected');
 					}
-					// tabsServices.classList.remove('d-hidden');
 					const hashTag = paramsURI.get('hashtag');
 					currentPage = paramPage;
-					if(!!hashTag && hashTag.trim().length > 2) {
+					if (!!hashTag && hashTag.trim().length > 2) {
 						searchInput.value = hashTag;
 						showControl[paramPage].callParams.keywords = hashTag;
 					}

@@ -181,6 +181,14 @@ export const createStartPostFeed = ({id, user_picture, user_name, collage, post_
 	return div;
 };
 
+/**
+ * render HTML post
+ * @module handlerPostData
+ * @param {object} {}
+ * @param {boolean} isLogined
+ * @param {string} currentPageName
+ * @return {DOM} div
+ */
 export const createPostFeed = ({id, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, shortlink, lat, lng, is_likes, is_bookmarks, city, role_ad, dist, contactsList, zonesName}, isLogined = false, currentPageName = '') => {
 	if(!id) {
 		return false;
@@ -236,7 +244,7 @@ export const createPostFeed = ({id, user_picture, user_name, collage, post_name,
 					<div class="post-activities">
 						<div class="post-action-group">
 							${renderLikeButton(disabledState, id, actionProps)}
-							${renderFavButton(disabledState, id, actionProps)}
+							${renderFavButton(disabledState, id, actionProps, currentPageName)}
 							${renderShareButton(shortlink, "new-post-share")}
 							<!--<button class="post-action post-share new-post-share" data-link="${shortlink}" title="Copy link to post">
 								<svg width="24" height="24" class="icon">

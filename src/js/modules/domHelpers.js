@@ -1,3 +1,8 @@
+/**
+* @module domHelpers
+* @param {string} servicesSelector
+* @return {string} service type (service, project, favorite)
+*/
 export const getCurrentPage = (servicesSelector) => {
 	const services = document.querySelectorAll(servicesSelector);
 	for(let item of services) {

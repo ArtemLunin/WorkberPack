@@ -1,6 +1,12 @@
 import * as storage from './storage';
 import {innerImagesPath} from './config';
 
+/**
+ * @module domManipulation
+ * @param {string} servicesSelector
+ * @param {DOM} targetService
+ * @param {string} className
+ */
 export const toggleService = (servicesSelector, targetService, className) => {
 	const services = document.querySelectorAll(servicesSelector);
 	services.forEach(item => {
@@ -11,6 +17,11 @@ export const toggleService = (servicesSelector, targetService, className) => {
 	}
 };
 
+/**
+ * @module domManipulation
+ * @param {string} callName
+ * @param {object} callName
+ */
 export const hidePageElems = (callName, showControl) => {
 	showControl[callName].hide.forEach(item => {
 		controlElems(item, 'hide');
@@ -58,15 +69,12 @@ export const renderButtonsFooter = (renderReset = false) => {
  * @param {boolean} disabledState
  * @param {string} postid
  * @param {object} actionProps
+ * @param {string} pageName
  * @return {string} HTML layout
  */
-export const renderFavButton = (disabledState, postid, actionProps) => {
-	return '';
+export const renderFavButton = (disabledState, postid, actionProps, pageName = '') => {
 	return `
-		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-postid="${postid}">
-			<!--<svg width="24" height="24" class="icon ${actionProps.icon_save}">
-				<use xlink:href="assets/workber_img/icons.svg#btn-save"></use>
-			</svg>-->
+		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-page="${pageName}" data-postid="${postid}">
 			${renderIcon('btn-save', 24, actionProps.icon_save)}
 			<span class="save_out" ${actionProps.text_save ? '' : `style="display:none;"`}>SAVE</span>
 		</button>
