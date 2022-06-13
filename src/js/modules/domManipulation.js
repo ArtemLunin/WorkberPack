@@ -72,9 +72,9 @@ export const renderButtonsFooter = (renderReset = false) => {
  * @param {string} pageName
  * @return {string} HTML layout
  */
-export const renderFavButton = (disabledState, postid, actionProps, pageName = '') => {
+export const renderFavButton = (disabledState, postid, actionProps) => {
 	return `
-		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-page="${pageName}" data-postid="${postid}">
+		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-postid="${postid}">
 			${renderIcon('btn-save', 24, actionProps.icon_save)}
 			<span class="save_out" ${actionProps.text_save ? '' : `style="display:none;"`}>SAVE</span>
 		</button>

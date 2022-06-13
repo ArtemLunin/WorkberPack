@@ -993,6 +993,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
  */
 export const handlePostBtn = (elem, postDocumentId = null) => {
 	const btn = elem.closest('.post-action');
+	const favoriteClass = 'favorite';
 	if (btn && btn.getAttribute('data-call')) {
 		const requestProps = {};
 		requestProps.call = btn.getAttribute('data-call');
@@ -1021,9 +1022,11 @@ export const handlePostBtn = (elem, postDocumentId = null) => {
 					btn.classList.remove('save-selected');
 					btn.setAttribute('data-value', '1');
 					btn.querySelector('.icon').classList.remove('icon-selected');
-					if (btn.dataset.page === 'favorite') {
-						location.reload();
-					}
+					try
+					{
+						const postItem = btn.closest(`.${favoriteClass}`);
+						postItem.remove();
+					} catch (e) {}
 				} else {
 					// btn.querySelector('.save_out').innerText = '';
 					btn.querySelector('.save_out').style.display = 'none';

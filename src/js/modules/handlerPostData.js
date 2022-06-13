@@ -53,18 +53,13 @@ export const createPost = ({postid, user_picture, user_name, collage, post_name,
 				<div class="post-image ${hide_post_img}">
 					<img src="${post_img}" alt="Post image">
 				</div>
+				<div style="display:none;" class="post-image post-image__href">${post_img}</div>
 				<div class="post-content">
 					<div class="post-activities">
 						<div class="post-action-group">
 							${renderLikeButton(disabledState, postid, actionProps)}
 							${renderFavButton(disabledState, postid, actionProps)}
 							${renderShareButton(shortlink)}
-							<!--<button class="post-action post-share" data-link="${shortlink}" title="Copy link to post">
-								<svg width="24" height="24" class="icon">
-									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
-								</svg>
-								SHARE
-							</button>-->
 						</div>
 						<div class="post-more">
 							<span class="post-view ${hide_more}">
@@ -119,7 +114,7 @@ export const createStartPostFeed = ({id, user_picture, user_name, collage, post_
 	let serviceClass = 'service-offer';
 	let serviceInfo = 'I OFFER';
 	const user_img = getUserAvatar(user_picture, user_name);
-	if(collage && collage != 'null') {
+	if (collage && collage != 'null') {
 		post_img = collage.name;
 		hide_post_img = '';
 	} else { // если картинки к посту нет, покажем заголовок и текст
@@ -153,7 +148,7 @@ export const createStartPostFeed = ({id, user_picture, user_name, collage, post_
 		<div style="display:none;" class="post-role_ad">${role_ad}</div>
 		<div style="display:none;" class="post-hashtags">${JSON.stringify(hashtags)}</div>
 		<div style="display:none;" class="post-link">${shortlink}</div>
-		<div style="display:none;" class="post-image">${post_img}</div>
+		<div style="display:none;" class="post-image post-image__href">${post_img}</div>
 		<!--<div class="post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
 		</div>-->
 		<!--<div class="${hide_post_img}">
@@ -211,7 +206,7 @@ export const createPostFeed = ({id, user_picture, user_name, collage, post_name,
 	}
 	const {contact_phone, contact_email, contact_address} = getDefaultContactsData(contactsList);
 	const div = document.createElement('div');
-	div.classList.add('post', 'post-feed', 'new-post');
+	div.classList.add('post', 'post-feed', 'new-post', currentPageName);
 	div.dataset.postid = id;
 	div.setAttribute('id', `${currentPageName}_postid_${id}`); 
 	div.dataset.showPageName = 'showOnePost';
@@ -240,18 +235,13 @@ export const createPostFeed = ({id, user_picture, user_name, collage, post_name,
 						<img src="${post_img}" alt="Post image">
 					</a>
 				</div>
+				<div style="display:none;" class="post-image__href">${post_img}</div>
 				<div class="post-content" data-dist="${dist}" data-lat="${lat}" data-lng="${lng}" data-zones="${zonesName}">
 					<div class="post-activities">
 						<div class="post-action-group">
 							${renderLikeButton(disabledState, id, actionProps)}
-							${renderFavButton(disabledState, id, actionProps, currentPageName)}
+							${renderFavButton(disabledState, id, actionProps)}
 							${renderShareButton(shortlink, "new-post-share")}
-							<!--<button class="post-action post-share new-post-share" data-link="${shortlink}" title="Copy link to post">
-								<svg width="24" height="24" class="icon">
-									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
-								</svg>
-								SHARE
-							</button>-->
 						</div>
 						<!--<div class="post-more">
 							<span class="post-view">

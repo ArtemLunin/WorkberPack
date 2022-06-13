@@ -240,8 +240,6 @@ const renderSearchPosts = ({zones, last_postid, last_dist, code}, postsContainer
 
 
 const renderSearchFavorite = ({posts, last_postid, last_dist, code}, postsContainer, currentPageName = '') => {
-	// const div = document.createElement('div');
-	// div.classList.add('posts-row');
 	if (posts.length == 0) {
 		postsContainer.append(notFoundPosts());
 	} else 
@@ -252,10 +250,8 @@ const renderSearchFavorite = ({posts, last_postid, last_dist, code}, postsContai
 				postsContainer.dataset.last_postid = last_postid;
 				postsContainer.dataset.code = code;
 				postsContainer.append(postFeed);
-				// div.append(postFeed);
 			}
 		});
-		// postsContainer.append(div);
 	}
 	
 	currentlyLoad++;
@@ -353,8 +349,10 @@ const showFeedSearch = (e = null) => {
 	onePostShowned = 0;
 };
 
-const showFeedFavorite = () => {
-	if (currentPage === 'favorite' && postsFavorite.textContent !== '') {
+const showFeedFavorite = (params = null) => {
+	console.log(params);
+	toggleService('.service', null, 'service-selected');
+	if (currentPage === 'favorite' && params === null && postsFavorite.textContent !== '') {
 		return false;
 	}
 	showControl[currentPage].scrollYPos = window.pageYOffset;
@@ -362,8 +360,12 @@ const showFeedFavorite = () => {
 	URImod({
 		'page': currentPage,
 	});
-	postsFavorite.textContent = '';
-	getDataAuthorized(createCallRequestParams(currentPage, showControl[currentPage].callParams, {}), renderSearchFavorite);
+
+	if (params === null ) {
+		postsFavorite.textContent = '';
+	}
+
+	getDataAuthorized(createCallRequestParams(currentPage, showControl[currentPage].callParams, params), renderSearchFavorite);
 	enableElemsStart(currentPage);
 	onePostShowned = 0;
 };
@@ -489,8 +491,7 @@ const showOnePost = postid => {
 			}
 			currentPage = showPageName;
 			const collage = {};
-			// collage.name = onePostFeed.querySelector('.post-link img').attributes.src.value;
-			collage.name = onePostFeed.querySelector('.post-image').textContent;
+			collage.name = onePostFeed.querySelector('.post-image__href').textContent;
 			const user_picture = onePostFeed.querySelector('.user-data').dataset.avatar,
 				user_name = onePostFeed.querySelector('.post-username').textContent,
 				post_name = onePostFeed.querySelector('.post-title').textContent,
@@ -507,7 +508,6 @@ const showOnePost = postid => {
 					contact_email: onePostFeed.querySelector('.post-contact-email').textContent,
 					address: onePostFeed.querySelector('.post-contact-address').textContent,
 				};
-
 			const post = createPost({postid, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, shortlink, city, role_ad, contactsList, is_likes, is_bookmarks}, storage.getAppItem('isLogined'));
 			const postContent = onePostFeed.querySelector('.post-content'),
 				lat = parseFloat(postContent.dataset.lat),
@@ -565,7 +565,7 @@ const showFeed = (e) => {
 	if(currentPage === 'doStart') { 
 		showHome(e);
 		return;
-	} else if(currentPage === 'showOnePost' && !!backMenu.dataset['prevPage']) {
+	} else if (currentPage === 'showOnePost' && !!backMenu.dataset['prevPage']) {
 		currentPage = backMenu.dataset['prevPage'];
 	}
 	enableElemsStart(currentPage);
@@ -589,8 +589,7 @@ const searchByTag = (e) => {
 	}
 };
 
-const postsScroll = ( e, setZoneName = 0) => {
-	// return false;
+const postsScroll = (e, setZoneName = 0) => {
 	const postsContainer = showControl[currentPage].container;
 	const allVisible = Array.from(postsContainer.querySelectorAll('.post-feed')).filter(visible);
 	if (!!allVisible[0] && !!allVisible[0].querySelector('.post-content')) {
@@ -599,13 +598,9 @@ const postsScroll = ( e, setZoneName = 0) => {
 			distText.textContent = distTextHeader.textContent = zoneName;
 		}
 	}
-	// if(scrollSearchActivated || onePostShowned || setZoneName) {
-	// 	return false;
-	// }
-
-	// if (!scrollSearchActivated && !onePostShowned && (!document.querySelector(`.${commonModalOpenClass}`))) {
 	if (!scrollSearchActivated && window.getComputedStyle(backMenu).display === 'none' && (!document.querySelector(`.${commonModalOpenClass}`))) {
 		let windowRelativeBottom = document.documentElement.getBoundingClientRect().bottom;
+
 		if (windowRelativeBottom <= document.documentElement.clientHeight + 120) {
 			doUploadPosts();
 		}
@@ -707,7 +702,6 @@ const clickHomeButton = () => {
 
 const clearSearchParam = () => {
 	searchInput.value = '';
-	// tabsServices.classList.add('d-hidden');
 };
 
 // const checkScrollBottom = () => {
@@ -756,6 +750,10 @@ const doUploadPosts = () => {
 		case 'all':
 			callBackRender = renderSearchAll;
 			break;
+		case 'favorite':
+			// callBackRender = renderSearchFavorite;
+			showFeedFavorite(params);
+			return;
 		default:
 			return false;
 	}
@@ -869,9 +867,9 @@ if (workberLogo) {
 						toggleService('.service', searchProject, 'service-selected');
 					} else if (paramPage === 'service') {
 						toggleService('.service', searchService, 'service-selected');
-					} else if (paramPage === 'favorite') {
+					} /* else if (paramPage === 'favorite') {
 						toggleService('.service', null, 'service-selected');
-					}
+					} */
 					const hashTag = paramsURI.get('hashtag');
 					currentPage = paramPage;
 					if (!!hashTag && hashTag.trim().length > 2) {
@@ -882,7 +880,6 @@ if (workberLogo) {
 				}
 			}
 			window.addEventListener('scroll', postsScroll);
-			// checkScrollBottom();
 		}
 	});
 }

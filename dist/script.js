@@ -20735,8 +20735,6 @@ window.addEventListener('DOMContentLoaded', () => {
       last_dist,
       code
     }, postsContainer, currentPageName = '') => {
-      // const div = document.createElement('div');
-      // div.classList.add('posts-row');
       if (posts.length == 0) {
         postsContainer.append(notFoundPosts());
       } else {
@@ -20746,9 +20744,9 @@ window.addEventListener('DOMContentLoaded', () => {
           if (!!postFeed) {
             postsContainer.dataset.last_postid = last_postid;
             postsContainer.dataset.code = code;
-            postsContainer.append(postFeed); // div.append(postFeed);
+            postsContainer.append(postFeed);
           }
-        }); // postsContainer.append(div);
+        });
       }
 
       currentlyLoad++;
@@ -20855,8 +20853,11 @@ window.addEventListener('DOMContentLoaded', () => {
       onePostShowned = 0;
     };
 
-    const showFeedFavorite = () => {
-      if (currentPage === 'favorite' && postsFavorite.textContent !== '') {
+    const showFeedFavorite = (params = null) => {
+      console.log(params);
+      Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["toggleService"])('.service', null, 'service-selected');
+
+      if (currentPage === 'favorite' && params === null && postsFavorite.textContent !== '') {
         return false;
       }
 
@@ -20865,8 +20866,12 @@ window.addEventListener('DOMContentLoaded', () => {
       Object(_modules_appState__WEBPACK_IMPORTED_MODULE_10__["URImod"])({
         'page': currentPage
       });
-      postsFavorite.textContent = '';
-      getDataAuthorized(Object(_modules_requests__WEBPACK_IMPORTED_MODULE_8__["createCallRequestParams"])(currentPage, showControl[currentPage].callParams, {}), renderSearchFavorite);
+
+      if (params === null) {
+        postsFavorite.textContent = '';
+      }
+
+      getDataAuthorized(Object(_modules_requests__WEBPACK_IMPORTED_MODULE_8__["createCallRequestParams"])(currentPage, showControl[currentPage].callParams, params), renderSearchFavorite);
       enableElemsStart(currentPage);
       onePostShowned = 0;
     };
@@ -21002,9 +21007,8 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         currentPage = showPageName;
-        const collage = {}; // collage.name = onePostFeed.querySelector('.post-link img').attributes.src.value;
-
-        collage.name = onePostFeed.querySelector('.post-image').textContent;
+        const collage = {};
+        collage.name = onePostFeed.querySelector('.post-image__href').textContent;
         const user_picture = onePostFeed.querySelector('.user-data').dataset.avatar,
               user_name = onePostFeed.querySelector('.post-username').textContent,
               post_name = onePostFeed.querySelector('.post-title').textContent,
@@ -21121,7 +21125,6 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     const postsScroll = (e, setZoneName = 0) => {
-      // return false;
       const postsContainer = showControl[currentPage].container;
       const allVisible = Array.from(postsContainer.querySelectorAll('.post-feed')).filter(_modules_domHelpers__WEBPACK_IMPORTED_MODULE_12__["visible"]);
 
@@ -21131,11 +21134,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!!zoneName) {
           distText.textContent = distTextHeader.textContent = zoneName;
         }
-      } // if(scrollSearchActivated || onePostShowned || setZoneName) {
-      // 	return false;
-      // }
-      // if (!scrollSearchActivated && !onePostShowned && (!document.querySelector(`.${commonModalOpenClass}`))) {
-
+      }
 
       if (!scrollSearchActivated && window.getComputedStyle(backMenu).display === 'none' && !document.querySelector(`.${_modules_modal__WEBPACK_IMPORTED_MODULE_6__["commonModalOpenClass"]}`)) {
         let windowRelativeBottom = document.documentElement.getBoundingClientRect().bottom;
@@ -21249,7 +21248,7 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     const clearSearchParam = () => {
-      searchInput.value = ''; // tabsServices.classList.add('d-hidden');
+      searchInput.value = '';
     }; // const checkScrollBottom = () => {
     // 	if(!scrollSearchActivated && !onePostShowned /* && !scrollDisabled */ && (!document.querySelector(`.${commonModalOpenClass}`))) {
     // 		let windowRelativeBottom = document.documentElement.getBoundingClientRect().bottom;
@@ -21307,6 +21306,11 @@ window.addEventListener('DOMContentLoaded', () => {
         case 'all':
           callBackRender = renderSearchAll;
           break;
+
+        case 'favorite':
+          // callBackRender = renderSearchFavorite;
+          showFeedFavorite(params);
+          return;
 
         default:
           return false;
@@ -21420,9 +21424,11 @@ window.addEventListener('DOMContentLoaded', () => {
               Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["toggleService"])('.service', searchProject, 'service-selected');
             } else if (paramPage === 'service') {
               Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["toggleService"])('.service', searchService, 'service-selected');
-            } else if (paramPage === 'favorite') {
-              Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_11__["toggleService"])('.service', null, 'service-selected');
             }
+            /* else if (paramPage === 'favorite') {
+            toggleService('.service', null, 'service-selected');
+            } */
+
 
             const hashTag = paramsURI.get('hashtag');
             currentPage = paramPage;
@@ -21436,7 +21442,7 @@ window.addEventListener('DOMContentLoaded', () => {
           }
         }
 
-        window.addEventListener('scroll', postsScroll); // checkScrollBottom();
+        window.addEventListener('scroll', postsScroll);
       }
     });
   }
@@ -22786,6 +22792,7 @@ const renderProfile = ({
 
 const handlePostBtn = (elem, postDocumentId = null) => {
   const btn = elem.closest('.post-action');
+  const favoriteClass = 'favorite';
 
   if (btn && btn.getAttribute('data-call')) {
     const requestProps = {};
@@ -22818,9 +22825,10 @@ const handlePostBtn = (elem, postDocumentId = null) => {
           btn.setAttribute('data-value', '1');
           btn.querySelector('.icon').classList.remove('icon-selected');
 
-          if (btn.dataset.page === 'favorite') {
-            location.reload();
-          }
+          try {
+            const postItem = btn.closest(`.${favoriteClass}`);
+            postItem.remove();
+          } catch (e) {}
         } else {
           // btn.querySelector('.save_out').innerText = '';
           btn.querySelector('.save_out').style.display = 'none';
@@ -23107,9 +23115,9 @@ const renderButtonsFooter = (renderReset = false) => {
  * @return {string} HTML layout
  */
 
-const renderFavButton = (disabledState, postid, actionProps, pageName = '') => {
+const renderFavButton = (disabledState, postid, actionProps) => {
   return `
-		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-page="${pageName}" data-postid="${postid}">
+		<button ${disabledState} class="post-action post-save ${actionProps.save_selected}" data-call="doFav" data-param="fav" data-value="${actionProps.fav_value}" data-postid="${postid}">
 			${renderIcon('btn-save', 24, actionProps.icon_save)}
 			<span class="save_out" ${actionProps.text_save ? '' : `style="display:none;"`}>SAVE</span>
 		</button>
@@ -23694,18 +23702,13 @@ const createPost = ({
 				<div class="post-image ${hide_post_img}">
 					<img src="${post_img}" alt="Post image">
 				</div>
+				<div style="display:none;" class="post-image post-image__href">${post_img}</div>
 				<div class="post-content">
 					<div class="post-activities">
 						<div class="post-action-group">
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderLikeButton"])(disabledState, postid, actionProps)}
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderFavButton"])(disabledState, postid, actionProps)}
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderShareButton"])(shortlink)}
-							<!--<button class="post-action post-share" data-link="${shortlink}" title="Copy link to post">
-								<svg width="24" height="24" class="icon">
-									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
-								</svg>
-								SHARE
-							</button>-->
 						</div>
 						<div class="post-more">
 							<span class="post-view ${hide_more}">
@@ -23821,7 +23824,7 @@ const createStartPostFeed = ({
 		<div style="display:none;" class="post-role_ad">${role_ad}</div>
 		<div style="display:none;" class="post-hashtags">${JSON.stringify(hashtags)}</div>
 		<div style="display:none;" class="post-link">${shortlink}</div>
-		<div style="display:none;" class="post-image">${post_img}</div>
+		<div style="display:none;" class="post-image post-image__href">${post_img}</div>
 		<!--<div class="post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
 		</div>-->
 		<!--<div class="${hide_post_img}">
@@ -23903,7 +23906,7 @@ const createPostFeed = ({
     contact_address
   } = getDefaultContactsData(contactsList);
   const div = document.createElement('div');
-  div.classList.add('post', 'post-feed', 'new-post');
+  div.classList.add('post', 'post-feed', 'new-post', currentPageName);
   div.dataset.postid = id;
   div.setAttribute('id', `${currentPageName}_postid_${id}`);
   div.dataset.showPageName = 'showOnePost';
@@ -23932,18 +23935,13 @@ const createPostFeed = ({
 						<img src="${post_img}" alt="Post image">
 					</a>
 				</div>
+				<div style="display:none;" class="post-image__href">${post_img}</div>
 				<div class="post-content" data-dist="${dist}" data-lat="${lat}" data-lng="${lng}" data-zones="${zonesName}">
 					<div class="post-activities">
 						<div class="post-action-group">
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderLikeButton"])(disabledState, id, actionProps)}
-							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderFavButton"])(disabledState, id, actionProps, currentPageName)}
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderFavButton"])(disabledState, id, actionProps)}
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderShareButton"])(shortlink, "new-post-share")}
-							<!--<button class="post-action post-share new-post-share" data-link="${shortlink}" title="Copy link to post">
-								<svg width="24" height="24" class="icon">
-									<use xlink:href="assets/workber_img/icons.svg#btn-share"></use>
-								</svg>
-								SHARE
-							</button>-->
 						</div>
 						<!--<div class="post-more">
 							<span class="post-view">

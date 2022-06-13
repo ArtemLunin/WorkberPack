@@ -2,5 +2,5 @@
 
 ## call events
 
-- search favorute by id="favorite"
+- search favorite by id="favorite"
 
