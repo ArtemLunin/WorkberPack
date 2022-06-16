@@ -1025,7 +1025,10 @@ export const handlePostBtn = (elem, postDocumentId = null) => {
 					try
 					{
 						const postItem = btn.closest(`.${favoriteClass}`);
-						postItem.remove();
+						postItem.classList.add('post-deleting');
+						setTimeout(() => {
+							postItem.remove();
+						}, 700);
 					} catch (e) {}
 				} else {
 					// btn.querySelector('.save_out').innerText = '';

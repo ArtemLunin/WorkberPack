@@ -26,3 +26,8 @@ p {
 button:hover {
 	opacity: .7;
 }
+
+.post-deleting {
+	transform: translate(-100%, -100%) scale(0.1) skew(30deg,30deg);
+    transition: 0.5s all;
+}
