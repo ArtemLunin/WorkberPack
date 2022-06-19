@@ -1,3 +1,4 @@
+import { tns } from "tiny-slider";
 import {mapLoader, setPostCoordsMap} from './modules/map';
 import {workberBackEnd, workberImages, endSearchCode, routes} from './modules/config';
 import * as storage from './modules/storage';
@@ -350,7 +351,6 @@ const showFeedSearch = (e = null) => {
 };
 
 const showFeedFavorite = (params = null) => {
-	console.log(params);
 	toggleService('.service', null, 'service-selected');
 	if (currentPage === 'favorite' && params === null && postsFavorite.textContent !== '') {
 		return false;
@@ -502,13 +502,17 @@ const showOnePost = postid => {
 				role_ad = onePostFeed.querySelector('.post-role_ad').textContent,
 				hashtags = JSON.parse(onePostFeed.querySelector('.post-hashtags').innerText),
 				city = onePostFeed.querySelector('.location-city').textContent,
-				shortlink = onePostFeed.querySelector('.post-link').textContent,
+				shortlink = onePostFeed.querySelector('.post-link').href,
+				images = onePostFeed.querySelector('[data-images]').dataset.images,
 				contactsList = {
 					phone: onePostFeed.querySelector('.post-contact-phone').textContent,
 					contact_email: onePostFeed.querySelector('.post-contact-email').textContent,
 					address: onePostFeed.querySelector('.post-contact-address').textContent,
 				};
-			const post = createPost({postid, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, shortlink, city, role_ad, contactsList, is_likes, is_bookmarks}, storage.getAppItem('isLogined'));
+
+		// console.log(onePostFeed.querySelector('.post-link'));
+			const post = createPost({postid, user_picture, user_name, collage, images, post_name, text_adv, likes, hashtags, shortlink, city, role_ad, contactsList, is_likes, is_bookmarks}, storage.getAppItem('isLogined'));
+
 			const postContent = onePostFeed.querySelector('.post-content'),
 				lat = parseFloat(postContent.dataset.lat),
 				lng = parseFloat(postContent.dataset.lng);
@@ -522,7 +526,23 @@ const showOnePost = postid => {
 			post.querySelector('.post-share').addEventListener('click', copyShareLink);
 			
 			postsOne.append(post);
-			
+			const slider = tns({
+				container: '.post-image-slider',
+				items: 1,
+				slideBy: 'page',
+				autoHeight: true,
+				autoplay: false,
+				controls: false,
+				nav: false
+			});
+
+			postsOne.querySelector('.slider-prev').addEventListener('click', () => {
+				slider.goTo('prev');
+			});
+			postsOne.querySelector('.slider-next').addEventListener('click', () => {
+				slider.goTo('next');
+			});
+
 			hidePageElems(showPageName, showControl);
 			showPageElems(showPageName, showControl);
 			noMorePosts.classList.add('d-none');

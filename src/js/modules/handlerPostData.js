@@ -1,5 +1,6 @@
 import {getActionProps} from './domHelpers';
-import {renderFavButton, renderLikeButton, renderShareButton} from './domManipulation';
+import {renderFavButton, renderLikeButton, renderShareButton, renderIcon} from './domManipulation';
+import { innerImagesPath } from './config';
 
 const getDefaultContactsData = contactsList => {
 	const contactsData = {
@@ -29,29 +30,42 @@ const getUserAvatar = (userPicture, userName) => {
 	return user_img;
 };
 
-export const createPost = ({postid, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, shortlink, city, role_ad, contactsList, is_likes, is_bookmarks}, isLogined = false) => {
-	let post_img = '';
-	let hide_post_img = 'd-none';
-	let hide_more = 'd-none';
-	let hashtags_str = '';
+export const createPost = ({postid, user_picture, user_name, collage, images = '', post_name, text_adv, likes, hashtags, shortlink, city, role_ad, contactsList, is_likes, is_bookmarks}, isLogined = false) => {
+
+	let hide_post_img = 'd-none',
+		hide_more = 'd-none';
+	let hashtags_str = '',
+		images_href = '',
+		post_img = '';
 	const user_img = getUserAvatar(user_picture, user_name);
 	const disabledState = (isLogined) ? '' : 'disabled';
 	const actionProps = getActionProps(likes, is_likes, is_bookmarks);
 	
-	if (collage && collage != 'null') {
+	if (collage && collage.name != '') {
 		post_img = collage.name;
 		hide_post_img = '';
 	}
 	if (hashtags && hashtags.length > 0) {
 		hashtags_str = hashtags.map(hashtag => `<a class="a-hashtag" data-page="${role_ad}" data-hashtag="${hashtag.substring(1)}" href="#" title="Search by hashtag">${hashtag}</a>`).join(' ');
 	}
+	try {
+		JSON.parse(window.atob(images)).forEach(img_item => {
+			images_href += `<div><img src="${img_item.name}" alt="Post image"></img></div>`;
+		});
+	} catch (e) {}
+
 	const {contact_phone, contact_email, contact_address} = getDefaultContactsData(contactsList);
 	const div = document.createElement('div');
 	div.classList.add('post');
 	div.innerHTML = `
 			<div class="post-body-view">
-				<div class="post-image ${hide_post_img}">
-					<img src="${post_img}" alt="Post image">
+				<div class="slider-buttons ${images_href === '' ? 'd-none' : ''}">
+					<button type="button" class="slider-prev"><img src="${innerImagesPath}/left.svg"></button>
+					<button type="button" class="slider-next"><img src="${innerImagesPath}/right.svg"></button>
+				</div>
+				<div class="post-image-slider ${hide_post_img}">
+					<div><img src="${post_img}" alt="Post image"></div>
+					${images_href}
 				</div>
 				<div style="display:none;" class="post-image post-image__href">${post_img}</div>
 				<div class="post-content">
@@ -64,9 +78,7 @@ export const createPost = ({postid, user_picture, user_name, collage, post_name,
 						<div class="post-more">
 							<span class="post-view ${hide_more}">
 								<a href="#" class="icon-more">
-									<svg width="24" height="24" class="icon">
-										<use xlink:href="assets/workber_img/icons.svg#btn-more"></use>
-									</svg>
+									${renderIcon("btn-more", 24)}
 								</a>
 							</span>
 						</div>
@@ -104,7 +116,7 @@ export const createPost = ({postid, user_picture, user_name, collage, post_name,
 	return div;
 };
 
-export const createStartPostFeed = ({id, user_picture, user_name, collage, post_name, text_adv, likes, role_ad, hashtags, shortlink, dist, lat, lng, is_likes, is_bookmarks, city, contactsList}, currentPageName = '') => {
+export const createStartPostFeed = ({id, user_picture, user_name, collage, images, post_name, text_adv, likes, role_ad, hashtags, shortlink, dist, lat, lng, is_likes, is_bookmarks, city, contactsList}, currentPageName = '') => {
 	if(!id) {
 		return false;
 	}
@@ -149,6 +161,7 @@ export const createStartPostFeed = ({id, user_picture, user_name, collage, post_
 		<div style="display:none;" class="post-hashtags">${JSON.stringify(hashtags)}</div>
 		<div style="display:none;" class="post-link">${shortlink}</div>
 		<div style="display:none;" class="post-image post-image__href">${post_img}</div>
+		<div style="display:none;" class="post-images" data-images="${window.btoa(JSON.stringify(images))}"></div>
 		<!--<div class="post-hashtags d-none" data-hashtags=${JSON.stringify(hashtags)} data-role_ad="${role_ad}">
 		</div>-->
 		<!--<div class="${hide_post_img}">
@@ -184,7 +197,7 @@ export const createStartPostFeed = ({id, user_picture, user_name, collage, post_
  * @param {string} currentPageName
  * @return {DOM} div
  */
-export const createPostFeed = ({id, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, shortlink, lat, lng, is_likes, is_bookmarks, city, role_ad, dist, contactsList, zonesName}, isLogined = false, currentPageName = '') => {
+export const createPostFeed = ({id, user_picture, user_name, collage, post_name, text_adv, likes, hashtags, images = null, shortlink, lat, lng, is_likes, is_bookmarks, city, role_ad, dist, contactsList, zonesName}, isLogined = false, currentPageName = '') => {
 	if(!id) {
 		return false;
 	}
@@ -236,6 +249,7 @@ export const createPostFeed = ({id, user_picture, user_name, collage, post_name,
 					</a>
 				</div>
 				<div style="display:none;" class="post-image__href">${post_img}</div>
+				<div style="display:none;" class="post-images" data-images="${window.btoa(JSON.stringify(images))}"></div>
 				<div class="post-content" data-dist="${dist}" data-lat="${lat}" data-lng="${lng}" data-zones="${zonesName}">
 					<div class="post-activities">
 						<div class="post-action-group">
@@ -247,7 +261,7 @@ export const createPostFeed = ({id, user_picture, user_name, collage, post_name,
 							<span class="post-view">
 								<a href="${shortlink}" class="icon-more" data-postid="${id}">
 									<svg width="24" height="24" class="icon">
-										<use xlink:href="assets/workber_img/icons.svg#btn-more"></use>
+										<use xlink:href="${innerImagesPath}/icons.svg#btn-more"></use>
 									</svg>
 								</a>
 							</span>

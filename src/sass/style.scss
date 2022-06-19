@@ -3,6 +3,7 @@
 @import 'fonts';
 @import 'main';
 @import 'profile';
+@import 'slider';
 
 a {
 	text-decoration: none;
@@ -476,9 +477,9 @@ a {
 	// background-color: #f2f2f2;
 }
 
-.post-one {
-	margin-top: 46px;
-}
+// .post-one {
+// 	margin-top: 46px;
+// }
 
 .posts-row {
 	max-width: 1024px;
@@ -663,6 +664,10 @@ a {
 	border-radius: 2px;
 }
 
+.post-body-view {
+	position: relative;
+}
+
 .post-header {
 	margin-top: 16px;
 	margin-bottom: 16px;
@@ -743,6 +748,13 @@ a {
 .post-image img {
 	max-width: 720px;
 	width: 100%;
+}
+
+.post-image-slider {
+	& img {
+		max-width: 720px;
+		width:100%;
+	}
 }
 
 .post-content {
