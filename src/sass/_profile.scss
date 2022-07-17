@@ -1,4 +1,7 @@
 .profile {
+	&__dataform {
+		max-width: 664px;
+	}
 	&-h3 {
 		margin: 0;
 		font-weight: bold;
@@ -8,7 +11,7 @@
 		&__content {
 			padding: 32px;
 			background: #fff;
-			width: 30%;
+			width: 40%;
 			ul {
 				padding: 0;
     			list-style: none;
@@ -25,7 +28,7 @@
 		&__description {
 			padding: 32px;
 			background: #fff;
-			width: 70%;
+			width: 60%;
 		}
 		&__menu {
 			border-radius: 4px;

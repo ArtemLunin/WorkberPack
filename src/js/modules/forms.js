@@ -1,6 +1,7 @@
 import {sendRequest} from './network';
 import {workberBackEnd} from './config';
 import * as storage from './storage';
+import {closeModalClass} from './modal';
 
 export const checkPassword = (passwords) => {
 	let errorMessage = '';
@@ -79,8 +80,8 @@ export const submitSignForm = (form, errorSignSelector, modalSign, modalVerifica
 							lat: objData.profile.lat,
 							lng: objData.profile.lng,
 						});
-						modalSign.querySelector('.menu__close').dataset.reloadPage = '1';
-						modalSign.querySelector('.menu__close').click();
+						modalSign.querySelector(`.${closeModalClass}`).dataset.reloadPage = '1';
+						modalSign.querySelector(`.${closeModalClass}`).click();
 						break;
 					case "regNewUser successful":
 						modalSign.remove();
@@ -202,7 +203,8 @@ export const submitPasswordForm = (form, errorSignSelector, modalChangePassword)
 					lat: objData.profile.lat,
 					lng: objData.profile.lng,
 				});
-			modalChangePassword.querySelector('.menu__close').click();
+			modalChangePassword.querySelector(`.${closeModalClass}`).dataset.reloadPage = '1';
+			modalChangePassword.querySelector(`.${closeModalClass}`).click();
 		}
 	});
 };

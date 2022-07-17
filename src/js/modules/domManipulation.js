@@ -54,6 +54,12 @@ export const controlElems = (classElems, todo) => {
 	});
 };
 
+/**
+ * render HTML layout for buttons footer
+ * @module domManipulation
+ * @param {boolean} renderReset
+ * @return {string} HTML layout
+ */
 export const renderButtonsFooter = (renderReset = false) => {
 	return `
 		<div class="form-profile-footer">
@@ -178,13 +184,37 @@ export const renderProfileHeader = (title) => {
  `;
 };
 
-export const renderCloseMenu = () => {
+/**
+ * render HTML layout
+ * @module domManipulation
+ * @return {string} HTML layout
+ */
+export const renderCloseMenu = (closeModalClass = 'menu__close') => {
 	return `
-		<span class="menu__close">
+		<span class="${closeModalClass}">
 			${renderIcon('btn-close', 24)}
 		</span>
 	`;
 }
+
+/**
+ * render HTML layout
+ * @module domManipulation
+ * @return {string} HTML layout
+ */
+export const renderBackMenu = () => {
+	return `
+		<div class="back-menu">
+			<a href="#" class="navigation-link back-feed">
+				${renderIcon('btn-back', 24)}
+				<span class="text-back">
+					BACK
+				</span>
+			</a>
+		</div>
+	`;
+}
+
 /**
  * update state for likes and favourites buttons
  * @module domManipulation

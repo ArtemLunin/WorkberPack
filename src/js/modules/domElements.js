@@ -1,7 +1,7 @@
 import hash from 'object-hash';
 import {hidePageElems, showPageElems, renderButtonsFooter, updatePostActionData, renderProfileButton, renderIcon, renderProfileHeader} from './domManipulation';
-import {closeSignModal, showModalMap} from './modal';
-import {URImod, checkUserName, postAPIRequest, logout, deleteTemplate, getTemplate, deleteAccount} from './appState';
+import { closeModalClass, closeSignModal, showModalMap, renderModalDeleteAccount } from './modal';
+import {URImod, checkUserName, postAPIRequest, logout, deleteTemplate, getTemplate} from './appState';
 import {hideSignInfo, showSignInfo} from './forms';
 import {getPlaceByCoord} from './map';
 import {maxDescriptionLength, maxHashtagsLength, MAX_WIDTH_AVATAR} from './config';
@@ -73,7 +73,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		<aside class="profile-sidebar">
 			<div class="profile-user">
 				<div class="profile-avatar">
-					<img class="img-avatar" src="" id="imgAvatar" alt="user avatar">
+					<img class="profile-sidebar__avatar img-avatar" src="" id="imgAvatar" alt="user avatar">
 					<form action="#" method="POST" id="formSetAvatar">
 						<input type="hidden" name="call" value="doSetAvatar">
 						<input type="hidden" name="action" value="set">
@@ -90,7 +90,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					<h2 id="titleUserName"></h2>
 				</div>
 				<hr class="divider">
-				<ul class="profile-menu">
+				<ul class="profile-sidebar__menu profile-menu">
 					<li data-container="profile-settings-main" class="menu-item active">Personal data</li>
 					<li data-container="profile-contacts" class="menu-item">Contact information</li>
 					<li data-container="profile-hashtags" class="menu-item">Hashtags</li>
@@ -118,7 +118,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 			<div class="profile-unit profile-settings-common profile-settings-main">
 			</div>
 			<div class="profile-unit profile-contacts d-none">
-				<section class="profile-top">
+				<section class="profile-unit__top profile-top">
 					<div class="profile-top-info">
 						<span style="color: #9AA0A8;">Contacts templates: <span class="profile-entities" id="contactsTemplatesCount"></span>
 						</span>
@@ -128,7 +128,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				<section class="profile-item"></section>
 			</div>
 			<div class="profile-unit profile-settings-common profile-hashtags d-none">
-				<section class="profile-top">
+				<section class="profile-unit__top profile-top">
 					<div class="profile-top-info">
 						<span style="color: #9AA0A8;">Hashtags templates: <span class="profile-entities" id="hashtagsTemplatesCount"></span>
 						</span>
@@ -197,7 +197,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		const modalForm = modal.querySelector('form');
 		modal.addEventListener('click', function (e) {
 			const target = e.target;
-			if (!target.closest('.modalContent') || target.closest('.menu__close')) {
+			if (!target.closest('.modalContent') || target.closest(`.${closeModalClass}`)) {
 				this.querySelector('form').reset();
 				closeSignModal(this);
 			}
@@ -237,7 +237,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 			<div class="templateModal modalContent">
 				${renderProfileHeader('Add new contacts template')}
 				<div class="template__body">
-					<form action="#" class="profileDataForm" id="formNewContact">
+					<form action="#" class="profile__dataform profileDataForm" id="formNewContact">
 						<input type="hidden" name="call" value="doSetContactsTemplates">
 						<div class="nameData">
 							<div class="profileData__field1">
@@ -251,7 +251,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 								<label for="newContactEmail">Email</label>
 								<input type="email" class="input-form" name="contact_email" id="newContactEmail">
 							</div>
-							<div class="nameData-w-30 profileData__field2">
+							<div class="nameData-wrap nameData-w-30 profileData__field2">
 								<label for="newContactPhone">Phone</label>
 								<input type="text" class="input-form" name="phone" id="newContactPhone">
 							</div>
@@ -270,7 +270,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 
 		modal.addEventListener('click', function (e) {
 			const target = e.target;
-			if (!target.closest('.modalContent') || target.closest('.menu__close')) {
+			if (!target.closest('.modalContent') || target.closest(`.${closeModalClass}`)) {
 				this.querySelector('form').reset();
 				closeSignModal(this);
 			}
@@ -338,7 +338,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				}
 				getTemplate('hashtag').then((data) => {
 					if (modal) {
-						modal.querySelector('.menu__close').click();
+						modal.querySelector(`.${closeModalClass}`).click();
 					}
 					localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
 					profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
@@ -387,7 +387,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				}
 				getTemplate('contact').then((data) => {
 					if (modal) {
-						modal.querySelector('.menu__close').click();
+						modal.querySelector(`.${closeModalClass}`).click();
 					}
 					localProfile.contactsList = JSON.parse(JSON.stringify(data.contactsList));
 					profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
@@ -467,7 +467,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		const formContainer = document.createElement('div');
 		formContainer.classList.add('profile-item-detail', 'border-elements');
 		formContainer.insertAdjacentHTML('beforeend', `
-			<form action="#" class="hashtagsDataForm" id="hashtagsDataForm">
+			<form action="#" class="profile__dataform hashtagsDataForm" id="hashtagsDataForm">
 				<input type="hidden" name="call" value="doUpdHashtagTemplates">
 				<input type="hidden" name="id" value="" id="id">
 				<input type="hidden" name="hashtagTemplateList" ${dataOuterFlag}>
@@ -478,8 +478,8 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						<p class="errorSignMessage"></p>
 					</div>
 				</div>
-				<div class="nameData">
-					<div class="profileData__field2">
+				<div class="nameData nameData-w-100">
+					<div class="nameData-w-100 profileData__field2">
 						<label for="hashtagTemplateList">Hashtags list <span class="editable-elem-chars color-pale" id="hashtagsCounter"></span></label>
 						<div class="hashtags-list-full input-form" contenteditable="true"
 							id="hashtagTemplateList">
@@ -507,7 +507,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		const formContainer = document.createElement('div');
 		formContainer.classList.add('profile-item-detail', 'border-elements');
 		formContainer.insertAdjacentHTML('beforeend', `
-			<form action="#" class="profileDataForm" id="profileDataForm">
+			<form action="#" class="profile__dataform profileDataForm" id="profileDataForm">
 				<input type="hidden" name="call" value="doUpdContactsTemplates">
 				<input type="hidden" name="id" value="" id="contact_id">
 				<div class="nameData" style="margin-top: 0;">
@@ -522,7 +522,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						<label for="contactEmail">Email</label>
 						<input type="email" class="input-form" name="contact_email" id="contactEmail">
 					</div>
-					<div class="nameData-w-30 profileData__field2">
+					<div class="nameData-wrap nameData-w-30 profileData__field2">
 						<label for="contactPhone">Phone</label>
 						<input type="text" class="input-form" name="phone" id="contactPhone">
 					</div>
@@ -616,19 +616,16 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					</div>
 				</div>
 				<div class="nameData">
-					<div class="nameData-w-60 mr-1 nameData__field1">
+					<div class="nameData-w-60 nameData__field1">
 						<label for="contact_email">Email (public)</label>
 						<input type="email" class="input-form" name="contact_email" id="contact_email" value="">
 					</div>
-					<div class="nameData-w-30 nameData__field1">
+					<div class="nameData-wrap nameData-w-30 nameData__field1">
 						<label for="phone">Phone (public)</label>
 						<input type="text" class="input-form" name="phone" id="phone" value="">
 					</div>
 				</div>
 				${renderButtonsFooter()}
-				<!--<div class="nameData">
-					<button type="submit" class="btn__form btn__confirmation">Save Data</button>
-				</div>-->
 			</form>
 			`
 		);
@@ -677,14 +674,14 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		contactsList.forEach((item) => {
 			const header = `
 				<div class="profile-item-wrapper" data-id="${item.id}">
-					<div class="profile-item-info border-elements">
-						<div class="profile-main-info">
-							<div class="profile-name">${item.templateName}</div>
-							<div class="profile-phone">${item.phone}</div>
-							<div class="profile-address">${item.address}</div>
+					<div class="profile-unit__item profile-item-info border-elements">
+						<div class="profile-unit__item__main profile-main-info">
+							<div class="profile-main-info__text profile-main-name profile-name">${item.templateName}</div>
+							<div class="profile-main-info__text profile-main-phone profile-phone">${item.phone}</div>
+							<div class="profile-main-info__text profile-main-address profile-address">${item.address}</div>
 							<div class="profile-email" style="display:none;">${item.contact_email}</div>
 						</div>
-						<div class="profile-buttons">
+						<div class="profile-unit__item__buttons profile-buttons">
 							${renderProfileButton('profile-button d-none', 'data-id="' + item.id + '" data-default="none" data-showned=""  data-delete="contact"', 'icon__profile-open', 'btn-trash')}
 							${renderProfileButton('profile-button d-none', 'data-default="none"', 'icon__profile-open', 'btn-toggleup')}
 							${renderProfileButton('profile-button', 'data-showned="down"', 'icon__profile-close', 'btn-toggledown')}
@@ -755,9 +752,9 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 		hashtagsList.forEach((item) => {
 			const hastagHeader = `
 			<div class="profile-item-wrapper" data-id="${item.id}">
-				<div class="profile-item-info border-elements">
+				<div class="profile-unit__item profile-item-info border-elements">
 					<div class="profile-main-info">
-						<div class="profile-name">${item.templateName}</div>
+						<div class="profile-main-info__text profile-name">${item.templateName}</div>
 						<div class="hashtags-list-cutted d-none">${item.hashtagList}</div>
 					</div>
 					<div class="profile-buttons">
@@ -960,9 +957,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					});
 					return false;
 				} else if (menuItem.dataset['container'] === 'deleteAccount') {
-					if (confirm('Are you sure? We will send you email with confirmation link')) {
-						deleteAccount();
-					}
+					document.body.append(renderModalDeleteAccount('modal-overlay'));
 					return false;
 				}
 				profileContainer.querySelectorAll('.profile-unit').forEach((item) => {
@@ -971,10 +966,6 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				profileContainer.querySelector(`.${menuItem.dataset['container']}`).classList.remove('d-none');
 				profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
 				profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
-				// profileContainer.querySelectorAll('.profile-menu>LI').forEach((item) => {
-				// 	item.classList.remove('active');
-				// });
-				// menuItem.classList.add('active');
 				setActiveMenuItem(profileContainer.querySelectorAll('.profile-menu>LI'), menuItem, 'active');
 			} catch (e) {}
 			

@@ -3,9 +3,13 @@ import {getLocation, getAppItem} from './storage';
 import {setPositionOnMap} from './map';
 import {hideSignInfo, submitSignForm, submitVerifyForm, submitResendForm, submitRestoreForm, submitPasswordForm} from './forms';
 import {registrationID, storeLinks, termsHTML, privacyHTML} from './config';
-import {renderSocialButton, renderIcon, renderCloseMenu} from './domManipulation';
+import { renderSocialButton, renderIcon, renderBackMenu, renderCloseMenu, renderButtonsFooter, renderProfileHeader } from './domManipulation';
+import { deleteAccount } from './appState';
 
-export const commonModalOpenClass = 'modal-open-class';
+export const commonModalOpenClass = 'modal-open-class',
+	closeModalClass = 'menu__close';
+
+const signModalClass = 'signModal';
 
 
 export const showModalMap = (sourceForm) => {
@@ -43,13 +47,13 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 	modalSign.classList.add(modalOverlayClass, commonModalOpenClass);
 	modalSign.innerHTML = `
-		<div class="signModal">
+		<div class="${signModalClass}">
 			<div class="modal-header">
 				<span class="menu__sign_">
 					<span class="menu__sign-in menu__sign" data-items_show="modal-signin" data-items_hide="modal-signup">Login</span>
 					<span class="menu__sign-up menu__sign" data-items_show="modal-signup" data-items_hide="modal-signin">Registration</span>
 				</span>
-				${renderCloseMenu()}
+				${renderCloseMenu(closeModalClass)}
 			</div>
 			<div class="modal-body">
 				<h2 class="modal-signin modal-title">Welcome back!</h2>
@@ -97,20 +101,18 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 		modalVerification.classList.add(modalOverlayClass, commonModalOpenClass);
 		modalVerification.innerHTML = `
-			<div class="signModal">
+			<div class="${signModalClass}">
 				<div class="modal-header">
-					<div class="back-menu">
+					<!--<div class="back-menu">
 						<a href="#" class="navigation-link back-feed">
-							<!--<svg width="25" height="24" class="icon">
-								<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
-							</svg>-->
 							${renderIcon('btn-back', 24)}
 							<span class="text-back">
 								BACK
 							</span>
 						</a>
-					</div>
-					${renderCloseMenu()}
+					</div>-->
+					${renderBackMenu()}
+					${renderCloseMenu(closeModalClass)}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Thank you!</h2>
@@ -155,11 +157,12 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 			submitResendForm(e.target.closest('form'), '.errorSignMessage', '.infoSignMessage');
 		});
 
-		modalVerification.addEventListener('click', (e) => {
-			const target = e.target;
-			if (!target.closest('.signModal') || target.closest('.menu__close')) {
-				closeSignModal(modalVerification);
-			}
+		modalVerification.addEventListener('click', function (e) {
+			closeSignModalNew(this, e.target, signModalClass, closeModalClass);
+			// const target = e.target;
+			// if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
+			// 	closeSignModal(modalVerification);
+			// }
 		});
 
 		return modalVerification;
@@ -170,9 +173,9 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 		modalCongratulation.classList.add(modalOverlayClass, commonModalOpenClass);
 		modalCongratulation.innerHTML = `
-			<div class="signModal">
+			<div class="${signModalClass}">
 				<div class="modal-header justify-end">
-					${renderCloseMenu()}
+					${renderCloseMenu(closeModalClass)}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Congratulations! You have
@@ -186,12 +189,14 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 			</div>
 		`;
 
-		modalCongratulation.addEventListener('click', (e) => {
-			const target = e.target;
-			if (!target.closest('.signModal') || target.closest('.menu__close')) {
-				closeSignModal(modalCongratulation);
-				location.reload();
-			}
+		modalCongratulation.addEventListener('click', function (e) {
+			this.querySelector(`.${closeModalClass}`).dataset.reloadPage = '1';
+			closeSignModalNew(this, e.target, signModalClass, closeModalClass);
+			// const target = e.target;
+			// if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
+			// 	closeSignModal(modalCongratulation);
+			// 	location.reload();
+			// }
 		});
 
 		return modalCongratulation;
@@ -202,20 +207,18 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 		modalRestore.classList.add(modalOverlayClass, commonModalOpenClass);
 		modalRestore.innerHTML = `
-			<div class="signModal">
+			<div class="${signModalClass}">
 				<div class="modal-header">
-					<div class="back-menu">
+					<!--<div class="back-menu">
 							<a href="#" class="navigation-link back-feed">
-								<!--<svg width="25" height="24" class="icon">
-									<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
-								</svg>-->
 								${renderIcon('btn-back', 24)}
 								<span class="text-back">
 									BACK
 								</span>
 							</a>
-					</div>
-					${renderCloseMenu()}
+					</div>-->
+					${renderBackMenu()}
+					${renderCloseMenu(closeModalClass)}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Forgot password?</h2>
@@ -233,11 +236,12 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 		const restoreForm = modalRestore.querySelector('#restoreForm');
 
-		modalRestore.addEventListener('click', (e) => {
-			const target = e.target;
-			if (!target.closest('.signModal') || target.closest('.menu__close')) {
-				closeSignModal(modalRestore);
-			}
+		modalRestore.addEventListener('click', function (e) {
+			closeSignModalNew(this, e.target, signModalClass, closeModalClass);
+			// const target = e.target;
+			// if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
+			// 	closeSignModal(modalRestore);
+			// }
 		});
 
 		modalRestore.querySelector('.back-feed').addEventListener('click', (e) => {
@@ -260,9 +264,9 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 		modalChangePassword.classList.add(modalOverlayClass, commonModalOpenClass);
 		modalChangePassword.innerHTML = `
-			<div class="signModal">
+			<div class="${signModalClass}">
 				<div class="modal-header justify-end">
-					${renderCloseMenu()}
+					${renderCloseMenu(closeModalClass)}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-title">Set password</h2>
@@ -281,11 +285,8 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 		const changePasswordForm = modalChangePassword.querySelector('#changePasswordForm');
 
-		modalChangePassword.addEventListener('click', (e) => {
-			const target = e.target;
-			if (!target.closest('.signModal') || target.closest('.menu__close')) {
-				closeSignModal(modalChangePassword);
-			}
+		modalChangePassword.addEventListener('click', function (e) {
+			closeSignModalNew(this, e.target, signModalClass, closeModalClass);
 		});
 
 		changePasswordForm.addEventListener('submit', (e) => {
@@ -369,14 +370,8 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		modalRestore = renderModalRestore(modalOverlayClass),
 		modalChangePassword = renderModalChangePassword(modalOverlayClass);
 
-	modalSign.addEventListener('click', (e) => {
-		const target = e.target;
-		if (!target.closest('.signModal') || target.closest('.menu__close')) {
-			closeSignModal(modalSign);
-			if (modalSign.querySelector('.menu__close').dataset.reloadPage === '1') {
-				location.reload();
-			}
-		}
+	modalSign.addEventListener('click', function (e) {
+		closeSignModalNew(this, e.target, signModalClass, closeModalClass);
 	});
 
 	modalSign.querySelector('.modal-header').addEventListener('click', switchMenu);
@@ -385,7 +380,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 	iconProfile.addEventListener('click', () => {
 		switchSignMethod(modalSign, '.menu__sign-in');
-		modalSign.querySelector('.menu__close').dataset.reloadPage = '';
+		modalSign.querySelector(`.${closeModalClass}`).dataset.reloadPage = '';
 		document.body.append(modalSign);
 		loginForm.reset();
 		disableScroll();
@@ -405,9 +400,9 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		hideSignInfo(loginForm.querySelector('.errorSignMessage'));
 	});
 
-	forgotPassword.addEventListener('click', (e) => {
+	forgotPassword.addEventListener('click', function (e) {
 		e.preventDefault();
-		const email = forgotPassword.closest('form').querySelector('#email');
+		const email = this.closest('form').querySelector('#email');
 		if (email) {
 			modalRestore.querySelector('#email').value = email.value;
 		}
@@ -429,43 +424,53 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 	};
 };
 
+export const renderModalDeleteAccount = (modalOverlayClass) => {
+	const modal = document.createElement('div');
+
+	modal.classList.add(modalOverlayClass, commonModalOpenClass);
+	modal.innerHTML = `
+			<div class="templateModal modalContent">
+				${renderProfileHeader('Delete account')}
+				<div class="template__body">
+					<form class="modal-form" action="#" method="POST" id="formDeleteAccount">
+						<div class="nameData">
+							Are you sure? We will send you email with confirmation link
+						</div>
+							${renderButtonsFooter()}
+					</form>
+				</div>
+			</div>
+		`;
+
+	const modalForm = modal.querySelector('form');
+
+	modal.addEventListener('click', function (e) {
+		closeSignModalNew(this, e.target, 'modalContent', closeModalClass);
+	});
+
+	modalForm.addEventListener('submit', function (e) {
+		e.preventDefault();
+		deleteAccount();
+		closeSignModal(modal);
+	});
+
+	return modal;
+};
+
 export const closeSignModal = (container) => {
 	container.remove();
 	enableScroll();
 };
 
-// export const renderModalDeleteAccount = () => {
-// 	const modal = document.createElement('div');
-
-// 	modal.classList.add(modalOverlayClass);
-// 	modal.innerHTML = `
-// 		<div class="signModal">
-// 			<div class="modal-header justify-end">
-// 				<span class="menu__close">
-// 					<svg width="24" height="24" class="icon">
-// 						<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-// 					</svg>
-// 				</span>
-// 			</div>
-// 			<div class="modal-body">
-// 				<h2 class="modal-title">Delete account</h2>
-// 				<p style="margin-bottom: 32px;">Please, choose your password.</p>
-// 				<form id="deleteAccountForm">
-// 					<button type="submit" class="btn__sign btn__confirmation">Done</button>
-// 				</form>
-// 			</div>
-// 		</div>
-// 	`;
-
-// 	const changePasswordForm = modalChangePassword.querySelector('#changePasswordForm');
-
-// 	modalChangePassword.addEventListener('click', (e) => {
-// 		const target = e.target;
-// 		if (!target.closest('.signModal') || target.closest('.menu__close')) {
-// 			closeSignModal(modalChangePassword);
-// 		}
-// 	});
-// };
+export const closeSignModalNew = (container, target, signModalClass, closeModalClass) => {
+	if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
+		container.remove();
+		enableScroll();
+		if (container.querySelector(`.${closeModalClass}`).dataset.reloadPage === '1') {
+			location.reload();
+		}
+	}
+};
 
 const disableScroll = () => {
 	const widthScroll = window.innerWidth - document.body.offsetWidth;

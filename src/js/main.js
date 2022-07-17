@@ -59,7 +59,7 @@ const distanceInfo = document.querySelector('.distance-info');
 const distances = document.querySelector('.distances');
 const distText = document.querySelector('.dist-text');
 const distTextHeader = document.querySelector('.dist-text-header');
-const postMenu = document.querySelector('.post-menu');
+// const postMenu = document.querySelector('.post-menu');
 const userMenu = document.querySelector('.user-menu'),
 	favorite = document.querySelector('#favorite'),
 	iconsPanel = document.querySelector('.icons-panel');
@@ -86,7 +86,7 @@ const localityLocal = document.querySelector('.locality-local');
 const showControl = {
 	'service': {
 		'hide': ['posts-favorite', 'posts-need', 'start-page', 'posts-all', 'post-one', 'back-menu', 'icons-panel__favorites_text-active'],
-		'show': ['posts-offer', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service'],
+		'show': ['posts-offer', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service', 'search-menu'],
 		'callParams': {
 			call: 'doSearch',
 			role_ad: 'service',
@@ -97,7 +97,7 @@ const showControl = {
 	},
 	'project': {
 		'hide': ['posts-favorite', 'posts-offer', 'posts-all', 'start-page', 'post-one', 'back-menu', 'icons-panel__favorites_text-active'],
-		'show': ['posts-need', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service'],
+		'show': ['posts-need', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service', 'search-menu'],
 		'callParams': {
 			call: 'doSearch',
 			role_ad: 'project',
@@ -108,7 +108,7 @@ const showControl = {
 	},
 	'favorite' : {
 		'hide': ['posts-need', 'posts-offer', 'posts-all', 'start-page', 'post-one', 'back-menu', 'distances', 'dist-text-header', 'post-menu'],
-		'show': ['posts-favorite', 'search-block', 'icon-settings', 'tabs-service', 'icons-panel__favorites_text-active'],
+		'show': ['posts-favorite', 'search-block', 'icon-settings', 'tabs-service', 'search-menu', 'icons-panel__favorites_text-active'],
 		'callParams': {
 			call: 'doShowMeFav',
 			postid: null,
@@ -128,7 +128,7 @@ const showControl = {
 	},
 	'doStart': {
 		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'post-one', 'back-menu', 'distance-info', 'dist-text-header', 'distances', 'icons-panel__favorites_text-active'],
-		'show': ['start-page', 'post-menu', 'icon-settings', 'tabs-service'],
+		'show': ['start-page', 'post-menu', 'icon-settings', 'tabs-service', 'search-menu'],
 		'callParams': {
 			call: 'doStart',
 			postid: null,
@@ -138,7 +138,8 @@ const showControl = {
 		'container': postsStart,
 	},
 	'showOnePost': {
-		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'distance-info', 'dist-text-header', 'distances', 'icon-settings', 'tabs-service', 'icons-panel__favorites_text-active'],
+		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'search-menu', 'start-page', 'distance-info', 'dist-text-header', 'distances', 'icon-settings',  'icons-panel__favorites_text-active'],
+		//  'home-page','tabs-service',
 		'show': ['post-one', 'back-menu'],
 		'callParams': {
 			call: 'getPostByID',
@@ -147,7 +148,7 @@ const showControl = {
 		'container': postsOne,
 	},
 	'profile': {
-		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service', 'icons-panel__favorites_text-active'],
+		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service', 'icons-panel__favorites_text-active', 'search-menu'],
 		'show': ['back-menu'],
 	}
 };
@@ -241,6 +242,8 @@ const renderSearchPosts = ({zones, last_postid, last_dist, code}, postsContainer
 
 
 const renderSearchFavorite = ({posts, last_postid, last_dist, code}, postsContainer, currentPageName = '') => {
+	postsContainer.dataset.last_postid = last_postid;
+	postsContainer.dataset.code = code;
 	if (posts.length == 0) {
 		postsContainer.append(notFoundPosts());
 	} else 
@@ -248,8 +251,8 @@ const renderSearchFavorite = ({posts, last_postid, last_dist, code}, postsContai
 		posts.forEach(postData => {
 			const postFeed = createPostFeed(postData, storage.getAppItem('isLogined'), currentPageName);
 			if (!!postFeed) {
-				postsContainer.dataset.last_postid = last_postid;
-				postsContainer.dataset.code = code;
+			// 	postsContainer.dataset.last_postid = last_postid;
+			// 	postsContainer.dataset.code = code;
 				postsContainer.append(postFeed);
 			}
 		});
@@ -724,17 +727,6 @@ const clearSearchParam = () => {
 	searchInput.value = '';
 };
 
-// const checkScrollBottom = () => {
-// 	if(!scrollSearchActivated && !onePostShowned /* && !scrollDisabled */ && (!document.querySelector(`.${commonModalOpenClass}`))) {
-// 		let windowRelativeBottom = document.documentElement.getBoundingClientRect().bottom;
-// 		if (windowRelativeBottom <= document.documentElement.clientHeight + 120) {
-// 			doUploadPosts();
-// 		}
-// 	}
-// 	setTimeout(() => {
-// 		checkScrollBottom();
-// 	}, 100000);
-// };
 
 const doUploadPosts = () => {
 	const postsContainer = showControl[currentPage].container;

@@ -24224,8 +24224,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const distanceInfo = document.querySelector('.distance-info');
     const distances = document.querySelector('.distances');
     const distText = document.querySelector('.dist-text');
-    const distTextHeader = document.querySelector('.dist-text-header');
-    const postMenu = document.querySelector('.post-menu');
+    const distTextHeader = document.querySelector('.dist-text-header'); // const postMenu = document.querySelector('.post-menu');
+
     const userMenu = document.querySelector('.user-menu'),
           favorite = document.querySelector('#favorite'),
           iconsPanel = document.querySelector('.icons-panel');
@@ -24249,7 +24249,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const showControl = {
       'service': {
         'hide': ['posts-favorite', 'posts-need', 'start-page', 'posts-all', 'post-one', 'back-menu', 'icons-panel__favorites_text-active'],
-        'show': ['posts-offer', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service'],
+        'show': ['posts-offer', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service', 'search-menu'],
         'callParams': {
           call: 'doSearch',
           role_ad: 'service'
@@ -24260,7 +24260,7 @@ window.addEventListener('DOMContentLoaded', () => {
       },
       'project': {
         'hide': ['posts-favorite', 'posts-offer', 'posts-all', 'start-page', 'post-one', 'back-menu', 'icons-panel__favorites_text-active'],
-        'show': ['posts-need', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service'],
+        'show': ['posts-need', 'search-block', 'post-menu', 'icon-settings', 'dist-text-header', 'distances', 'tabs-service', 'search-menu'],
         'callParams': {
           call: 'doSearch',
           role_ad: 'project'
@@ -24271,7 +24271,7 @@ window.addEventListener('DOMContentLoaded', () => {
       },
       'favorite': {
         'hide': ['posts-need', 'posts-offer', 'posts-all', 'start-page', 'post-one', 'back-menu', 'distances', 'dist-text-header', 'post-menu'],
-        'show': ['posts-favorite', 'search-block', 'icon-settings', 'tabs-service', 'icons-panel__favorites_text-active'],
+        'show': ['posts-favorite', 'search-block', 'icon-settings', 'tabs-service', 'search-menu', 'icons-panel__favorites_text-active'],
         'callParams': {
           call: 'doShowMeFav',
           postid: null
@@ -24291,7 +24291,7 @@ window.addEventListener('DOMContentLoaded', () => {
       },
       'doStart': {
         'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'post-one', 'back-menu', 'distance-info', 'dist-text-header', 'distances', 'icons-panel__favorites_text-active'],
-        'show': ['start-page', 'post-menu', 'icon-settings', 'tabs-service'],
+        'show': ['start-page', 'post-menu', 'icon-settings', 'tabs-service', 'search-menu'],
         'callParams': {
           call: 'doStart',
           postid: null,
@@ -24301,7 +24301,8 @@ window.addEventListener('DOMContentLoaded', () => {
         'container': postsStart
       },
       'showOnePost': {
-        'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'distance-info', 'dist-text-header', 'distances', 'icon-settings', 'tabs-service', 'icons-panel__favorites_text-active'],
+        'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'search-menu', 'start-page', 'distance-info', 'dist-text-header', 'distances', 'icon-settings', 'icons-panel__favorites_text-active'],
+        //  'home-page','tabs-service',
         'show': ['post-one', 'back-menu'],
         'callParams': {
           call: 'getPostByID',
@@ -24310,7 +24311,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'container': postsOne
       },
       'profile': {
-        'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service', 'icons-panel__favorites_text-active'],
+        'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service', 'icons-panel__favorites_text-active', 'search-menu'],
         'show': ['back-menu']
       }
     };
@@ -24421,6 +24422,9 @@ window.addEventListener('DOMContentLoaded', () => {
       last_dist,
       code
     }, postsContainer, currentPageName = '') => {
+      postsContainer.dataset.last_postid = last_postid;
+      postsContainer.dataset.code = code;
+
       if (posts.length == 0) {
         postsContainer.append(notFoundPosts());
       } else {
@@ -24428,8 +24432,8 @@ window.addEventListener('DOMContentLoaded', () => {
           const postFeed = Object(_modules_handlerPostData__WEBPACK_IMPORTED_MODULE_8__["createPostFeed"])(postData, _modules_storage__WEBPACK_IMPORTED_MODULE_6__["getAppItem"]('isLogined'), currentPageName);
 
           if (!!postFeed) {
-            postsContainer.dataset.last_postid = last_postid;
-            postsContainer.dataset.code = code;
+            // 	postsContainer.dataset.last_postid = last_postid;
+            // 	postsContainer.dataset.code = code;
             postsContainer.append(postFeed);
           }
         });
@@ -24952,18 +24956,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const clearSearchParam = () => {
       searchInput.value = '';
-    }; // const checkScrollBottom = () => {
-    // 	if(!scrollSearchActivated && !onePostShowned /* && !scrollDisabled */ && (!document.querySelector(`.${commonModalOpenClass}`))) {
-    // 		let windowRelativeBottom = document.documentElement.getBoundingClientRect().bottom;
-    // 		if (windowRelativeBottom <= document.documentElement.clientHeight + 120) {
-    // 			doUploadPosts();
-    // 		}
-    // 	}
-    // 	setTimeout(() => {
-    // 		checkScrollBottom();
-    // 	}, 100000);
-    // };
-
+    };
 
     const doUploadPosts = () => {
       const postsContainer = showControl[currentPage].container;
@@ -25559,7 +25552,7 @@ const renderProfile = ({
 		<aside class="profile-sidebar">
 			<div class="profile-user">
 				<div class="profile-avatar">
-					<img class="img-avatar" src="" id="imgAvatar" alt="user avatar">
+					<img class="profile-sidebar__avatar img-avatar" src="" id="imgAvatar" alt="user avatar">
 					<form action="#" method="POST" id="formSetAvatar">
 						<input type="hidden" name="call" value="doSetAvatar">
 						<input type="hidden" name="action" value="set">
@@ -25576,7 +25569,7 @@ const renderProfile = ({
 					<h2 id="titleUserName"></h2>
 				</div>
 				<hr class="divider">
-				<ul class="profile-menu">
+				<ul class="profile-sidebar__menu profile-menu">
 					<li data-container="profile-settings-main" class="menu-item active">Personal data</li>
 					<li data-container="profile-contacts" class="menu-item">Contact information</li>
 					<li data-container="profile-hashtags" class="menu-item">Hashtags</li>
@@ -25604,7 +25597,7 @@ const renderProfile = ({
 			<div class="profile-unit profile-settings-common profile-settings-main">
 			</div>
 			<div class="profile-unit profile-contacts d-none">
-				<section class="profile-top">
+				<section class="profile-unit__top profile-top">
 					<div class="profile-top-info">
 						<span style="color: #9AA0A8;">Contacts templates: <span class="profile-entities" id="contactsTemplatesCount"></span>
 						</span>
@@ -25614,7 +25607,7 @@ const renderProfile = ({
 				<section class="profile-item"></section>
 			</div>
 			<div class="profile-unit profile-settings-common profile-hashtags d-none">
-				<section class="profile-top">
+				<section class="profile-unit__top profile-top">
 					<div class="profile-top-info">
 						<span style="color: #9AA0A8;">Hashtags templates: <span class="profile-entities" id="hashtagsTemplatesCount"></span>
 						</span>
@@ -25682,7 +25675,7 @@ const renderProfile = ({
     modal.addEventListener('click', function (e) {
       const target = e.target;
 
-      if (!target.closest('.modalContent') || target.closest('.menu__close')) {
+      if (!target.closest('.modalContent') || target.closest(`.${_modal__WEBPACK_IMPORTED_MODULE_3__["closeModalClass"]}`)) {
         this.querySelector('form').reset();
         Object(_modal__WEBPACK_IMPORTED_MODULE_3__["closeSignModal"])(this);
       }
@@ -25716,7 +25709,7 @@ const renderProfile = ({
 			<div class="templateModal modalContent">
 				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileHeader"])('Add new contacts template')}
 				<div class="template__body">
-					<form action="#" class="profileDataForm" id="formNewContact">
+					<form action="#" class="profile__dataform profileDataForm" id="formNewContact">
 						<input type="hidden" name="call" value="doSetContactsTemplates">
 						<div class="nameData">
 							<div class="profileData__field1">
@@ -25730,7 +25723,7 @@ const renderProfile = ({
 								<label for="newContactEmail">Email</label>
 								<input type="email" class="input-form" name="contact_email" id="newContactEmail">
 							</div>
-							<div class="nameData-w-30 profileData__field2">
+							<div class="nameData-wrap nameData-w-30 profileData__field2">
 								<label for="newContactPhone">Phone</label>
 								<input type="text" class="input-form" name="phone" id="newContactPhone">
 							</div>
@@ -25749,7 +25742,7 @@ const renderProfile = ({
     modal.addEventListener('click', function (e) {
       const target = e.target;
 
-      if (!target.closest('.modalContent') || target.closest('.menu__close')) {
+      if (!target.closest('.modalContent') || target.closest(`.${_modal__WEBPACK_IMPORTED_MODULE_3__["closeModalClass"]}`)) {
         this.querySelector('form').reset();
         Object(_modal__WEBPACK_IMPORTED_MODULE_3__["closeSignModal"])(this);
       }
@@ -25814,7 +25807,7 @@ const renderProfile = ({
 
         Object(_appState__WEBPACK_IMPORTED_MODULE_4__["getTemplate"])('hashtag').then(data => {
           if (modal) {
-            modal.querySelector('.menu__close').click();
+            modal.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_3__["closeModalClass"]}`).click();
           }
 
           localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
@@ -25867,7 +25860,7 @@ const renderProfile = ({
 
         Object(_appState__WEBPACK_IMPORTED_MODULE_4__["getTemplate"])('contact').then(data => {
           if (modal) {
-            modal.querySelector('.menu__close').click();
+            modal.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_3__["closeModalClass"]}`).click();
           }
 
           localProfile.contactsList = JSON.parse(JSON.stringify(data.contactsList));
@@ -25949,7 +25942,7 @@ const renderProfile = ({
     const formContainer = document.createElement('div');
     formContainer.classList.add('profile-item-detail', 'border-elements');
     formContainer.insertAdjacentHTML('beforeend', `
-			<form action="#" class="hashtagsDataForm" id="hashtagsDataForm">
+			<form action="#" class="profile__dataform hashtagsDataForm" id="hashtagsDataForm">
 				<input type="hidden" name="call" value="doUpdHashtagTemplates">
 				<input type="hidden" name="id" value="" id="id">
 				<input type="hidden" name="hashtagTemplateList" ${dataOuterFlag}>
@@ -25960,8 +25953,8 @@ const renderProfile = ({
 						<p class="errorSignMessage"></p>
 					</div>
 				</div>
-				<div class="nameData">
-					<div class="profileData__field2">
+				<div class="nameData nameData-w-100">
+					<div class="nameData-w-100 profileData__field2">
 						<label for="hashtagTemplateList">Hashtags list <span class="editable-elem-chars color-pale" id="hashtagsCounter"></span></label>
 						<div class="hashtags-list-full input-form" contenteditable="true"
 							id="hashtagTemplateList">
@@ -25986,7 +25979,7 @@ const renderProfile = ({
     const formContainer = document.createElement('div');
     formContainer.classList.add('profile-item-detail', 'border-elements');
     formContainer.insertAdjacentHTML('beforeend', `
-			<form action="#" class="profileDataForm" id="profileDataForm">
+			<form action="#" class="profile__dataform profileDataForm" id="profileDataForm">
 				<input type="hidden" name="call" value="doUpdContactsTemplates">
 				<input type="hidden" name="id" value="" id="contact_id">
 				<div class="nameData" style="margin-top: 0;">
@@ -26001,7 +25994,7 @@ const renderProfile = ({
 						<label for="contactEmail">Email</label>
 						<input type="email" class="input-form" name="contact_email" id="contactEmail">
 					</div>
-					<div class="nameData-w-30 profileData__field2">
+					<div class="nameData-wrap nameData-w-30 profileData__field2">
 						<label for="contactPhone">Phone</label>
 						<input type="text" class="input-form" name="phone" id="contactPhone">
 					</div>
@@ -26089,19 +26082,16 @@ const renderProfile = ({
 					</div>
 				</div>
 				<div class="nameData">
-					<div class="nameData-w-60 mr-1 nameData__field1">
+					<div class="nameData-w-60 nameData__field1">
 						<label for="contact_email">Email (public)</label>
 						<input type="email" class="input-form" name="contact_email" id="contact_email" value="">
 					</div>
-					<div class="nameData-w-30 nameData__field1">
+					<div class="nameData-wrap nameData-w-30 nameData__field1">
 						<label for="phone">Phone (public)</label>
 						<input type="text" class="input-form" name="phone" id="phone" value="">
 					</div>
 				</div>
 				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtonsFooter"])()}
-				<!--<div class="nameData">
-					<button type="submit" class="btn__form btn__confirmation">Save Data</button>
-				</div>-->
 			</form>
 			`);
     const userName = formContainer.querySelector('#user_name');
@@ -26145,14 +26135,14 @@ const renderProfile = ({
     contactsList.forEach(item => {
       const header = `
 				<div class="profile-item-wrapper" data-id="${item.id}">
-					<div class="profile-item-info border-elements">
-						<div class="profile-main-info">
-							<div class="profile-name">${item.templateName}</div>
-							<div class="profile-phone">${item.phone}</div>
-							<div class="profile-address">${item.address}</div>
+					<div class="profile-unit__item profile-item-info border-elements">
+						<div class="profile-unit__item__main profile-main-info">
+							<div class="profile-main-info__text profile-main-name profile-name">${item.templateName}</div>
+							<div class="profile-main-info__text profile-main-phone profile-phone">${item.phone}</div>
+							<div class="profile-main-info__text profile-main-address profile-address">${item.address}</div>
 							<div class="profile-email" style="display:none;">${item.contact_email}</div>
 						</div>
-						<div class="profile-buttons">
+						<div class="profile-unit__item__buttons profile-buttons">
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileButton"])('profile-button d-none', 'data-id="' + item.id + '" data-default="none" data-showned=""  data-delete="contact"', 'icon__profile-open', 'btn-trash')}
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileButton"])('profile-button d-none', 'data-default="none"', 'icon__profile-open', 'btn-toggleup')}
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderProfileButton"])('profile-button', 'data-showned="down"', 'icon__profile-close', 'btn-toggledown')}
@@ -26238,9 +26228,9 @@ const renderProfile = ({
     hashtagsList.forEach(item => {
       const hastagHeader = `
 			<div class="profile-item-wrapper" data-id="${item.id}">
-				<div class="profile-item-info border-elements">
+				<div class="profile-unit__item profile-item-info border-elements">
 					<div class="profile-main-info">
-						<div class="profile-name">${item.templateName}</div>
+						<div class="profile-main-info__text profile-name">${item.templateName}</div>
 						<div class="hashtags-list-cutted d-none">${item.hashtagList}</div>
 					</div>
 					<div class="profile-buttons">
@@ -26462,10 +26452,7 @@ const renderProfile = ({
           });
           return false;
         } else if (menuItem.dataset['container'] === 'deleteAccount') {
-          if (confirm('Are you sure? We will send you email with confirmation link')) {
-            Object(_appState__WEBPACK_IMPORTED_MODULE_4__["deleteAccount"])();
-          }
-
+          document.body.append(Object(_modal__WEBPACK_IMPORTED_MODULE_3__["renderModalDeleteAccount"])('modal-overlay'));
           return false;
         }
 
@@ -26474,11 +26461,7 @@ const renderProfile = ({
         });
         profileContainer.querySelector(`.${menuItem.dataset['container']}`).classList.remove('d-none');
         profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
-        profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList); // profileContainer.querySelectorAll('.profile-menu>LI').forEach((item) => {
-        // 	item.classList.remove('active');
-        // });
-        // menuItem.classList.add('active');
-
+        profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
         setActiveMenuItem(profileContainer.querySelectorAll('.profile-menu>LI'), menuItem, 'active');
       } catch (e) {}
     }
@@ -26724,7 +26707,7 @@ const getNewSizeUploadedImages = (width, height, max_size) => {
 /*!*******************************************!*\
   !*** ./src/js/modules/domManipulation.js ***!
   \*******************************************/
-/*! exports provided: toggleService, hidePageElems, showPageElems, controlElems, renderButtonsFooter, renderFavButton, renderLikeButton, renderShareButton, renderSocialButton, renderProfileButton, renderIcon, renderProfileHeader, renderCloseMenu, updatePostActionData */
+/*! exports provided: toggleService, hidePageElems, showPageElems, controlElems, renderButtonsFooter, renderFavButton, renderLikeButton, renderShareButton, renderSocialButton, renderProfileButton, renderIcon, renderProfileHeader, renderCloseMenu, renderBackMenu, updatePostActionData */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -26742,6 +26725,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderIcon", function() { return renderIcon; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderProfileHeader", function() { return renderProfileHeader; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderCloseMenu", function() { return renderCloseMenu; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderBackMenu", function() { return renderBackMenu; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updatePostActionData", function() { return updatePostActionData; });
 /* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./storage */ "./src/js/modules/storage.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
@@ -26803,6 +26787,13 @@ const controlElems = (classElems, todo) => {
     }
   });
 };
+/**
+ * render HTML layout for buttons footer
+ * @module domManipulation
+ * @param {boolean} renderReset
+ * @return {string} HTML layout
+ */
+
 const renderButtonsFooter = (renderReset = false) => {
   return `
 		<div class="form-profile-footer">
@@ -26926,11 +26917,35 @@ const renderProfileHeader = title => {
 	</div>
  `;
 };
-const renderCloseMenu = () => {
+/**
+ * render HTML layout
+ * @module domManipulation
+ * @return {string} HTML layout
+ */
+
+const renderCloseMenu = (closeModalClass = 'menu__close') => {
   return `
-		<span class="menu__close">
+		<span class="${closeModalClass}">
 			${renderIcon('btn-close', 24)}
 		</span>
+	`;
+};
+/**
+ * render HTML layout
+ * @module domManipulation
+ * @return {string} HTML layout
+ */
+
+const renderBackMenu = () => {
+  return `
+		<div class="back-menu">
+			<a href="#" class="navigation-link back-feed">
+				${renderIcon('btn-back', 24)}
+				<span class="text-back">
+					BACK
+				</span>
+			</a>
+		</div>
 	`;
 };
 /**
@@ -27075,6 +27090,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _network__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./network */ "./src/js/modules/network.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
 /* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./storage */ "./src/js/modules/storage.js");
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modal */ "./src/js/modules/modal.js");
+
 
 
 
@@ -27164,8 +27181,8 @@ const submitSignForm = (form, errorSignSelector, modalSign, modalVerification) =
               lat: objData.profile.lat,
               lng: objData.profile.lng
             });
-            modalSign.querySelector('.menu__close').dataset.reloadPage = '1';
-            modalSign.querySelector('.menu__close').click();
+            modalSign.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_4__["closeModalClass"]}`).dataset.reloadPage = '1';
+            modalSign.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_4__["closeModalClass"]}`).click();
             break;
 
           case "regNewUser successful":
@@ -27295,7 +27312,8 @@ const submitPasswordForm = (form, errorSignSelector, modalChangePassword) => {
         lat: objData.profile.lat,
         lng: objData.profile.lng
       });
-      modalChangePassword.querySelector('.menu__close').click();
+      modalChangePassword.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_4__["closeModalClass"]}`).dataset.reloadPage = '1';
+      modalChangePassword.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_4__["closeModalClass"]}`).click();
     }
   });
 };
@@ -27873,15 +27891,18 @@ function setMarkerToMap(postLat, postLng, mapID) {
 /*!*********************************!*\
   !*** ./src/js/modules/modal.js ***!
   \*********************************/
-/*! exports provided: commonModalOpenClass, showModalMap, renderModalSign, closeSignModal */
+/*! exports provided: commonModalOpenClass, closeModalClass, showModalMap, renderModalSign, renderModalDeleteAccount, closeSignModal, closeSignModalNew */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "commonModalOpenClass", function() { return commonModalOpenClass; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "closeModalClass", function() { return closeModalClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "showModalMap", function() { return showModalMap; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderModalSign", function() { return renderModalSign; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderModalDeleteAccount", function() { return renderModalDeleteAccount; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "closeSignModal", function() { return closeSignModal; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "closeSignModalNew", function() { return closeSignModalNew; });
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _firebase__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./firebase */ "./src/js/modules/firebase.js");
@@ -27890,6 +27911,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _forms__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./forms */ "./src/js/modules/forms.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
 /* harmony import */ var _domManipulation__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./domManipulation */ "./src/js/modules/domManipulation.js");
+/* harmony import */ var _appState__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./appState */ "./src/js/modules/appState.js");
 
 
 
@@ -27897,7 +27919,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const commonModalOpenClass = 'modal-open-class';
+
+const commonModalOpenClass = 'modal-open-class',
+      closeModalClass = 'menu__close';
+const signModalClass = 'signModal';
 const showModalMap = sourceForm => {
   const locationOverlay = document.querySelector('.location-overlay'); // const locationBtnClose = document.querySelector('.location__btn-close');
 
@@ -27932,13 +27957,13 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
   const modalSign = document.createElement('div');
   modalSign.classList.add(modalOverlayClass, commonModalOpenClass);
   modalSign.innerHTML = `
-		<div class="signModal">
+		<div class="${signModalClass}">
 			<div class="modal-header">
 				<span class="menu__sign_">
 					<span class="menu__sign-in menu__sign" data-items_show="modal-signin" data-items_hide="modal-signup">Login</span>
 					<span class="menu__sign-up menu__sign" data-items_show="modal-signup" data-items_hide="modal-signin">Registration</span>
 				</span>
-				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])()}
+				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])(closeModalClass)}
 			</div>
 			<div class="modal-body">
 				<h2 class="modal-signin modal-title">Welcome back!</h2>
@@ -27985,20 +28010,18 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     const modalVerification = document.createElement('div');
     modalVerification.classList.add(modalOverlayClass, commonModalOpenClass);
     modalVerification.innerHTML = `
-			<div class="signModal">
+			<div class="${signModalClass}">
 				<div class="modal-header">
-					<div class="back-menu">
+					<!--<div class="back-menu">
 						<a href="#" class="navigation-link back-feed">
-							<!--<svg width="25" height="24" class="icon">
-								<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
-							</svg>-->
 							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderIcon"])('btn-back', 24)}
 							<span class="text-back">
 								BACK
 							</span>
 						</a>
-					</div>
-					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])()}
+					</div>-->
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderBackMenu"])()}
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])(closeModalClass)}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Thank you!</h2>
@@ -28038,12 +28061,11 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
       e.preventDefault();
       Object(_forms__WEBPACK_IMPORTED_MODULE_4__["submitResendForm"])(e.target.closest('form'), '.errorSignMessage', '.infoSignMessage');
     });
-    modalVerification.addEventListener('click', e => {
-      const target = e.target;
-
-      if (!target.closest('.signModal') || target.closest('.menu__close')) {
-        closeSignModal(modalVerification);
-      }
+    modalVerification.addEventListener('click', function (e) {
+      closeSignModalNew(this, e.target, signModalClass, closeModalClass); // const target = e.target;
+      // if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
+      // 	closeSignModal(modalVerification);
+      // }
     });
     return modalVerification;
   };
@@ -28052,9 +28074,9 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     const modalCongratulation = document.createElement('div');
     modalCongratulation.classList.add(modalOverlayClass, commonModalOpenClass);
     modalCongratulation.innerHTML = `
-			<div class="signModal">
+			<div class="${signModalClass}">
 				<div class="modal-header justify-end">
-					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])()}
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])(closeModalClass)}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Congratulations! You have
@@ -28067,13 +28089,13 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 				</div>
 			</div>
 		`;
-    modalCongratulation.addEventListener('click', e => {
-      const target = e.target;
-
-      if (!target.closest('.signModal') || target.closest('.menu__close')) {
-        closeSignModal(modalCongratulation);
-        location.reload();
-      }
+    modalCongratulation.addEventListener('click', function (e) {
+      this.querySelector(`.${closeModalClass}`).dataset.reloadPage = '1';
+      closeSignModalNew(this, e.target, signModalClass, closeModalClass); // const target = e.target;
+      // if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
+      // 	closeSignModal(modalCongratulation);
+      // 	location.reload();
+      // }
     });
     return modalCongratulation;
   };
@@ -28082,20 +28104,18 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     const modalRestore = document.createElement('div');
     modalRestore.classList.add(modalOverlayClass, commonModalOpenClass);
     modalRestore.innerHTML = `
-			<div class="signModal">
+			<div class="${signModalClass}">
 				<div class="modal-header">
-					<div class="back-menu">
+					<!--<div class="back-menu">
 							<a href="#" class="navigation-link back-feed">
-								<!--<svg width="25" height="24" class="icon">
-									<use xlink:href="assets/workber_img/icons.svg#btn-back"></use>
-								</svg>-->
 								${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderIcon"])('btn-back', 24)}
 								<span class="text-back">
 									BACK
 								</span>
 							</a>
-					</div>
-					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])()}
+					</div>-->
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderBackMenu"])()}
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])(closeModalClass)}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-signin modal-title">Forgot password?</h2>
@@ -28111,12 +28131,11 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 			</div>
 		`;
     const restoreForm = modalRestore.querySelector('#restoreForm');
-    modalRestore.addEventListener('click', e => {
-      const target = e.target;
-
-      if (!target.closest('.signModal') || target.closest('.menu__close')) {
-        closeSignModal(modalRestore);
-      }
+    modalRestore.addEventListener('click', function (e) {
+      closeSignModalNew(this, e.target, signModalClass, closeModalClass); // const target = e.target;
+      // if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
+      // 	closeSignModal(modalRestore);
+      // }
     });
     modalRestore.querySelector('.back-feed').addEventListener('click', e => {
       e.preventDefault();
@@ -28135,9 +28154,9 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     const modalChangePassword = document.createElement('div');
     modalChangePassword.classList.add(modalOverlayClass, commonModalOpenClass);
     modalChangePassword.innerHTML = `
-			<div class="signModal">
+			<div class="${signModalClass}">
 				<div class="modal-header justify-end">
-					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])()}
+					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])(closeModalClass)}
 				</div>
 				<div class="modal-body">
 					<h2 class="modal-title">Set password</h2>
@@ -28154,12 +28173,8 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 			</div>
 		`;
     const changePasswordForm = modalChangePassword.querySelector('#changePasswordForm');
-    modalChangePassword.addEventListener('click', e => {
-      const target = e.target;
-
-      if (!target.closest('.signModal') || target.closest('.menu__close')) {
-        closeSignModal(modalChangePassword);
-      }
+    modalChangePassword.addEventListener('click', function (e) {
+      closeSignModalNew(this, e.target, signModalClass, closeModalClass);
     });
     changePasswordForm.addEventListener('submit', e => {
       e.preventDefault();
@@ -28239,22 +28254,14 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
         modalCongratulation = renderModalCongratulation(modalOverlayClass),
         modalRestore = renderModalRestore(modalOverlayClass),
         modalChangePassword = renderModalChangePassword(modalOverlayClass);
-  modalSign.addEventListener('click', e => {
-    const target = e.target;
-
-    if (!target.closest('.signModal') || target.closest('.menu__close')) {
-      closeSignModal(modalSign);
-
-      if (modalSign.querySelector('.menu__close').dataset.reloadPage === '1') {
-        location.reload();
-      }
-    }
+  modalSign.addEventListener('click', function (e) {
+    closeSignModalNew(this, e.target, signModalClass, closeModalClass);
   });
   modalSign.querySelector('.modal-header').addEventListener('click', switchMenu);
   modalSign.querySelector('.social-buttons').addEventListener('click', authSocial);
   iconProfile.addEventListener('click', () => {
     switchSignMethod(modalSign, '.menu__sign-in');
-    modalSign.querySelector('.menu__close').dataset.reloadPage = '';
+    modalSign.querySelector(`.${closeModalClass}`).dataset.reloadPage = '';
     document.body.append(modalSign);
     loginForm.reset();
     disableScroll();
@@ -28270,9 +28277,9 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
   loginForm.addEventListener('reset', () => {
     Object(_forms__WEBPACK_IMPORTED_MODULE_4__["hideSignInfo"])(loginForm.querySelector('.errorSignMessage'));
   });
-  forgotPassword.addEventListener('click', e => {
+  forgotPassword.addEventListener('click', function (e) {
     e.preventDefault();
-    const email = forgotPassword.closest('form').querySelector('#email');
+    const email = this.closest('form').querySelector('#email');
 
     if (email) {
       modalRestore.querySelector('#email').value = email.value;
@@ -28293,38 +28300,47 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     } catch (e) {}
   };
 };
+const renderModalDeleteAccount = modalOverlayClass => {
+  const modal = document.createElement('div');
+  modal.classList.add(modalOverlayClass, commonModalOpenClass);
+  modal.innerHTML = `
+			<div class="templateModal modalContent">
+				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderProfileHeader"])('Delete account')}
+				<div class="template__body">
+					<form class="modal-form" action="#" method="POST" id="formDeleteAccount">
+						<div class="nameData">
+							Are you sure? We will send you email with confirmation link
+						</div>
+							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderButtonsFooter"])()}
+					</form>
+				</div>
+			</div>
+		`;
+  const modalForm = modal.querySelector('form');
+  modal.addEventListener('click', function (e) {
+    closeSignModalNew(this, e.target, 'modalContent', closeModalClass);
+  });
+  modalForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    Object(_appState__WEBPACK_IMPORTED_MODULE_7__["deleteAccount"])();
+    closeSignModal(modal);
+  });
+  return modal;
+};
 const closeSignModal = container => {
   container.remove();
   enableScroll();
-}; // export const renderModalDeleteAccount = () => {
-// 	const modal = document.createElement('div');
-// 	modal.classList.add(modalOverlayClass);
-// 	modal.innerHTML = `
-// 		<div class="signModal">
-// 			<div class="modal-header justify-end">
-// 				<span class="menu__close">
-// 					<svg width="24" height="24" class="icon">
-// 						<use xlink:href="assets/workber_img/icons.svg#btn-close"></use>
-// 					</svg>
-// 				</span>
-// 			</div>
-// 			<div class="modal-body">
-// 				<h2 class="modal-title">Delete account</h2>
-// 				<p style="margin-bottom: 32px;">Please, choose your password.</p>
-// 				<form id="deleteAccountForm">
-// 					<button type="submit" class="btn__sign btn__confirmation">Done</button>
-// 				</form>
-// 			</div>
-// 		</div>
-// 	`;
-// 	const changePasswordForm = modalChangePassword.querySelector('#changePasswordForm');
-// 	modalChangePassword.addEventListener('click', (e) => {
-// 		const target = e.target;
-// 		if (!target.closest('.signModal') || target.closest('.menu__close')) {
-// 			closeSignModal(modalChangePassword);
-// 		}
-// 	});
-// };
+};
+const closeSignModalNew = (container, target, signModalClass, closeModalClass) => {
+  if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
+    container.remove();
+    enableScroll();
+
+    if (container.querySelector(`.${closeModalClass}`).dataset.reloadPage === '1') {
+      location.reload();
+    }
+  }
+};
 
 const disableScroll = () => {
   const widthScroll = window.innerWidth - document.body.offsetWidth;
