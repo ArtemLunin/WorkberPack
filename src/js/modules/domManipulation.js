@@ -60,14 +60,30 @@ export const controlElems = (classElems, todo) => {
  * @param {boolean} renderReset
  * @return {string} HTML layout
  */
-export const renderButtonsFooter = (renderReset = false) => {
-	return `
-		<div class="form-profile-footer">
-			<button type="submit" class="btn__form btn__confirmation">Save</button>
-			${(renderReset) ? '<button type="reset" class="btn__form btn__confirmation">Cancel</button>' : ''}
-		</div>
-	`;
-}
+// export const renderButtonsFooter = (renderReset = false) => {
+// 	return `
+// 		<div class="form-profile-footer">
+// 			<button type="submit" class="btn__form btn__confirmation">Save</button>
+// 			${(renderReset) ? '<button type="reset" class="btn__form btn__confirmation">Cancel</button>' : ''}
+// 		</div>
+// 	`;
+// }
+
+/**
+ * render HTML layout for buttons  * @module domManipulation
+ * @param {string} containerClass
+ * @param {object} btnsArray
+ * @return {string} HTML layout
+ */
+export const renderButtons = (containerClass, btnsArray) => {
+	let containerBtns = `<div class="${containerClass}">`;
+	btnsArray.forEach(btn => {
+		let rawAttr = (btn.rawAttr) ? btn.rawAttr : '';
+		containerBtns += `<button type="${btn.type}" class="${btn.classes}" ${rawAttr}>${btn.title}</button>`;
+	});
+	containerBtns += '</div>';
+	return containerBtns;
+};
 
 /**
  * render HTML layout for Fav button

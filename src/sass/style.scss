@@ -4,6 +4,7 @@
 @import 'main';
 @import 'profile';
 @import 'slider';
+@import 'modal';
 
 a {
 	text-decoration: none;
@@ -1088,21 +1089,10 @@ a {
 	background-image: url('../workber_img/lock2.svg');
 }
 
-.modal-checkbox {
-	display: flex;
-	justify-content: space-between;
-	font-size: 12px;
-	line-height: 16px;
-	letter-spacing: 0.14px;
-}
-
-.modal-sign-forgot {
-	color: #9AA0A8;
-}
-
 .btn__form {
 	height: 36px;
 	padding: 6px 16px;
+	margin-right: 5px;
 	font-weight: 600;
 	line-height: 24px;
 	text-align: center;

@@ -1,0 +1,24 @@
+.modal {
+	&__link-forgot {
+		color: #9AA0A8;
+	}
+	&__checkbox {
+		display: flex;
+		justify-content: space-between;
+		font-size: 12px;
+		line-height: 16px;
+		letter-spacing: 0.14px;
+		&_elem {
+			display: flex;
+			align-items: center;
+			& [type="checkbox"] {
+				margin-right: 5px;
+			}
+		}
+	}
+	&__del-message {
+		font-size: 12px;
+		visibility:hidden;
+		color: #9AA0A8;
+	}
+}

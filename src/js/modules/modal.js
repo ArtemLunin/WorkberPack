@@ -3,7 +3,7 @@ import {getLocation, getAppItem} from './storage';
 import {setPositionOnMap} from './map';
 import {hideSignInfo, submitSignForm, submitVerifyForm, submitResendForm, submitRestoreForm, submitPasswordForm} from './forms';
 import {registrationID, storeLinks, termsHTML, privacyHTML} from './config';
-import { renderSocialButton, renderIcon, renderBackMenu, renderCloseMenu, renderButtonsFooter, renderProfileHeader } from './domManipulation';
+import { renderSocialButton, renderIcon, renderBackMenu, renderCloseMenu,  renderProfileHeader, renderButtons } from './domManipulation';
 import { deleteAccount } from './appState';
 
 export const commonModalOpenClass = 'modal-open-class',
@@ -64,19 +64,19 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 						required>
 					<input type="password" class="icon__modal icon-password2 modal-signup" name="password-repeat" id=""
 						placeholder="Repeat password" required>
-					<div class="modal-signin modal-checkbox">
+					<div class="modal__checkbox modal-signin modal-checkbox">
 						<!--<span>
 							<input type="checkbox" name="remember" id="cbRemember" class="modal-signin">
 							<label for="cbRemember">Remember me</label>
 						</span>-->
-						<a href="#" class="modal-sign-forgot">Forgot password?</a>
+						<a href="#" class="modal__link-forgot modal-sign-forgot">Forgot password?</a>
 					</div>
-					<div class="modal-signup modal-checkbox">
-						<span>
+					<div class="modal__checkbox modal-signup modal-checkbox">
+						<div class="modal__checkbox_elem">
 							<input type="checkbox" name="policy-agree" id="cbAgree" class="modal-signup" data-control="btn__sign-up">
 							<label for="cbAgree">I agree with the <a href="${termsHTML}" target="_blank">Terms and conditions</a> and <a href="${privacyHTML}" target="_blank">Privacy policy</a>
 							</label>
-						</span>
+						</div>
 					</div>
 					<button type="submit" class="modal-signin btn__sign btn__sign-in" id="btn__sign-in">SIGN IN</button>
 					<button type="submit" class="modal-signup btn__sign btn__sign-up" id="btn__sign-up">SIGN UP</button>
@@ -431,12 +431,17 @@ export const renderModalDeleteAccount = (modalOverlayClass) => {
 	modal.innerHTML = `
 			<div class="templateModal modalContent">
 				${renderProfileHeader('Delete account')}
-				<div class="template__body">
+				<div>
 					<form class="modal-form" action="#" method="POST" id="formDeleteAccount">
 						<div class="nameData">
 							Are you sure? We will send you email with confirmation link
 						</div>
-							${renderButtonsFooter()}
+						<span class="modal__del-message del-message">Check your inbox, you have been sent a link to delete your account</span>
+						${renderButtons("form-profile-footer", [{
+							type: "submit",
+							title: "Yes",
+							classes: "btn__form btn__confirmation"
+						}])}
 					</form>
 				</div>
 			</div>
@@ -451,7 +456,7 @@ export const renderModalDeleteAccount = (modalOverlayClass) => {
 	modalForm.addEventListener('submit', function (e) {
 		e.preventDefault();
 		deleteAccount();
-		closeSignModal(modal);
+		this.querySelector('.del-message').style.visibility = 'visible';
 	});
 
 	return modal;

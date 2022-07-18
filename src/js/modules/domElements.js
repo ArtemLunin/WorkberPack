@@ -1,5 +1,5 @@
 import hash from 'object-hash';
-import {hidePageElems, showPageElems, renderButtonsFooter, updatePostActionData, renderProfileButton, renderIcon, renderProfileHeader} from './domManipulation';
+import { hidePageElems, showPageElems, updatePostActionData, renderProfileButton, renderIcon, renderProfileHeader, renderButtons } from './domManipulation';
 import { closeModalClass, closeSignModal, showModalMap, renderModalDeleteAccount } from './modal';
 import {URImod, checkUserName, postAPIRequest, logout, deleteTemplate, getTemplate} from './appState';
 import {hideSignInfo, showSignInfo} from './forms';
@@ -122,7 +122,13 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					<div class="profile-top-info">
 						<span style="color: #9AA0A8;">Contacts templates: <span class="profile-entities" id="contactsTemplatesCount"></span>
 						</span>
-						<button class="btn__form btn__add-contact btn__add-profile" data-modal="contactModalForm">Add new</button>
+						<!--<button class="btn__form btn__add-contact btn__add-profile" data-modal="contactModalForm">Add new</button>-->
+						${renderButtons("", [{
+							type: "button",
+							title: "Add new",
+							classes: "btn__form btn__add-contact btn__add-profile",
+							rawAttr: 'data-modal="contactModalForm"'
+						}])}
 					</div>
 				</section>
 				<section class="profile-item"></section>
@@ -132,7 +138,13 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					<div class="profile-top-info">
 						<span style="color: #9AA0A8;">Hashtags templates: <span class="profile-entities" id="hashtagsTemplatesCount"></span>
 						</span>
-						<button class="btn__form btn__add-hashtag btn__add-profile" data-modal="hashtagModalForm">Add new</button>
+						<!--<button class="btn__form btn__add-hashtag btn__add-profile" data-modal="hashtagModalForm">Add new</button>-->
+						${renderButtons("", [{
+							type: "button",
+							title: "Add new",
+							classes: "btn__form btn__add-hashtag btn__add-profile",
+							rawAttr: 'data-modal="hashtagModalForm"'
+						}])}
 					</div>
 				</section>
 				<section class="profile-item"></section>
@@ -156,7 +168,11 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 							<label for="cbViewContacts">View my contacts</label>
 							<!-- </div> -->
 						</div>
-						${renderButtonsFooter()}
+						${renderButtons("form-profile-footer", [{
+							type: "submit",
+							title: "Save",
+							classes: "btn__form btn__confirmation"
+						}])}
 					</form>
 				</section>
 			</div>
@@ -188,7 +204,16 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 								</div>
 							</div>
 						</div>
-						${renderButtonsFooter(true)}
+						${renderButtons("form-profile-footer", [{
+							type: "submit",
+							title: "Save",
+							classes: "btn__form btn__confirmation"
+						},
+						{
+							type: "reset",
+							title: "Cancel",
+							classes: "btn__form btn__confirmation"
+						}])}
 					</form>
 				</div>
 			</div>
@@ -262,7 +287,16 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 								<input type="text" class="input-form" name="address" id="newAddress">
 							</div>
 						</div>
-						${renderButtonsFooter(true)}
+						${renderButtons("form-profile-footer", [{
+							type: "submit",
+							title: "Save",
+							classes: "btn__form btn__confirmation"
+						},
+						{
+							type: "reset",
+							title: "Cancel",
+							classes: "btn__form btn__confirmation"
+						}])}
 					</form>
 				</div>
 			</div>
@@ -486,7 +520,11 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						</div>
 					</div>
 				</div>
-				${renderButtonsFooter()}
+				${renderButtons("form-profile-footer", [{
+					type: "submit",
+					title: "Save",
+					classes: "btn__form btn__confirmation"
+				}])}
 			</form>
 		`);
 		
@@ -533,7 +571,11 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						<input type="text" class="input-form" name="address" id="address">
 					</div>
 				</div>
-				${renderButtonsFooter()}
+				${renderButtons("form-profile-footer", [{
+					type: "submit",
+					title: "Save",
+					classes: "btn__form btn__confirmation"
+				}])}
 			</form>
 		`);
 		return formContainer;
@@ -625,7 +667,11 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 						<input type="text" class="input-form" name="phone" id="phone" value="">
 					</div>
 				</div>
-				${renderButtonsFooter()}
+				${renderButtons("form-profile-footer", [{
+					type: "submit",
+					title: "Save",
+					classes: "btn__form btn__confirmation"
+				}])}
 			</form>
 			`
 		);
@@ -967,7 +1013,9 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
 				profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
 				setActiveMenuItem(profileContainer.querySelectorAll('.profile-menu>LI'), menuItem, 'active');
-			} catch (e) {}
+			} catch (e) {
+				// console.error(e);
+			}
 			
 		}
 	});

@@ -25601,7 +25601,13 @@ const renderProfile = ({
 					<div class="profile-top-info">
 						<span style="color: #9AA0A8;">Contacts templates: <span class="profile-entities" id="contactsTemplatesCount"></span>
 						</span>
-						<button class="btn__form btn__add-contact btn__add-profile" data-modal="contactModalForm">Add new</button>
+						<!--<button class="btn__form btn__add-contact btn__add-profile" data-modal="contactModalForm">Add new</button>-->
+						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtons"])("", [{
+    type: "button",
+    title: "Add new",
+    classes: "btn__form btn__add-contact btn__add-profile",
+    rawAttr: 'data-modal="contactModalForm"'
+  }])}
 					</div>
 				</section>
 				<section class="profile-item"></section>
@@ -25611,7 +25617,13 @@ const renderProfile = ({
 					<div class="profile-top-info">
 						<span style="color: #9AA0A8;">Hashtags templates: <span class="profile-entities" id="hashtagsTemplatesCount"></span>
 						</span>
-						<button class="btn__form btn__add-hashtag btn__add-profile" data-modal="hashtagModalForm">Add new</button>
+						<!--<button class="btn__form btn__add-hashtag btn__add-profile" data-modal="hashtagModalForm">Add new</button>-->
+						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtons"])("", [{
+    type: "button",
+    title: "Add new",
+    classes: "btn__form btn__add-hashtag btn__add-profile",
+    rawAttr: 'data-modal="hashtagModalForm"'
+  }])}
 					</div>
 				</section>
 				<section class="profile-item"></section>
@@ -25635,7 +25647,11 @@ const renderProfile = ({
 							<label for="cbViewContacts">View my contacts</label>
 							<!-- </div> -->
 						</div>
-						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtonsFooter"])()}
+						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtons"])("form-profile-footer", [{
+    type: "submit",
+    title: "Save",
+    classes: "btn__form btn__confirmation"
+  }])}
 					</form>
 				</section>
 			</div>
@@ -25666,7 +25682,15 @@ const renderProfile = ({
 								</div>
 							</div>
 						</div>
-						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtonsFooter"])(true)}
+						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtons"])("form-profile-footer", [{
+      type: "submit",
+      title: "Save",
+      classes: "btn__form btn__confirmation"
+    }, {
+      type: "reset",
+      title: "Cancel",
+      classes: "btn__form btn__confirmation"
+    }])}
 					</form>
 				</div>
 			</div>
@@ -25734,7 +25758,15 @@ const renderProfile = ({
 								<input type="text" class="input-form" name="address" id="newAddress">
 							</div>
 						</div>
-						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtonsFooter"])(true)}
+						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtons"])("form-profile-footer", [{
+      type: "submit",
+      title: "Save",
+      classes: "btn__form btn__confirmation"
+    }, {
+      type: "reset",
+      title: "Cancel",
+      classes: "btn__form btn__confirmation"
+    }])}
 					</form>
 				</div>
 			</div>
@@ -25961,7 +25993,11 @@ const renderProfile = ({
 						</div>
 					</div>
 				</div>
-				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtonsFooter"])()}
+				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtons"])("form-profile-footer", [{
+      type: "submit",
+      title: "Save",
+      classes: "btn__form btn__confirmation"
+    }])}
 			</form>
 		`);
     formContainer.querySelector('#hashtagTemplateList').addEventListener('paste', function (e) {
@@ -26005,7 +26041,11 @@ const renderProfile = ({
 						<input type="text" class="input-form" name="address" id="address">
 					</div>
 				</div>
-				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtonsFooter"])()}
+				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtons"])("form-profile-footer", [{
+      type: "submit",
+      title: "Save",
+      classes: "btn__form btn__confirmation"
+    }])}
 			</form>
 		`);
     return formContainer;
@@ -26091,7 +26131,11 @@ const renderProfile = ({
 						<input type="text" class="input-form" name="phone" id="phone" value="">
 					</div>
 				</div>
-				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtonsFooter"])()}
+				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["renderButtons"])("form-profile-footer", [{
+      type: "submit",
+      title: "Save",
+      classes: "btn__form btn__confirmation"
+    }])}
 			</form>
 			`);
     const userName = formContainer.querySelector('#user_name');
@@ -26463,7 +26507,8 @@ const renderProfile = ({
         profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
         profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
         setActiveMenuItem(profileContainer.querySelectorAll('.profile-menu>LI'), menuItem, 'active');
-      } catch (e) {}
+      } catch (e) {// console.error(e);
+      }
     }
   });
   return profileContainer;
@@ -26707,7 +26752,7 @@ const getNewSizeUploadedImages = (width, height, max_size) => {
 /*!*******************************************!*\
   !*** ./src/js/modules/domManipulation.js ***!
   \*******************************************/
-/*! exports provided: toggleService, hidePageElems, showPageElems, controlElems, renderButtonsFooter, renderFavButton, renderLikeButton, renderShareButton, renderSocialButton, renderProfileButton, renderIcon, renderProfileHeader, renderCloseMenu, renderBackMenu, updatePostActionData */
+/*! exports provided: toggleService, hidePageElems, showPageElems, controlElems, renderButtons, renderFavButton, renderLikeButton, renderShareButton, renderSocialButton, renderProfileButton, renderIcon, renderProfileHeader, renderCloseMenu, renderBackMenu, updatePostActionData */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -26716,7 +26761,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hidePageElems", function() { return hidePageElems; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "showPageElems", function() { return showPageElems; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "controlElems", function() { return controlElems; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderButtonsFooter", function() { return renderButtonsFooter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderButtons", function() { return renderButtons; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderFavButton", function() { return renderFavButton; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderLikeButton", function() { return renderLikeButton; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderShareButton", function() { return renderShareButton; });
@@ -26793,14 +26838,30 @@ const controlElems = (classElems, todo) => {
  * @param {boolean} renderReset
  * @return {string} HTML layout
  */
+// export const renderButtonsFooter = (renderReset = false) => {
+// 	return `
+// 		<div class="form-profile-footer">
+// 			<button type="submit" class="btn__form btn__confirmation">Save</button>
+// 			${(renderReset) ? '<button type="reset" class="btn__form btn__confirmation">Cancel</button>' : ''}
+// 		</div>
+// 	`;
+// }
 
-const renderButtonsFooter = (renderReset = false) => {
-  return `
-		<div class="form-profile-footer">
-			<button type="submit" class="btn__form btn__confirmation">Save</button>
-			${renderReset ? '<button type="reset" class="btn__form btn__confirmation">Cancel</button>' : ''}
-		</div>
-	`;
+/**
+ * render HTML layout for buttons  * @module domManipulation
+ * @param {string} containerClass
+ * @param {object} btnsArray
+ * @return {string} HTML layout
+ */
+
+const renderButtons = (containerClass, btnsArray) => {
+  let containerBtns = `<div class="${containerClass}">`;
+  btnsArray.forEach(btn => {
+    let rawAttr = btn.rawAttr ? btn.rawAttr : '';
+    containerBtns += `<button type="${btn.type}" class="${btn.classes}" ${rawAttr}>${btn.title}</button>`;
+  });
+  containerBtns += '</div>';
+  return containerBtns;
 };
 /**
  * render HTML layout for Fav button
@@ -27974,19 +28035,19 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 						required>
 					<input type="password" class="icon__modal icon-password2 modal-signup" name="password-repeat" id=""
 						placeholder="Repeat password" required>
-					<div class="modal-signin modal-checkbox">
+					<div class="modal__checkbox modal-signin modal-checkbox">
 						<!--<span>
 							<input type="checkbox" name="remember" id="cbRemember" class="modal-signin">
 							<label for="cbRemember">Remember me</label>
 						</span>-->
-						<a href="#" class="modal-sign-forgot">Forgot password?</a>
+						<a href="#" class="modal__link-forgot modal-sign-forgot">Forgot password?</a>
 					</div>
-					<div class="modal-signup modal-checkbox">
-						<span>
+					<div class="modal__checkbox modal-signup modal-checkbox">
+						<div class="modal__checkbox_elem">
 							<input type="checkbox" name="policy-agree" id="cbAgree" class="modal-signup" data-control="btn__sign-up">
 							<label for="cbAgree">I agree with the <a href="${_config__WEBPACK_IMPORTED_MODULE_5__["termsHTML"]}" target="_blank">Terms and conditions</a> and <a href="${_config__WEBPACK_IMPORTED_MODULE_5__["privacyHTML"]}" target="_blank">Privacy policy</a>
 							</label>
-						</span>
+						</div>
 					</div>
 					<button type="submit" class="modal-signin btn__sign btn__sign-in" id="btn__sign-in">SIGN IN</button>
 					<button type="submit" class="modal-signup btn__sign btn__sign-up" id="btn__sign-up">SIGN UP</button>
@@ -28306,12 +28367,17 @@ const renderModalDeleteAccount = modalOverlayClass => {
   modal.innerHTML = `
 			<div class="templateModal modalContent">
 				${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderProfileHeader"])('Delete account')}
-				<div class="template__body">
+				<div>
 					<form class="modal-form" action="#" method="POST" id="formDeleteAccount">
 						<div class="nameData">
 							Are you sure? We will send you email with confirmation link
 						</div>
-							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderButtonsFooter"])()}
+						<span class="modal__del-message del-message">Check your inbox, you have been sent a link to delete your account</span>
+						${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderButtons"])("form-profile-footer", [{
+    type: "submit",
+    title: "Yes",
+    classes: "btn__form btn__confirmation"
+  }])}
 					</form>
 				</div>
 			</div>
@@ -28323,7 +28389,7 @@ const renderModalDeleteAccount = modalOverlayClass => {
   modalForm.addEventListener('submit', function (e) {
     e.preventDefault();
     Object(_appState__WEBPACK_IMPORTED_MODULE_7__["deleteAccount"])();
-    closeSignModal(modal);
+    this.querySelector('.del-message').style.visibility = 'visible';
   });
   return modal;
 };
