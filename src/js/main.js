@@ -13,7 +13,6 @@ import {renderProfile, handlePostBtn} from './modules/domElements';
 
 
 window.addEventListener('DOMContentLoaded', () => {
-
 	/*jshint camelcase: false */
 
 let postid = 0;

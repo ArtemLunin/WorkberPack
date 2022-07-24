@@ -18379,6 +18379,47 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
 
 /***/ }),
 
+/***/ "./node_modules/email-validator/index.js":
+/*!***********************************************!*\
+  !*** ./node_modules/email-validator/index.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var tester = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+// Thanks to:
+// http://fightingforalostcause.net/misc/2006/compare-email-regex.php
+// http://thedailywtf.com/Articles/Validating_Email_Addresses.aspx
+// http://stackoverflow.com/questions/201323/what-is-the-best-regular-expression-for-validating-email-addresses/201378#201378
+exports.validate = function(email)
+{
+	if (!email)
+		return false;
+		
+	if(email.length>254)
+		return false;
+
+	var valid = tester.test(email);
+	if(!valid)
+		return false;
+
+	// Further checking of some things regex can't handle
+	var parts = email.split("@");
+	if(parts[0].length>64)
+		return false;
+
+	var domainParts = parts[1].split(".");
+	if(domainParts.some(function(part) { return part.length>63; }))
+		return false;
+
+	return true;
+}
+
+/***/ }),
+
 /***/ "./node_modules/firebase/app/dist/index.esm.js":
 /*!*****************************************************!*\
   !*** ./node_modules/firebase/app/dist/index.esm.js ***!
@@ -25199,7 +25240,7 @@ const getUserProfile = async () => {
 
     if (profile === 401) {
       if (refreshToken && refreshToken != '') {
-        const data = await refreshTokens(token, refreshToken).then(async objData => {
+        const data = await Object(_requests__WEBPACK_IMPORTED_MODULE_2__["refreshTokens"])(token, refreshToken).then(async objData => {
           if (objData !== false && objData.message !== "There is no such refresh token") {
             _storage__WEBPACK_IMPORTED_MODULE_3__["setGlobalItem"]({
               sid: objData.sid,
@@ -25240,19 +25281,23 @@ const getUserProfile = async () => {
  * @return {object} data from back-end
  */
 
-const postAPIRequest = async requestData => {
+const postAPIRequest = async (requestData, reloadOnFalse = true) => {
   let token = _storage__WEBPACK_IMPORTED_MODULE_3__["getGlobalItem"]('sid');
+  let data = false;
 
   if (token) {
     requestData.token = token;
-    const data = await Object(_requests__WEBPACK_IMPORTED_MODULE_2__["sendGetRequest"])(requestData, {
+    data = await Object(_requests__WEBPACK_IMPORTED_MODULE_2__["sendGetRequest"])(requestData, {
       token: token,
       refreshToken: _storage__WEBPACK_IMPORTED_MODULE_3__["getGlobalItem"]('refresh_token')
     });
-    return data;
   }
 
-  return false;
+  if (data === false && reloadOnFalse) {
+    location.reload();
+  }
+
+  return data;
 };
 const deleteTemplate = async (typeTemplate, id) => {
   let token = _storage__WEBPACK_IMPORTED_MODULE_3__["getGlobalItem"]('sid');
@@ -25317,16 +25362,14 @@ const checkUserName = async user_name => {
   }
 
   return false;
-};
-
-const refreshTokens = async (token, refreshToken) => {
-  const data = await Object(_requests__WEBPACK_IMPORTED_MODULE_2__["sendGetRequest"])({
-    call: 'doRefreshTokens',
-    token: token,
-    refresh_token: refreshToken
-  }, false);
-  return data;
-};
+}; // const refreshTokens = async (token, refreshToken) => {
+// 	const data = await sendGetRequest({
+// 		call: 'doRefreshTokens',
+// 		token: token,
+// 		refresh_token: refreshToken
+// 	}, false);
+// 	return data;
+// };
 
 const storeProfileInfo = ({
   profile,
@@ -25366,9 +25409,10 @@ const deleteAccount = async () => {
       token: token,
       refreshToken: _storage__WEBPACK_IMPORTED_MODULE_3__["getGlobalItem"]('refresh_token')
     });
+    return true;
   }
 
-  return true;
+  return false;
 };
 const URImod = newURIParams => {
   const originURI = new URL(location);
@@ -25830,21 +25874,23 @@ const renderProfile = ({
       hashtagTemplateList: requestProps.hashtagTemplateList
     })) {
       Object(_appState__WEBPACK_IMPORTED_MODULE_4__["postAPIRequest"])(requestProps).then(data => {
-        Object(_forms__WEBPACK_IMPORTED_MODULE_5__["hideSignInfo"])(form.querySelector('.errorSignMessage'));
+        if (data) {
+          Object(_forms__WEBPACK_IMPORTED_MODULE_5__["hideSignInfo"])(form.querySelector('.errorSignMessage'));
 
-        if (data.message == "hashtag list updating error" || data.message == "hashtag list adding error") {
-          Object(_forms__WEBPACK_IMPORTED_MODULE_5__["showSignInfo"])(form.querySelector('.errorSignMessage'), data.errors);
-          return false;
-        }
-
-        Object(_appState__WEBPACK_IMPORTED_MODULE_4__["getTemplate"])('hashtag').then(data => {
-          if (modal) {
-            modal.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_3__["closeModalClass"]}`).click();
+          if (data.message == "hashtag list updating error" || data.message == "hashtag list adding error") {
+            Object(_forms__WEBPACK_IMPORTED_MODULE_5__["showSignInfo"])(form.querySelector('.errorSignMessage'), data.errors);
+            return false;
           }
 
-          localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
-          profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
-        });
+          Object(_appState__WEBPACK_IMPORTED_MODULE_4__["getTemplate"])('hashtag').then(data => {
+            if (modal) {
+              modal.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_3__["closeModalClass"]}`).click();
+            }
+
+            localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
+            profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
+          });
+        }
       });
     }
   };
@@ -25883,21 +25929,23 @@ const renderProfile = ({
       address: requestProps.address
     })) {
       Object(_appState__WEBPACK_IMPORTED_MODULE_4__["postAPIRequest"])(requestProps).then(data => {
-        Object(_forms__WEBPACK_IMPORTED_MODULE_5__["hideSignInfo"])(form.querySelector('.errorSignMessage'));
+        if (data) {
+          Object(_forms__WEBPACK_IMPORTED_MODULE_5__["hideSignInfo"])(form.querySelector('.errorSignMessage'));
 
-        if (data.message == "contact update failed" || data.message == "contact adding error") {
-          Object(_forms__WEBPACK_IMPORTED_MODULE_5__["showSignInfo"])(form.querySelector('.errorSignMessage'), data.errors);
-          return false;
-        }
-
-        Object(_appState__WEBPACK_IMPORTED_MODULE_4__["getTemplate"])('contact').then(data => {
-          if (modal) {
-            modal.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_3__["closeModalClass"]}`).click();
+          if (data.message == "contact update failed" || data.message == "contact adding error") {
+            Object(_forms__WEBPACK_IMPORTED_MODULE_5__["showSignInfo"])(form.querySelector('.errorSignMessage'), data.errors);
+            return false;
           }
 
-          localProfile.contactsList = JSON.parse(JSON.stringify(data.contactsList));
-          profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
-        });
+          Object(_appState__WEBPACK_IMPORTED_MODULE_4__["getTemplate"])('contact').then(data => {
+            if (modal) {
+              modal.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_3__["closeModalClass"]}`).click();
+            }
+
+            localProfile.contactsList = JSON.parse(JSON.stringify(data.contactsList));
+            profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
+          });
+        }
       });
     }
   };
@@ -25940,7 +25988,7 @@ const renderProfile = ({
       lng: parseFloat(requestProps.lng)
     })) {
       Object(_appState__WEBPACK_IMPORTED_MODULE_4__["postAPIRequest"])(requestProps).then(data => {
-        if (data.errors) {} else if (data.code && data.code === 1) {
+        if (data && data.code && data.code === 1) {
           if (data.message === "avatar set") {
             localProfile.personalData.user_picture = userAvatar(data.user_picture);
           } else {
@@ -26209,6 +26257,7 @@ const renderProfile = ({
           if (btnDelete !== null) {
             Object(_appState__WEBPACK_IMPORTED_MODULE_4__["deleteTemplate"])(btnDelete, button.dataset.id).then(() => {
               Object(_appState__WEBPACK_IMPORTED_MODULE_4__["getTemplate"])(btnDelete).then(data => {
+                console.log(data);
                 localProfile.contactsList = JSON.parse(JSON.stringify(data.contactsList));
                 profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
               });
@@ -26531,49 +26580,51 @@ const handlePostBtn = (elem, postDocumentId = null) => {
     requestProps.postid = btn.getAttribute('data-postid');
     requestProps[btn.getAttribute('data-param')] = btn.getAttribute('data-value');
     Object(_appState__WEBPACK_IMPORTED_MODULE_4__["postAPIRequest"])(requestProps).then(data => {
-      if (data.message === 'like changed') {
-        btn.querySelector('.likes_out').innerText = data.likes;
+      if (data) {
+        if (data.message === 'like changed') {
+          btn.querySelector('.likes_out').innerText = data.likes;
 
-        if (btn.getAttribute('data-value') === '0') {
-          btn.classList.remove('like-selected');
-          btn.setAttribute('data-value', '1');
-          btn.querySelector('.icon').classList.remove('icon-selected');
-        } else {
-          btn.classList.add('like-selected');
-          btn.setAttribute('data-value', '0');
-          btn.querySelector('.icon').classList.add('icon-selected');
+          if (btn.getAttribute('data-value') === '0') {
+            btn.classList.remove('like-selected');
+            btn.setAttribute('data-value', '1');
+            btn.querySelector('.icon').classList.remove('icon-selected');
+          } else {
+            btn.classList.add('like-selected');
+            btn.setAttribute('data-value', '0');
+            btn.querySelector('.icon').classList.add('icon-selected');
+          }
+
+          Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["updatePostActionData"])(postDocumentId, {
+            '.post-like': data.likes,
+            '.post-is_likes': btn.getAttribute('data-value') === '1' ? '0' : '1'
+          });
+        } else if (data.message === 'bookmarks changed') {
+          if (btn.getAttribute('data-value') === '0') {
+            // btn.querySelector('.save_out').innerText = 'SAVE';
+            btn.querySelector('.save_out').style.display = '';
+            btn.classList.remove('save-selected');
+            btn.setAttribute('data-value', '1');
+            btn.querySelector('.icon').classList.remove('icon-selected');
+
+            try {
+              const postItem = btn.closest(`.${favoriteClass}`);
+              postItem.classList.add('post-deleting');
+              setTimeout(() => {
+                postItem.remove();
+              }, 700);
+            } catch (e) {}
+          } else {
+            // btn.querySelector('.save_out').innerText = '';
+            btn.querySelector('.save_out').style.display = 'none';
+            btn.classList.add('save-selected');
+            btn.setAttribute('data-value', '0');
+            btn.querySelector('.icon').classList.add('icon-selected');
+          }
+
+          Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["updatePostActionData"])(postDocumentId, {
+            '.post-is_bookmarks': btn.getAttribute('data-value') === '1' ? '0' : '1'
+          });
         }
-
-        Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["updatePostActionData"])(postDocumentId, {
-          '.post-like': data.likes,
-          '.post-is_likes': btn.getAttribute('data-value') === '1' ? '0' : '1'
-        });
-      } else if (data.message === 'bookmarks changed') {
-        if (btn.getAttribute('data-value') === '0') {
-          // btn.querySelector('.save_out').innerText = 'SAVE';
-          btn.querySelector('.save_out').style.display = '';
-          btn.classList.remove('save-selected');
-          btn.setAttribute('data-value', '1');
-          btn.querySelector('.icon').classList.remove('icon-selected');
-
-          try {
-            const postItem = btn.closest(`.${favoriteClass}`);
-            postItem.classList.add('post-deleting');
-            setTimeout(() => {
-              postItem.remove();
-            }, 700);
-          } catch (e) {}
-        } else {
-          // btn.querySelector('.save_out').innerText = '';
-          btn.querySelector('.save_out').style.display = 'none';
-          btn.classList.add('save-selected');
-          btn.setAttribute('data-value', '0');
-          btn.querySelector('.icon').classList.add('icon-selected');
-        }
-
-        Object(_domManipulation__WEBPACK_IMPORTED_MODULE_2__["updatePostActionData"])(postDocumentId, {
-          '.post-is_bookmarks': btn.getAttribute('data-value') === '1' ? '0' : '1'
-        });
       }
     });
   }
@@ -27148,10 +27199,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "submitPasswordForm", function() { return submitPasswordForm; });
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _network__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./network */ "./src/js/modules/network.js");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
-/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./storage */ "./src/js/modules/storage.js");
-/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modal */ "./src/js/modules/modal.js");
+/* harmony import */ var email_validator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! email-validator */ "./node_modules/email-validator/index.js");
+/* harmony import */ var email_validator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(email_validator__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _network__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./network */ "./src/js/modules/network.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
+/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./storage */ "./src/js/modules/storage.js");
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modal */ "./src/js/modules/modal.js");
+
 
 
 
@@ -27215,6 +27269,32 @@ const submitSignForm = (form, errorSignSelector, modalSign, modalVerification) =
     switch (typeSubmit) {
       case 'btn__sign-up':
         call = 'reg_nu';
+        const pwd = formData.get('pwd'),
+              email = formData.get('email');
+
+        if (pwd && email) {
+          if (email_validator__WEBPACK_IMPORTED_MODULE_1__["validate"](email) === false) {
+            showSignInfo(form.querySelector(errorSignSelector), [..."incorrect email"]);
+            return false;
+          }
+
+          let regData = pwd + email;
+
+          if (regData === _storage__WEBPACK_IMPORTED_MODULE_4__["getAppItem"]('regData')) {
+            modalSign.remove();
+            showModalForm([{
+              selector: '#email',
+              value: email
+            }, {
+              selector: '#code',
+              value: ''
+            }], modalVerification);
+            return;
+          } else {
+            _storage__WEBPACK_IMPORTED_MODULE_4__["setAppItem"]('regData', regData);
+          }
+        }
+
         break;
 
       case 'btn__sign-in':
@@ -27226,7 +27306,7 @@ const submitSignForm = (form, errorSignSelector, modalSign, modalVerification) =
     }
 
     formData.append('call', call);
-    Object(_network__WEBPACK_IMPORTED_MODULE_1__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_2__["workberBackEnd"], formData).then(data => {
+    Object(_network__WEBPACK_IMPORTED_MODULE_2__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_3__["workberBackEnd"], formData).then(data => {
       if (data.error) {
         showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
       } else if (data.success) {
@@ -27234,7 +27314,7 @@ const submitSignForm = (form, errorSignSelector, modalSign, modalVerification) =
 
         switch (objData.message) {
           case "user has logined":
-            _storage__WEBPACK_IMPORTED_MODULE_3__["storeProfile"](objData.profile, {
+            _storage__WEBPACK_IMPORTED_MODULE_4__["storeProfile"](objData.profile, {
               sid: objData.sid,
               isLogined: 1,
               refresh_token: objData.refresh_token,
@@ -27242,8 +27322,8 @@ const submitSignForm = (form, errorSignSelector, modalSign, modalVerification) =
               lat: objData.profile.lat,
               lng: objData.profile.lng
             });
-            modalSign.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_4__["closeModalClass"]}`).dataset.reloadPage = '1';
-            modalSign.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_4__["closeModalClass"]}`).click();
+            modalSign.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_5__["closeModalClass"]}`).dataset.reloadPage = '1';
+            modalSign.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_5__["closeModalClass"]}`).click();
             break;
 
           case "regNewUser successful":
@@ -27270,7 +27350,7 @@ const submitVerifyForm = (form, parentContainerClass, errorSignSelector, infoSig
   hideSignInfo(form.querySelector(errorSignSelector));
   hideSignInfo(form.querySelector(infoSignSelector));
   formData.append('call', 'doCheckEmail');
-  Object(_network__WEBPACK_IMPORTED_MODULE_1__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_2__["workberBackEnd"], formData).then(data => {
+  Object(_network__WEBPACK_IMPORTED_MODULE_2__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_3__["workberBackEnd"], formData).then(data => {
     if (data.error) {
       showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
     } else if (data.success) {
@@ -27285,7 +27365,7 @@ const submitVerifyForm = (form, parentContainerClass, errorSignSelector, infoSig
           value: objData.confirmation_token
         }], modalContainerNext);
       } else {
-        _storage__WEBPACK_IMPORTED_MODULE_3__["storeProfile"](objData.profile, {
+        _storage__WEBPACK_IMPORTED_MODULE_4__["storeProfile"](objData.profile, {
           sid: objData.sid,
           isLogined: 1,
           refresh_token: objData.refresh_token,
@@ -27304,7 +27384,7 @@ const submitRestoreForm = (form, errorSignSelector, modalRestore, modalVerificat
   const formData = new FormData(form);
   hideSignInfo(form.querySelector(errorSignSelector));
   formData.append('call', 'doRestore');
-  Object(_network__WEBPACK_IMPORTED_MODULE_1__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_2__["workberBackEnd"], formData).then(data => {
+  Object(_network__WEBPACK_IMPORTED_MODULE_2__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_3__["workberBackEnd"], formData).then(data => {
     if (data.error) {
       showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
     } else if (data.success) {
@@ -27327,7 +27407,7 @@ const submitResendForm = (form, errorSignSelector, infoSignSelector) => {
   formData.append('call', 'doSendCode');
   hideSignInfo(form.querySelector(errorSignSelector));
   hideSignInfo(form.querySelector(infoSignSelector));
-  Object(_network__WEBPACK_IMPORTED_MODULE_1__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_2__["workberBackEnd"], formData).then(data => {
+  Object(_network__WEBPACK_IMPORTED_MODULE_2__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_3__["workberBackEnd"], formData).then(data => {
     if (data.error) {
       showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
     } else if (data.success) {
@@ -27360,12 +27440,12 @@ const submitPasswordForm = (form, errorSignSelector, modalChangePassword) => {
 
   hideSignInfo(form.querySelector(errorSignSelector));
   formData.append('call', 'doChangePwd');
-  Object(_network__WEBPACK_IMPORTED_MODULE_1__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_2__["workberBackEnd"], formData).then(data => {
+  Object(_network__WEBPACK_IMPORTED_MODULE_2__["sendRequest"])(_config__WEBPACK_IMPORTED_MODULE_3__["workberBackEnd"], formData).then(data => {
     if (data.error) {
       showSignInfo(form.querySelector(errorSignSelector), data.error.errors);
     } else if (data.success) {
       const objData = data.success;
-      _storage__WEBPACK_IMPORTED_MODULE_3__["storeProfile"](objData.profile, {
+      _storage__WEBPACK_IMPORTED_MODULE_4__["storeProfile"](objData.profile, {
         sid: objData.sid,
         isLogined: 1,
         refresh_token: objData.refresh_token,
@@ -27373,8 +27453,8 @@ const submitPasswordForm = (form, errorSignSelector, modalChangePassword) => {
         lat: objData.profile.lat,
         lng: objData.profile.lng
       });
-      modalChangePassword.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_4__["closeModalClass"]}`).dataset.reloadPage = '1';
-      modalChangePassword.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_4__["closeModalClass"]}`).click();
+      modalChangePassword.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_5__["closeModalClass"]}`).dataset.reloadPage = '1';
+      modalChangePassword.querySelector(`.${_modal__WEBPACK_IMPORTED_MODULE_5__["closeModalClass"]}`).click();
     }
   });
 };
@@ -28073,14 +28153,6 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     modalVerification.innerHTML = `
 			<div class="${signModalClass}">
 				<div class="modal-header">
-					<!--<div class="back-menu">
-						<a href="#" class="navigation-link back-feed">
-							${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderIcon"])('btn-back', 24)}
-							<span class="text-back">
-								BACK
-							</span>
-						</a>
-					</div>-->
 					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderBackMenu"])()}
 					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])(closeModalClass)}
 				</div>
@@ -28123,10 +28195,13 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
       Object(_forms__WEBPACK_IMPORTED_MODULE_4__["submitResendForm"])(e.target.closest('form'), '.errorSignMessage', '.infoSignMessage');
     });
     modalVerification.addEventListener('click', function (e) {
-      closeSignModalNew(this, e.target, signModalClass, closeModalClass); // const target = e.target;
-      // if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
-      // 	closeSignModal(modalVerification);
-      // }
+      closeSignModalNew(this, e.target, signModalClass, closeModalClass);
+    });
+    modalVerification.querySelector('.back-feed').addEventListener('click', e => {
+      e.preventDefault();
+      closeSignModal(modalVerification);
+      document.body.append(modalSign);
+      disableScroll();
     });
     return modalVerification;
   };
@@ -28152,11 +28227,7 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		`;
     modalCongratulation.addEventListener('click', function (e) {
       this.querySelector(`.${closeModalClass}`).dataset.reloadPage = '1';
-      closeSignModalNew(this, e.target, signModalClass, closeModalClass); // const target = e.target;
-      // if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
-      // 	closeSignModal(modalCongratulation);
-      // 	location.reload();
-      // }
+      closeSignModalNew(this, e.target, signModalClass, closeModalClass);
     });
     return modalCongratulation;
   };
@@ -28300,7 +28371,7 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     menuItemShow.classList.add('active');
     container.querySelectorAll(`.${menuItemShow.dataset['items_show']}`).forEach(item => {
       item.style.display = '';
-      item.removeAttribute('disabled', '');
+      item.removeAttribute('disabled');
     });
     container.querySelectorAll(`.${menuItemShow.dataset['items_hide']}`).forEach(item => {
       item.style.display = 'none';
@@ -28332,7 +28403,8 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     toggleStatusElem(loginForm.querySelector(`#${target.dataset['control']}`), target.checked);
   });
   loginForm.addEventListener('submit', e => {
-    e.preventDefault();
+    e.preventDefault(); // const reg_info = getAppItem('regInfo');
+
     Object(_forms__WEBPACK_IMPORTED_MODULE_4__["submitSignForm"])(e.target, '.errorSignMessage', modalSign, modalVerification);
   });
   loginForm.addEventListener('reset', () => {
@@ -28389,7 +28461,11 @@ const renderModalDeleteAccount = modalOverlayClass => {
   modalForm.addEventListener('submit', function (e) {
     e.preventDefault();
     Object(_appState__WEBPACK_IMPORTED_MODULE_7__["deleteAccount"])();
+    this.querySelector('[type="submit"]').style.visibility = 'hidden';
     this.querySelector('.del-message').style.visibility = 'visible';
+    setTimeout(() => {
+      closeSignModal(this.closest(`.${commonModalOpenClass}`));
+    }, 30000);
   });
   return modal;
 };
@@ -28478,7 +28554,7 @@ async function sendRequest(url, body) {
 /*!************************************!*\
   !*** ./src/js/modules/requests.js ***!
   \************************************/
-/*! exports provided: createRequestParams, createCallRequestParams, sendGetRequest */
+/*! exports provided: createRequestParams, createCallRequestParams, sendGetRequest, refreshTokens */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -28486,6 +28562,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createRequestParams", function() { return createRequestParams; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createCallRequestParams", function() { return createCallRequestParams; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sendGetRequest", function() { return sendGetRequest; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "refreshTokens", function() { return refreshTokens; });
 /* harmony import */ var _network__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./network */ "./src/js/modules/network.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/js/modules/config.js");
 /* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./storage */ "./src/js/modules/storage.js");
@@ -28608,11 +28685,14 @@ const sendGetRequest = async (requestProps, tokensPair = null) => {
               }
 
               return false;
+            } else {
+              _storage__WEBPACK_IMPORTED_MODULE_2__["removeLocalLoginInfo"]();
+              return false;
             }
-
-            return false;
           });
           return data;
+        } else {
+          return false;
         }
       }
 
@@ -28633,13 +28713,17 @@ const sendGetRequest = async (requestProps, tokensPair = null) => {
   });
   return data;
 };
-
 const refreshTokens = async (token, refreshToken) => {
   const data = await sendGetRequest({
     call: 'doRefreshTokens',
     token: token,
     refresh_token: refreshToken
   }, null);
+
+  if (data.code != 1) {
+    return false;
+  }
+
   return data;
 };
 
@@ -28727,14 +28811,22 @@ const setGlobalItem = (item, packJSON = null) => {
     }
   }
 };
-const getGlobalItem = itemKey => localStorage.getItem(itemKey);
+const getGlobalItem = itemKey => {
+  let item = localStorage.getItem(itemKey);
+
+  if (item === 'undefined') {
+    item = null;
+  }
+
+  return item;
+};
 const removeGlobalItem = itemsArr => {
   itemsArr.forEach(item => {
     localStorage.removeItem(item);
   });
 };
 const removeLocalLoginInfo = () => {
-  removeGlobalItem(['refresh_token', 'sid', 'lifetime', 'lat', 'lng']);
+  removeGlobalItem(['refresh_token', 'sid', 'lifetime', 'isLogined', 'localityStatus', 'lat', 'lng']);
 };
 const getLocalityStatus = () => {
   const localityStatus = localStorage.getItem('localityStatus');

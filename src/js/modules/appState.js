@@ -1,4 +1,4 @@
-import {sendGetRequest} from './requests';
+import { sendGetRequest, refreshTokens } from './requests';
 import * as storage from './storage';
 
 /**
@@ -63,15 +63,18 @@ export const getUserProfile = async () => {
  * @param {object} requestData
  * @return {object} data from back-end
  */
-export const postAPIRequest = async (requestData) => {
+export const postAPIRequest = async (requestData, reloadOnFalse = true) => {
 	let token = storage.getGlobalItem('sid');
+	let data = false;
 	if (token) {
 		requestData.token = token;
-		const data = await sendGetRequest(requestData, 
+		data = await sendGetRequest(requestData, 
 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
-		return data;
 	}
-	return false;
+	if (data === false && reloadOnFalse) {
+			location.reload();
+	}
+	return data;
 };
 
 export const deleteTemplate = async (typeTemplate, id) => {
@@ -127,14 +130,14 @@ export const checkUserName = async (user_name) => {
 	return false;
 };
 
-const refreshTokens = async (token, refreshToken) => {
-	const data = await sendGetRequest({
-		call: 'doRefreshTokens',
-		token: token,
-		refresh_token: refreshToken
-	}, false);
-	return data;
-};
+// const refreshTokens = async (token, refreshToken) => {
+// 	const data = await sendGetRequest({
+// 		call: 'doRefreshTokens',
+// 		token: token,
+// 		refresh_token: refreshToken
+// 	}, false);
+// 	return data;
+// };
 
 const storeProfileInfo = ({profile, sid}) => {
 	if (profile) {
@@ -168,8 +171,9 @@ export const deleteAccount = async () => {
 			token: token,
 		},
 		{token:token, refreshToken: storage.getGlobalItem('refresh_token')});
+		return true;
 	}
-	return true;
+	return false;
 };
 
 export const URImod = (newURIParams) => {

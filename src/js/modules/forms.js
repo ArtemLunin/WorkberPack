@@ -1,3 +1,4 @@
+import * as EmailValidator from 'email-validator';
 import {sendRequest} from './network';
 import {workberBackEnd} from './config';
 import * as storage from './storage';
@@ -57,6 +58,25 @@ export const submitSignForm = (form, errorSignSelector, modalSign, modalVerifica
 		switch (typeSubmit) {
 			case 'btn__sign-up':
 				call = 'reg_nu';
+				const pwd = formData.get('pwd'),
+					email = formData.get('email');
+				if (pwd && email) {
+					if (EmailValidator.validate(email) === false) {
+						showSignInfo(form.querySelector(errorSignSelector), [..."incorrect email"]);
+						return false;
+					}
+					let regData = pwd + email;
+					if (regData === storage.getAppItem('regData')) {
+						modalSign.remove();
+						showModalForm([
+							{ selector: '#email', value: email },
+							{ selector: '#code', value: '' },
+						], modalVerification);
+						return;
+					} else {
+						storage.setAppItem('regData', regData);
+					}
+				}
 				break;
 			case 'btn__sign-in':
 				call = 'login';

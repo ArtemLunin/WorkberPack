@@ -364,19 +364,21 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				hashtagTemplateList: requestProps.hashtagTemplateList,
 			})) {
 			postAPIRequest(requestProps).then((data) => {
-				hideSignInfo(form.querySelector('.errorSignMessage'));
-				if (data.message == "hashtag list updating error" || 
-					data.message == "hashtag list adding error") {
-					showSignInfo(form.querySelector('.errorSignMessage'), data.errors);
-					return false;
-				}
-				getTemplate('hashtag').then((data) => {
-					if (modal) {
-						modal.querySelector(`.${closeModalClass}`).click();
+				if (data) {
+					hideSignInfo(form.querySelector('.errorSignMessage'));
+					if (data.message == "hashtag list updating error" || 
+						data.message == "hashtag list adding error") {
+						showSignInfo(form.querySelector('.errorSignMessage'), data.errors);
+						return false;
 					}
-					localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
-					profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
-				});
+					getTemplate('hashtag').then((data) => {
+						if (modal) {
+							modal.querySelector(`.${closeModalClass}`).click();
+						}
+						localProfile.hashagsList = JSON.parse(JSON.stringify(data.hashtagsList));
+						profileProps.hashtags.callback(hashtagsTemplatesCount, hashtagSection, renderHashtagSection, localProfile.hashagsList);
+					});
+				}
 			});
 		}
 	};
@@ -413,19 +415,21 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				address: requestProps.address
 			})) {
 			postAPIRequest(requestProps).then((data) => {
-				hideSignInfo(form.querySelector('.errorSignMessage'));
-				if (data.message == "contact update failed" || 
-					data.message == "contact adding error") {
-					showSignInfo(form.querySelector('.errorSignMessage'), data.errors);
-					return false;
-				}
-				getTemplate('contact').then((data) => {
-					if (modal) {
-						modal.querySelector(`.${closeModalClass}`).click();
+				if (data) {
+					hideSignInfo(form.querySelector('.errorSignMessage'));
+					if (data.message == "contact update failed" || 
+						data.message == "contact adding error") {
+						showSignInfo(form.querySelector('.errorSignMessage'), data.errors);
+						return false;
 					}
-					localProfile.contactsList = JSON.parse(JSON.stringify(data.contactsList));
-					profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
-				});
+					getTemplate('contact').then((data) => {
+						if (modal) {
+							modal.querySelector(`.${closeModalClass}`).click();
+						}
+						localProfile.contactsList = JSON.parse(JSON.stringify(data.contactsList));
+						profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);
+					});
+				}
 			});
 		}
 	};
@@ -465,10 +469,8 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 				lng: parseFloat(requestProps.lng),
 			})) {
 				postAPIRequest(requestProps).then((data) => {
-				if (data.errors) {
-				}
-				else if (data.code && data.code === 1) {
-					if ( data.message === "avatar set") {
+				if (data && data.code && data.code === 1) {
+					if (data.message === "avatar set") {
 						localProfile.personalData.user_picture = userAvatar(data.user_picture);
 					} else {
 						personalDataCheckSum = hash.MD5({
@@ -750,6 +752,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 					if (btnDelete !== null) {
 						deleteTemplate(btnDelete, button.dataset.id).then(() => {
 							getTemplate(btnDelete).then((data) => {
+								console.log(data);
 								localProfile.contactsList = JSON.parse(JSON.stringify(data.contactsList));
 								profileProps.contacts.callback(contactsTemplatesCount, contactSection, renderContactSection, localProfile.contactsList);				
 							});
@@ -1039,46 +1042,48 @@ export const handlePostBtn = (elem, postDocumentId = null) => {
 		requestProps.postid = btn.getAttribute('data-postid');
 		requestProps[btn.getAttribute('data-param')] = btn.getAttribute('data-value');
 		postAPIRequest(requestProps).then((data) => {
-			if (data.message === 'like changed') {
-				btn.querySelector('.likes_out').innerText = data.likes;
-				if (btn.getAttribute('data-value') === '0') {
-					btn.classList.remove('like-selected');
-					btn.setAttribute('data-value', '1');
-					btn.querySelector('.icon').classList.remove('icon-selected');
-				} else {
-					btn.classList.add('like-selected');
-					btn.setAttribute('data-value', '0');
-					btn.querySelector('.icon').classList.add('icon-selected');
+			if (data) {
+				if (data.message === 'like changed') {
+					btn.querySelector('.likes_out').innerText = data.likes;
+					if (btn.getAttribute('data-value') === '0') {
+						btn.classList.remove('like-selected');
+						btn.setAttribute('data-value', '1');
+						btn.querySelector('.icon').classList.remove('icon-selected');
+					} else {
+						btn.classList.add('like-selected');
+						btn.setAttribute('data-value', '0');
+						btn.querySelector('.icon').classList.add('icon-selected');
+					}
+					updatePostActionData(postDocumentId, {
+						'.post-like': data.likes,
+						'.post-is_likes': (btn.getAttribute('data-value') === '1') ? '0' : '1'
+					});
+				} else if (data.message === 'bookmarks changed') {
+					if (btn.getAttribute('data-value') === '0') {
+						// btn.querySelector('.save_out').innerText = 'SAVE';
+						btn.querySelector('.save_out').style.display = '';
+						btn.classList.remove('save-selected');
+						btn.setAttribute('data-value', '1');
+						btn.querySelector('.icon').classList.remove('icon-selected');
+						try
+						{
+							const postItem = btn.closest(`.${favoriteClass}`);
+							postItem.classList.add('post-deleting');
+							setTimeout(() => {
+								postItem.remove();
+							}, 700);
+						} catch (e) {}
+					} else {
+						// btn.querySelector('.save_out').innerText = '';
+						btn.querySelector('.save_out').style.display = 'none';
+						btn.classList.add('save-selected');
+						btn.setAttribute('data-value', '0');
+						btn.querySelector('.icon').classList.add('icon-selected');
+					}
+					updatePostActionData(postDocumentId, {
+						'.post-is_bookmarks': (btn.getAttribute('data-value') === '1') ? '0' : '1'
+					});
 				}
-				updatePostActionData(postDocumentId, {
-					'.post-like': data.likes,
-					'.post-is_likes': (btn.getAttribute('data-value') === '1') ? '0' : '1'
-				});
-			} else if (data.message === 'bookmarks changed') {
-				if (btn.getAttribute('data-value') === '0') {
-					// btn.querySelector('.save_out').innerText = 'SAVE';
-					btn.querySelector('.save_out').style.display = '';
-					btn.classList.remove('save-selected');
-					btn.setAttribute('data-value', '1');
-					btn.querySelector('.icon').classList.remove('icon-selected');
-					try
-					{
-						const postItem = btn.closest(`.${favoriteClass}`);
-						postItem.classList.add('post-deleting');
-						setTimeout(() => {
-							postItem.remove();
-						}, 700);
-					} catch (e) {}
-				} else {
-					// btn.querySelector('.save_out').innerText = '';
-					btn.querySelector('.save_out').style.display = 'none';
-					btn.classList.add('save-selected');
-					btn.setAttribute('data-value', '0');
-					btn.querySelector('.icon').classList.add('icon-selected');
-				}
-				updatePostActionData(postDocumentId, {
-					'.post-is_bookmarks': (btn.getAttribute('data-value') === '1') ? '0' : '1'
-				});
 			}
 		});
 	}

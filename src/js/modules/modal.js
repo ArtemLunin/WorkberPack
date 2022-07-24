@@ -1,5 +1,5 @@
 import {firebaseAuth} from "./firebase";
-import {getLocation, getAppItem} from './storage';
+import { getLocation, setAppItem, getAppItem} from './storage';
 import {setPositionOnMap} from './map';
 import {hideSignInfo, submitSignForm, submitVerifyForm, submitResendForm, submitRestoreForm, submitPasswordForm} from './forms';
 import {registrationID, storeLinks, termsHTML, privacyHTML} from './config';
@@ -103,14 +103,6 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		modalVerification.innerHTML = `
 			<div class="${signModalClass}">
 				<div class="modal-header">
-					<!--<div class="back-menu">
-						<a href="#" class="navigation-link back-feed">
-							${renderIcon('btn-back', 24)}
-							<span class="text-back">
-								BACK
-							</span>
-						</a>
-					</div>-->
 					${renderBackMenu()}
 					${renderCloseMenu(closeModalClass)}
 				</div>
@@ -159,10 +151,13 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 		modalVerification.addEventListener('click', function (e) {
 			closeSignModalNew(this, e.target, signModalClass, closeModalClass);
-			// const target = e.target;
-			// if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
-			// 	closeSignModal(modalVerification);
-			// }
+		});
+
+		modalVerification.querySelector('.back-feed').addEventListener('click', (e) => {
+			e.preventDefault();
+			closeSignModal(modalVerification);
+			document.body.append(modalSign);
+			disableScroll();
 		});
 
 		return modalVerification;
@@ -192,11 +187,6 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		modalCongratulation.addEventListener('click', function (e) {
 			this.querySelector(`.${closeModalClass}`).dataset.reloadPage = '1';
 			closeSignModalNew(this, e.target, signModalClass, closeModalClass);
-			// const target = e.target;
-			// if (!target.closest(`.${signModalClass}`) || target.closest(`.${closeModalClass}`)) {
-			// 	closeSignModal(modalCongratulation);
-			// 	location.reload();
-			// }
 		});
 
 		return modalCongratulation;
@@ -352,7 +342,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 		container.querySelectorAll(`.${menuItemShow.dataset['items_show']}`).forEach(item => {
 			item.style.display = '';
-			item.removeAttribute('disabled', '');
+			item.removeAttribute('disabled');
 		});
 		
 		container.querySelectorAll(`.${menuItemShow.dataset['items_hide']}`).forEach(item => {
@@ -393,6 +383,7 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 
 	loginForm.addEventListener('submit', (e) => {
 		e.preventDefault();
+		// const reg_info = getAppItem('regInfo');
 		submitSignForm(e.target, '.errorSignMessage', modalSign, modalVerification);
 	});
 
@@ -456,7 +447,11 @@ export const renderModalDeleteAccount = (modalOverlayClass) => {
 	modalForm.addEventListener('submit', function (e) {
 		e.preventDefault();
 		deleteAccount();
+		this.querySelector('[type="submit"]').style.visibility = 'hidden';
 		this.querySelector('.del-message').style.visibility = 'visible';
+		setTimeout(() => {
+			closeSignModal(this.closest(`.${commonModalOpenClass}`));
+		}, 30000);
 	});
 
 	return modal;

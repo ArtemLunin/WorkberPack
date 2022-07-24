@@ -60,7 +60,13 @@ export const setGlobalItem = (item, packJSON = null) => {
 	}
 };
 
-export const getGlobalItem = (itemKey) => localStorage.getItem(itemKey);
+export const getGlobalItem = (itemKey) => {
+	let item = localStorage.getItem(itemKey);
+	if (item === 'undefined') {
+		item = null;
+	}
+	return item;
+}
 
 export const removeGlobalItem = (itemsArr) => {
 	itemsArr.forEach(item => {
@@ -70,7 +76,7 @@ export const removeGlobalItem = (itemsArr) => {
 
 export const removeLocalLoginInfo = () => {
 	removeGlobalItem([
-		'refresh_token', 'sid', 'lifetime', 'lat', 'lng'
+		'refresh_token', 'sid', 'lifetime', 'isLogined', 'localityStatus', 'lat', 'lng'
 	]);
 };
 

@@ -105,10 +105,14 @@ export const sendGetRequest = async (requestProps, tokensPair = null) => {
 									return (data.success);
 								}
 								return false;
-							} 
-							return false;
+							} else {
+								storage.removeLocalLoginInfo();
+								return false;
+							}
 						});
 						return data; 
+					} else {
+						return false;
 					}
 				}
 				return 401;
@@ -128,11 +132,14 @@ export const sendGetRequest = async (requestProps, tokensPair = null) => {
 	return data;
 };
 
-const refreshTokens = async (token, refreshToken) => {
+export const refreshTokens = async (token, refreshToken) => {
 	const data = await sendGetRequest({
 		call: 'doRefreshTokens',
 		token: token,
 		refresh_token: refreshToken
 	}, null);
+	if (data.code != 1) {
+		return false;
+	}
 	return data;
 };
