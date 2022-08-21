@@ -28238,14 +28238,6 @@ const renderModalSign = (modalOverlayClass, settingsSelector) => {
     modalRestore.innerHTML = `
 			<div class="${signModalClass}">
 				<div class="modal-header">
-					<!--<div class="back-menu">
-							<a href="#" class="navigation-link back-feed">
-								${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderIcon"])('btn-back', 24)}
-								<span class="text-back">
-									BACK
-								</span>
-							</a>
-					</div>-->
 					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderBackMenu"])()}
 					${Object(_domManipulation__WEBPACK_IMPORTED_MODULE_6__["renderCloseMenu"])(closeModalClass)}
 				</div>

@@ -199,14 +199,6 @@ export const renderModalSign = (modalOverlayClass, settingsSelector) => {
 		modalRestore.innerHTML = `
 			<div class="${signModalClass}">
 				<div class="modal-header">
-					<!--<div class="back-menu">
-							<a href="#" class="navigation-link back-feed">
-								${renderIcon('btn-back', 24)}
-								<span class="text-back">
-									BACK
-								</span>
-							</a>
-					</div>-->
 					${renderBackMenu()}
 					${renderCloseMenu(closeModalClass)}
 				</div>
