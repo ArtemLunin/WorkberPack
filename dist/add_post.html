@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/normalize.css" />
+	<link rel="stylesheet" href="assets/css/tiny-slider.css">
+	<link rel="stylesheet" href="assets/css/style.min.css">
+    <title>Create post</title>
+</head>
+<body>
+    <form class="create-post">
+        <img class="create-post__images" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0cFFOtQT4XVOQvJQ8I_fnLi4OIMZM5272vQ&usqp=CAU" alt="post image">
+        <input type="hidden" name="role_ad" id="role_ad" value="service">
+        <input type="hidden" name="contact_id" id="contact_id">
+        <input type="hidden" name="active" id="active" value="1">
+        <input type="hidden" name="share_loc" id="share_loc" value="1">
+        <div class="create-post__content">
+            <div class="create-post__roles">
+                <a href="#" data-service="service" class="create-post__roles_role create-post__roles_role_active">I offer</a>
+                <a href="#" data-service="project" class="create-post__roles_role">I need</a>
+            </div>
+            <section class="create-post__title">
+                <label for="post_name">Title <span class="create-post__title_text">5/50</span></label>
+                <input type="text" name="post_name" id="post_name">
+            </section>
+            <section class="create-post__description">
+                <div class="create-post__description_label">Description <span>10/3000</span></div>
+                <textarea class="create-post__description_text" name="text_adv" id="text_adv" ></textarea>
+            </section>
+            <section class="create-post__hashtags">
+                <textarea class="create-post__hashtags_text" name="hashtagTemplateList" id="hashtagTemplateList"></textarea>
+            </section>
+            <section class="create-post__buttons">
+                <a class="create-post__buttons_btn" href="#">
+                    <svg width=24 height=24>
+                        <use xlink:href="assets/workber_img/icons.svg#btn-hash"></use>
+                    </svg>Add hashtags
+                </a>
+                <a class="create-post__buttons_btn" href="#">
+                    <svg width=24 height=24>
+                        <use xlink:href="assets/workber_img/icons.svg#btn-contact"></use>
+                    </svg>Add contacts
+                </a>
+            </section>
+            <section class="create-post__contacts">
+                <div class="create-post__contacts_contact">
+                    Contact1
+                </div>
+                <div class="create-post__contacts_contact">
+                    Contact2
+                </div>
+            </section>
+            <section class="create-post__behavior">
+                <div class="form-check">
+                    <div class="form-check__line"></div>
+                    <div class="form-check__circle form-check__circle_on"></div>
+                </div>
+                <span>Publish location</span>
+                <div class="form-check">
+                    <div class="form-check__line"></div>
+                    <div class="form-check__circle form-check__circle_on"></div>
+                </div>
+                <span>Activate after publication</span>
+            </section>
+            <div class="form-profile-footer">
+                <button type="submit" class="btn__form btn__confirmation">Save</button>
+                <button type="reset" class="btn__form btn__confirmation">Cancel</button>
+            </div>
+        </div>
+        
+    </form>
+</body>
+</html>

@@ -1,0 +1,56 @@
+form * {
+    &:focus {
+        border: 1px solid $form-focus-color;
+    }
+}
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #e2e5ed;
+    // box-shadow: inset 0 1px 2px rgba(102,113,123,.21);
+    border-radius: 4px;
+    resize: none;
+    outline: none;
+}
+input {
+    padding: 8px 12px 8px 12px;
+    background: #fff;
+    border: 1px solid #e2e5ed;
+    // box-shadow: inset 0 1px 2px rgba(102,113,123,.21);
+    border-radius: 4px;
+    outline: none;
+}
+
+.form-check {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 34px;
+    height: 20px;
+    margin-right: 16px;
+    cursor: pointer;
+    &__line {
+        width: 100%;
+        position: absolute;
+        height: 14px;
+        background: rgba(114, 161, 229, 0.4);
+        border-radius: 15px;
+    }
+    &__circle {
+        width: 20px;
+        height: 20px;
+        border-radius: 100%;
+        position: absolute;
+        transition: all 0.5s;
+        &_on {
+            right: 0;
+            background: #72A1E5;
+            box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px rgba(0, 0, 0, 0.14), 0px 1px 5px rgba(0, 0, 0, 0.12);
+        }
+        &_off {
+            right: calc(100% - 20px);
+            background: #c3c5c8;
+            box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px rgba(0, 0, 0, 0.14), 0px 1px 5px rgba(0, 0, 0, 0.12);
+        }
+    }
+}

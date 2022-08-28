@@ -29,7 +29,7 @@ const setCursorEnd = (el) => {
 }
 
 
-export const renderProfile = ({contact_email, contact_phone, user_name, user_picture, user_descr, email, lat, lng, hashtagsList, contactsList, toggles}, settingsSelector, showControl) => {
+export const renderProfile = ({contact_email, contact_phone, user_name, user_picture, user_descr, email, lat, lng, hashtagsList, contactsList, toggles}, settingsSelector, showControl = null) => {
 	
 	const dataOuterFlag = 'data-outer';
 	
@@ -65,7 +65,7 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 	};
 
 	// const iconSettings = document.querySelector(settingsSelector);
-	const profileContainer = document.createElement('section') ;
+	const profileContainer = document.createElement('section');
 
 	profileContainer.classList.add('posts-block', 'profile-container');
 	// profileContainer.dataset.container
@@ -1024,6 +1024,107 @@ export const renderProfile = ({contact_email, contact_phone, user_name, user_pic
 	});
 
 	return profileContainer;
+};
+
+/**
+ * render post container
+ * @module domElements
+ * @return {DOM}
+ */
+export const renderPostMod = () => {
+	const postModContainer = document.createElement('section');
+	postModContainer.classList.add('posts-block', 'profile-container');
+
+	postModContainer.insertAdjacentHTML('beforeend', `
+		<form class="create-post">
+			<img class="create-post__images" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0cFFOtQT4XVOQvJQ8I_fnLi4OIMZM5272vQ&usqp=CAU" alt="post image">
+			<input type="hidden" name="role_ad" id="role_ad" value="service">
+			<input type="hidden" name="contact_id" id="contact_id">
+			<input type="hidden" name="active" id="active" value="1">
+			<input type="hidden" name="share_loc" id="share_loc" value="1">
+			<div class="create-post__content">
+				<div class="create-post__roles">
+					<a href="#" data-service="service" class="create-post__roles_role create-post__roles_role_active">I offer</a>
+					<a href="#" data-service="project" class="create-post__roles_role">I need</a>
+				</div>
+				<section class="create-post__title">
+					<label for="post_name">Title <span class="create-post__title_text">5/50</span></label>
+					<input type="text" name="post_name" id="post_name">
+				</section>
+				<section class="create-post__description">
+					<div class="create-post__description_label">Description <span>10/3000</span></div>
+					<textarea class="create-post__description_text" name="text_adv" id="text_adv" ></textarea>
+				</section>
+				<section class="create-post__hashtags">
+					<textarea class="create-post__hashtags_text" name="hashtagTemplateList" id="hashtagTemplateList"></textarea>
+				</section>
+				<section class="create-post__buttons">
+					<a class="create-post__buttons_btn" href="#">
+						<svg width=24 height=24>
+							<use xlink:href="assets/workber_img/icons.svg#btn-hash"></use>
+						</svg>Add hashtags
+					</a>
+					<a class="create-post__buttons_btn" href="#">
+						<svg width=24 height=24>
+							<use xlink:href="assets/workber_img/icons.svg#btn-contact"></use>
+						</svg>Add contacts
+					</a>
+				</section>
+				<section class="create-post__contacts">
+					<div class="create-post__contacts_contact">
+						Contact1
+					</div>
+					<div class="create-post__contacts_contact">
+						Contact2
+					</div>
+				</section>
+				<section class="create-post__behavior">
+					<div class="form-check" data-check="share_loc">
+						<div class="form-check__line"></div>
+						<div class="form-check__circle form-check__circle_on"></div>
+					</div>
+					<span>Publish location</span>
+					<div class="form-check" data-check="active">
+						<div class="form-check__line"></div>
+						<div class="form-check__circle form-check__circle_on"></div>
+					</div>
+					<span>Activate after publication</span>
+				</section>
+				<div class="form-profile-footer">
+					<button type="submit" class="btn__form btn__confirmation">Save</button>
+					<button type="reset" class="btn__form btn__confirmation">Cancel</button>
+				</div>
+			</div>
+			
+		</form>
+	`);
+	const form = postModContainer.querySelector('form'),
+		behavior = form.querySelector('.create-post__behavior');
+
+	behavior.addEventListener('click', (e) => {
+		const target = e.target;
+		const item = target.closest('.form-check');
+		if (item) {
+			try {
+				const checkItem = item.querySelector('.form-check__circle');
+				const formCheck = form.querySelector(`#${item.dataset['check']}`);
+				if (checkItem.classList.contains('form-check__circle_on')) {
+					formCheck.value = '0';
+					checkItem.classList.remove('form-check__circle_on');
+					checkItem.classList.add('form-check__circle_off');
+				} else {
+					formCheck.value = '1';
+					checkItem.classList.remove('form-check__circle_off');
+					checkItem.classList.add('form-check__circle_on');
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	});
+	
+
+	return postModContainer;
 };
 
 /**

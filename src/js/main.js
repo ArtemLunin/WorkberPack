@@ -9,7 +9,7 @@ import {sendRequest} from './modules/network';
 import {getUserProfile, URImod, logout} from './modules/appState';
 import {toggleService, hidePageElems, showPageElems} from './modules/domManipulation';
 import {getCurrentPage, visible, copyShareLink} from './modules/domHelpers'
-import {renderProfile, handlePostBtn} from './modules/domElements';
+import {renderProfile, renderPostMod, handlePostBtn} from './modules/domElements';
 
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -149,6 +149,10 @@ const showControl = {
 	'profile': {
 		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service', 'icons-panel__favorites_text-active', 'search-menu'],
 		'show': ['back-menu'],
+	},
+	'create': {
+		'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service', 'icons-panel__favorites_text-active', 'search-menu'],
+		'show': ['back-menu'],
 	}
 };
 
@@ -162,7 +166,7 @@ const callParams = {
 
 let currentPage = 'doStart';
 workberHome.dataset['currentPage'] = 'doStart';
-const pages = ['service', 'project', 'all', 'post', 'profile', 'favorite'];
+const pages = ['service', 'project', 'all', 'post', 'profile', 'favorite', 'create'];
 const eventClick = new Event("click");
 const eventScroll = new Event("scroll");
 
@@ -818,7 +822,7 @@ if (workberLogo) {
 	mapLoader();
 
 	getUserProfile().then(profile => {
-		let profileContainer;
+		let profileContainer, postModContainer;
 		if (profile) {
 			iconsPanel.style.display = '';
 			if (userMenu) {
@@ -832,6 +836,7 @@ if (workberLogo) {
 				// userMenu.classList.remove('d-none');
 			}
 			profileContainer = renderProfile(profile.profile, '#small_avatar', showControl);
+			postModContainer = renderPostMod();
 			const profileDescription = profileContainer.querySelector('#user_descr');
 			// const descriptionCounter = profileContainer.querySelector('#descriptionCounter');
 			// profileDescription.innerText = profileDescription.innerText.trim().substring(0, maxDescriptionLength);
@@ -851,6 +856,16 @@ if (workberLogo) {
 						'page': 'profile',
 					});
 				}
+			});
+
+			document.querySelector('#btn_create').addEventListener('click', (e) => {
+				e.preventDefault();
+				console.log('create post!!!');
+				hidePageElems('create', showControl);
+				showPageElems('create', showControl, postModContainer);
+				URImod({
+					'page': 'create',
+				})
 			});
 		}
 

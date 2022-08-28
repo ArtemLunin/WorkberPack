@@ -24354,6 +24354,10 @@ window.addEventListener('DOMContentLoaded', () => {
       'profile': {
         'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service', 'icons-panel__favorites_text-active', 'search-menu'],
         'show': ['back-menu']
+      },
+      'create': {
+        'hide': ['posts-favorite', 'posts-offer', 'posts-need', 'posts-all', 'home-page', 'start-page', 'post-one', 'distance-info', 'dist-text-header', 'distances', 'tabs-service', 'icons-panel__favorites_text-active', 'search-menu'],
+        'show': ['back-menu']
       }
     };
     const callParams = {
@@ -24365,7 +24369,7 @@ window.addEventListener('DOMContentLoaded', () => {
     };
     let currentPage = 'doStart';
     workberHome.dataset['currentPage'] = 'doStart';
-    const pages = ['service', 'project', 'all', 'post', 'profile', 'favorite'];
+    const pages = ['service', 'project', 'all', 'post', 'profile', 'favorite', 'create'];
     const eventClick = new Event("click");
     const eventScroll = new Event("scroll");
     let currentlyLoad = 0; // в данный момент загружено 0 элементов
@@ -25098,7 +25102,7 @@ window.addEventListener('DOMContentLoaded', () => {
     Object(_modules_modal__WEBPACK_IMPORTED_MODULE_7__["renderModalSign"])('modal-overlay', '#login_acc');
     Object(_modules_map__WEBPACK_IMPORTED_MODULE_4__["mapLoader"])();
     Object(_modules_appState__WEBPACK_IMPORTED_MODULE_11__["getUserProfile"])().then(profile => {
-      let profileContainer;
+      let profileContainer, postModContainer;
 
       if (profile) {
         iconsPanel.style.display = '';
@@ -25114,6 +25118,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         profileContainer = Object(_modules_domElements__WEBPACK_IMPORTED_MODULE_14__["renderProfile"])(profile.profile, '#small_avatar', showControl);
+        postModContainer = Object(_modules_domElements__WEBPACK_IMPORTED_MODULE_14__["renderPostMod"])();
         const profileDescription = profileContainer.querySelector('#user_descr'); // const descriptionCounter = profileContainer.querySelector('#descriptionCounter');
         // profileDescription.innerText = profileDescription.innerText.trim().substring(0, maxDescriptionLength);
         // descriptionCounter.innerText = `${profileDescription.innerText.length}/${maxDescriptionLength}`;
@@ -25133,6 +25138,15 @@ window.addEventListener('DOMContentLoaded', () => {
               'page': 'profile'
             });
           }
+        });
+        document.querySelector('#btn_create').addEventListener('click', e => {
+          e.preventDefault();
+          console.log('create post!!!');
+          Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_12__["hidePageElems"])('create', showControl);
+          Object(_modules_domManipulation__WEBPACK_IMPORTED_MODULE_12__["showPageElems"])('create', showControl, postModContainer);
+          Object(_modules_appState__WEBPACK_IMPORTED_MODULE_11__["URImod"])({
+            'page': 'create'
+          });
         });
       }
 
@@ -25482,13 +25496,14 @@ const routes = {
 /*!***************************************!*\
   !*** ./src/js/modules/domElements.js ***!
   \***************************************/
-/*! exports provided: cropEditableContent, renderProfile, handlePostBtn */
+/*! exports provided: cropEditableContent, renderProfile, renderPostMod, handlePostBtn */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cropEditableContent", function() { return cropEditableContent; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderProfile", function() { return renderProfile; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderPostMod", function() { return renderPostMod; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "handlePostBtn", function() { return handlePostBtn; });
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.iterator */ "./node_modules/core-js/modules/web.dom-collections.iterator.js");
 /* harmony import */ var core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_iterator__WEBPACK_IMPORTED_MODULE_0__);
@@ -25542,7 +25557,7 @@ const renderProfile = ({
   hashtagsList,
   contactsList,
   toggles
-}, settingsSelector, showControl) => {
+}, settingsSelector, showControl = null) => {
   const dataOuterFlag = 'data-outer';
 
   const userAvatar = user_picture => user_picture ? user_picture : 'assets/workber_img/no-avatar.jpg';
@@ -26561,6 +26576,105 @@ const renderProfile = ({
     }
   });
   return profileContainer;
+};
+/**
+ * render post container
+ * @module domElements
+ * @return {DOM}
+ */
+
+const renderPostMod = () => {
+  const postModContainer = document.createElement('section');
+  postModContainer.classList.add('posts-block', 'profile-container');
+  postModContainer.insertAdjacentHTML('beforeend', `
+		<form class="create-post">
+			<img class="create-post__images" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0cFFOtQT4XVOQvJQ8I_fnLi4OIMZM5272vQ&usqp=CAU" alt="post image">
+			<input type="hidden" name="role_ad" id="role_ad" value="service">
+			<input type="hidden" name="contact_id" id="contact_id">
+			<input type="hidden" name="active" id="active" value="1">
+			<input type="hidden" name="share_loc" id="share_loc" value="1">
+			<div class="create-post__content">
+				<div class="create-post__roles">
+					<a href="#" data-service="service" class="create-post__roles_role create-post__roles_role_active">I offer</a>
+					<a href="#" data-service="project" class="create-post__roles_role">I need</a>
+				</div>
+				<section class="create-post__title">
+					<label for="post_name">Title <span class="create-post__title_text">5/50</span></label>
+					<input type="text" name="post_name" id="post_name">
+				</section>
+				<section class="create-post__description">
+					<div class="create-post__description_label">Description <span>10/3000</span></div>
+					<textarea class="create-post__description_text" name="text_adv" id="text_adv" ></textarea>
+				</section>
+				<section class="create-post__hashtags">
+					<textarea class="create-post__hashtags_text" name="hashtagTemplateList" id="hashtagTemplateList"></textarea>
+				</section>
+				<section class="create-post__buttons">
+					<a class="create-post__buttons_btn" href="#">
+						<svg width=24 height=24>
+							<use xlink:href="assets/workber_img/icons.svg#btn-hash"></use>
+						</svg>Add hashtags
+					</a>
+					<a class="create-post__buttons_btn" href="#">
+						<svg width=24 height=24>
+							<use xlink:href="assets/workber_img/icons.svg#btn-contact"></use>
+						</svg>Add contacts
+					</a>
+				</section>
+				<section class="create-post__contacts">
+					<div class="create-post__contacts_contact">
+						Contact1
+					</div>
+					<div class="create-post__contacts_contact">
+						Contact2
+					</div>
+				</section>
+				<section class="create-post__behavior">
+					<div class="form-check" data-check="share_loc">
+						<div class="form-check__line"></div>
+						<div class="form-check__circle form-check__circle_on"></div>
+					</div>
+					<span>Publish location</span>
+					<div class="form-check" data-check="active">
+						<div class="form-check__line"></div>
+						<div class="form-check__circle form-check__circle_on"></div>
+					</div>
+					<span>Activate after publication</span>
+				</section>
+				<div class="form-profile-footer">
+					<button type="submit" class="btn__form btn__confirmation">Save</button>
+					<button type="reset" class="btn__form btn__confirmation">Cancel</button>
+				</div>
+			</div>
+			
+		</form>
+	`);
+  const form = postModContainer.querySelector('form'),
+        behavior = form.querySelector('.create-post__behavior');
+  behavior.addEventListener('click', e => {
+    const target = e.target;
+    const item = target.closest('.form-check');
+
+    if (item) {
+      try {
+        const checkItem = item.querySelector('.form-check__circle');
+        const formCheck = form.querySelector(`#${item.dataset['check']}`);
+
+        if (checkItem.classList.contains('form-check__circle_on')) {
+          formCheck.value = '0';
+          checkItem.classList.remove('form-check__circle_on');
+          checkItem.classList.add('form-check__circle_off');
+        } else {
+          formCheck.value = '1';
+          checkItem.classList.remove('form-check__circle_off');
+          checkItem.classList.add('form-check__circle_on');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  });
+  return postModContainer;
 };
 /**
  * handle events for likes and favorites buttons
